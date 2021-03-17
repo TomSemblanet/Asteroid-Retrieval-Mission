@@ -14,7 +14,10 @@ import pygmo as pg
 import numpy as np 
 import math as mt
 
+from pykep.examples import algo_factory
+
 from scripts.load_bodies import load_asteroid, load_planet
+from scripts.load_kernels import load_kernels
 import data.constants as cst
 
 class Earth2Asteroid:
@@ -334,7 +337,7 @@ class Earth2Asteroid:
 		fwd_grid = t0 + tof * self.fwd_grid
 		bwd_grid = t0 + tof * self.bwd_grid
 
-		throttles = [x[3 + 3 * i: 6 + 3 * i] for i in range(n_seg)]
+		throttles = [x[7 + 3 * i: 10 + 3 * i] for i in range(n_seg)]
 		alphas = [min(1., np.linalg.norm(t)) for t in throttles]
 
 		times = np.concatenate((fwd_grid, bwd_grid))
@@ -448,7 +451,7 @@ class Earth2Asteroid:
 		fwd_grid = t0 + tof * self.fwd_grid
 		bwd_grid = t0 + tof * self.bwd_grid
 
-		throttles = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
+		throttles = [np.linalg.norm(x[7 + 3 * i: 10 + 3 * i])
 					 for i in range(n_seg)]
 
 		dist_earth = [0.0] * (n_seg + 2)  # distances spacecraft - Earth
@@ -592,7 +595,8 @@ class Earth2Asteroid:
 
 if __name__ == '__main__':
 
-	from pykep.examples import algo_factory
+	# Loading the main kernels
+	load_kernels()
 
 	# Loading of the target asteroid
 	ast = load_asteroid('2008 JL24')
@@ -613,7 +617,7 @@ if __name__ == '__main__':
 	# 5 - Optimization algorithm
 	algorithm = algo_factory('slsqp')
 	algorithm.extract(pg.nlopt).xtol_rel = 1e-8
-	algorithm.extract(pg.nlopt).maxeval = 2000
+	algorithm.extract(pg.nlopt).maxeval = 3000
 
 	# 6 - Problem
 	udp = Earth2Asteroid(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \

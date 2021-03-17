@@ -27,10 +27,6 @@ def load_asteroid(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NON
 			Asteroid object
 
 	"""
-	# Load SPICE kernels
-	pk.util.load_spice_kernel('data/spice_kernels/asteroids.bsp')
-	pk.util.load_spice_kernel('data/spice_kernels/de405.bsp')
-
 	return pk.planet.spice(NAME2SPK[name], observer, ref_frame, aberrations, mu_central_body)
 
 def load_planet(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NONE', mu_central_body=pk.MU_SUN):
@@ -57,7 +53,4 @@ def load_planet(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NONE'
 			Planet object
 
 	"""
-	# Load SPICE kernels
-	pk.util.load_spice_kernel('data/spice_kernels/de405.bsp')
-
 	return pk.planet.spice(name, observer, ref_frame, aberrations, mu_central_body)

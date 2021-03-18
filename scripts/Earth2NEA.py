@@ -45,7 +45,7 @@ vinf_max = 1.5e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2
+algorithm.extract(pg.nlopt).maxeval = 2000
 
 # 6 - Problem
 udp = Earth2NEA(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \
@@ -60,8 +60,13 @@ population = pg.population(problem, size=1, seed=123)
 # 8 - Optimization
 population = algorithm.evolve(population)
 
+
+
+
+
+
 # If we are on RAINMAIN, we pickle the results to inspect them further
-if 'e' in os.uname()[1]:
+if 'node' in os.uname()[1]:
 	rs = {'udp': udp, 'x': population.champion_x}
 
 	date = dt.now().strftime("%d_%m_%Y_%H_%M_%S")

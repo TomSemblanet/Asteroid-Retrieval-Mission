@@ -45,7 +45,7 @@ vinf_max = 1.5e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2000
+algorithm.extract(pg.nlopt).maxeval = 2
 
 # 6 - Problem
 udp = Earth2NEA(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \

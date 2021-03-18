@@ -15,7 +15,7 @@ from datetime import datetime as dt
 
 from scripts.loaders import load_sqp, load_kernels, load_bodies
 
-from scripts.UDP.Earth2NEA_UDP import Earth2Asteroid
+from scripts.UDP.Earth2NEA_UDP import Earth2NEA
 
 from data import constants as cst
 
@@ -48,7 +48,7 @@ algorithm = load_sqp.load('slsqp')
 algorithm.extract(pg.nlopt).maxeval = 3000
 
 # 6 - Problem
-udp = Earth2Asteroid(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \
+udp = Earth2NEA(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf=[vinf_min, vinf_max])
 
 problem = pg.problem(udp)
@@ -65,7 +65,7 @@ if 'node' in os.uname()[1]:
 	rs = {'udp': udp, 'x': population.champion_x}
 
 	date = dt.now().strftime("%d:%m:%Y_%H:%M:%S")
-	with open('Earth - NEA - ' + str(date), 'wb') as file:
+	with open('Earth-NEA-' + str(date), 'wb') as file:
 		pkl.dump(rs, file)
 
 
@@ -75,7 +75,7 @@ else:
 	udp.report(population.champion_x)
 
 	# 10 - plot trajectory
-	udp.plot_traj(population.champion_x, plot_segments=True)
+	udp.plot_traj(population.champion_x)
 	plt.title("The trajectory in the heliocentric frame")
 
 	udp.plot_dists_thrust(population.champion_x)

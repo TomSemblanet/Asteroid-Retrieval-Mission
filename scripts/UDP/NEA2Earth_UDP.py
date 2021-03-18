@@ -16,7 +16,7 @@ import numpy as np
 from scripts.loaders import load_bodies
 import data.constants as cst
 
-class Earth2Asteroid:
+class NEA2Earth:
 	""" 
 	Optimal control problem representing a low-thrust transfer between a NEA and the Earth
 	environment. The spacecraft leaves the NEA with a zero relative velocity and reaches the Moon 
@@ -31,7 +31,7 @@ class Earth2Asteroid:
 
 	Parameters:
 	-----------
-	departure: <pykep.planet>
+	nea: <pykep.planet>
 		The departure NEA
 	n_seg: int
 		Number of segment in which the trajectory is divided
@@ -43,57 +43,31 @@ class Earth2Asteroid:
 	tof : array [float, float]
 		Lower and upper bounds of the time of flight
 	m0 : float
-		Initial mass of the spacecraft + asteroid sample [kg]
+		Initial mass of the S/A [kg]
 	Tmax : float
-		Maximum thrust of the spacecraft [N]
+		Maximum thrust of the S/A [N]
 	Isp : float
-		Specific impulse of the spacecraft [s]
+		Specific impulse of the S/A [s]
 
 	"""
 
 	def __init__(self, 
-				 target = None, 
+				 nea = None, 
 				 n_seg = 30, 
 				 grid_type='uniform', 
 				 t0 = [pk.epoch(0), pk.epoch(1000)], 
 				 tof = [0, 1000], 
 				 m0 = 600, 
 				 Tmax = 0.1, 
-				 Isp = 2700, 
-				 vinf = [0, 2.5e3]):
-		""" Initialization of the `Earth2Asteroid` class.
-
-			Parameters:
-			-----------
-			target: <pykep.planet>
-				Target NEO (Near-Earth Object)
-			n_seg: int
-				Number of segments to use in the problem transcription (time grid)
-			grid_type: string
-				"uniform" for uniform segments, "nonuniform" to use a denser grid in the first part of the trajectory
-			t0: tuple
-				List of two pykep.epoch defining the bounds on the launch epoch
-			tof: tuple
-				List of two floats defining the bounds on the time of flight (days)
-			m0: float
-				Initial mass of the spacecraft (kg)
-			Tmax: float
-				Maximum thrust at 1 AU (N)
-			Isp: float
-				Engine specific impulse (s)
-			vinf: array
-				Minimal and maximal velocities at infinity relative to the Earth at departure [m/s]
-			
-		"""
+				 Isp = 2700):
 
 		# Class data members
-		self.target = target 
+		self.nea = nea 
 		self.n_seg = n_seg
 		self.grid_type = grid_type
 		self.sc = pk.sims_flanagan.spacecraft(m0, Tmax, Isp)
 		self.earth = load_bodies.planet('EARTH')
 		self.moon = load_bodies.planet('MOON')
-		self.vinf = vinf
 
 		# Grid construction
 		if grid_type == 'uniform':
@@ -255,14 +229,11 @@ class Earth2Asteroid:
 
 		# Computation of the initial epochs and ephemerides
 		ti = pk.epoch(t0)
-		ri, vi = self.moon.eph(ti)
-
-		# Adding the initial velocity at infinity (Earth departure)
-		vi += vinf_mag * vinf_unit
+		ri, vi = self.nea.eph(ti)
 
 		# Computation of the final epochs and ephemerides
 		tf = pk.epoch(t0 + tof)
-		rf, vf = self.target.eph(tf)
+		rf, vf = self.moon.eph(tf)
 
 		# Forward propagation
 		fwd_grid = t0 + tof * self.fwd_grid
@@ -403,7 +374,6 @@ class Earth2Asteroid:
 		if plot_segments:
 			axes.scatter(xfwd[:-1], yfwd[:-1], zfwd[:-1],
 						 label='nodes', marker='o', s=5, c='k')
-
 
 		# Backward propagation
 		xbwd = [0.0] * (bwd_seg + 1)

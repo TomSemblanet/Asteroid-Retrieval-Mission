@@ -16,7 +16,7 @@ import numpy as np
 from scripts.loaders import load_bodies
 import data.constants as cst
 
-class Earth2Asteroid:
+class Earth2NEA:
 	""" 
 	Optimal control problem representing a low-thrust transfer between the Earth environment and a 
 	target NEA. The spacecraft leaves the Moon with a infinity velocity `v_inf` relative to the Earth.
@@ -319,7 +319,7 @@ class Earth2Asteroid:
 		"""
 		return pg.estimate_gradient(lambda x: self.fitness(x), x, 1e-8)
 
-	def plot_traj(self, x, units=pk.AU, plot_segments=False, plot_thrusts=False, axes=None):
+	def plot_traj(self, x, units=pk.AU, plot_segments=True, plot_thrusts=False, axes=None):
 		""" Plots the distance of the spacecraft from the Earth/Sun and the thrust profile
 
 			Parameters:

@@ -1,7 +1,7 @@
 import pykep as pk 
 import os
 
-def load_kernels(kernels=None):
+def load(kernels=None):
 	""" Loads the need SPICE kernels """
 	# Get the host machine name
 	host_nm = os.uname()[1]

@@ -3,7 +3,7 @@ import pykep as pk
 from data.spk_table import NAME2SPK
 
 
-def load_asteroid(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NONE', mu_central_body=pk.MU_SUN):
+def asteroid(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NONE', mu_central_body=pk.MU_SUN):
 	""" Load an asteroid from its generic name (eg. '2011 UD21') using PyKEP.util
 		module and SPICE kernels. The asteroid
 
@@ -29,7 +29,7 @@ def load_asteroid(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NON
 	"""
 	return pk.planet.spice(NAME2SPK[name], observer, ref_frame, aberrations, mu_central_body)
 
-def load_planet(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NONE', mu_central_body=pk.MU_SUN):
+def planet(name, observer='SUN', ref_frame='ECLIPJ2000', aberrations='NONE', mu_central_body=pk.MU_SUN):
 	""" Load an asteroid from its generic name (eg. '2011 UD21') using PyKEP.util
 		module and SPICE kernels. The asteroid
 

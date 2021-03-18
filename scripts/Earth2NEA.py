@@ -10,17 +10,18 @@ Created on Thu Mar 18 2021 09:02:20
 import pykep as pk 
 import pygmo as pg 
 
-from scripts.loaders.load_kernels import load_kernels
-from scripts.loaders.load_bodies import load_asteroid
+from scripts.loaders import load_sqp, load_kernels, load_bodies
+
+from scripts.UDP.Earth2NEA_UDP import Earth2Asteroid
 
 from data import constants as cst
 
 
 # Loading the main kernels
-load_kernels()
+load_kernels.load()
 
 # Loading of the target asteroid
-ast = load_asteroid('2020 CD3')
+ast = load_bodies.asteroid('2020 CD3')
 
 # 2 - Launch window
 lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
@@ -40,8 +41,7 @@ vinf_min = 0
 vinf_max = 1.5e3
 
 # 5 - Optimization algorithm
-algorithm = algo_factory('slsqp')
-algorithm.extract(pg.nlopt).xtol_rel = 1e-8
+algorithm = load_sqp.load('slsqp')
 algorithm.extract(pg.nlopt).maxeval = 3000
 
 # 6 - Problem

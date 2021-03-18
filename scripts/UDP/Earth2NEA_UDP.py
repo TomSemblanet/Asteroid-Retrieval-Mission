@@ -13,7 +13,7 @@ import pykep as pk
 import pygmo as pg 
 import numpy as np 
 
-from scripts.load_bodies import load_asteroid, load_planet
+from scripts.loaders import load_bodies
 import data.constants as cst
 
 class Earth2Asteroid:
@@ -87,8 +87,8 @@ class Earth2Asteroid:
 		self.n_seg = n_seg
 		self.grid_type = grid_type
 		self.sc = pk.sims_flanagan.spacecraft(m0, Tmax, Isp)
-		self.earth = load_planet('EARTH')
-		self.moon = load_planet('MOON')
+		self.earth = load_bodies.planet('EARTH')
+		self.moon = load_bodies.planet('MOON')
 		self.vinf = vinf
 
 		# Grid construction

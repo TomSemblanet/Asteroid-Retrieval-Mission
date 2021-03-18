@@ -52,7 +52,7 @@ udp = Earth2Asteroid(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_u
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf=[vinf_min, vinf_max])
 
 problem = pg.problem(udp)
-problem.c_tol = [1e-5] * problem.get_nc()
+problem.c_tol = [1e-8] * problem.get_nc()
 
 # 7 - Population
 population = pg.population(problem, size=1, seed=123)

@@ -66,7 +66,7 @@ if 'e' in os.uname()[1]:
 
 	date = dt.now().strftime("%d_%m_%Y_%H_%M_%S")
 	with open('Earth_NEA_' + str(date), 'wb') as file:
-		pkl.dump(rs, file)
+		pkl.dump(obj=rs, file=file, protocol=4)
 
 else:
 	# 9 - Inspect the solution

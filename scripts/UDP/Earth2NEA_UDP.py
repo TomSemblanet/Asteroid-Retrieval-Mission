@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 16 2021 10:03:43
+Created on Tue Mar 16 2021 10:55:00
 
 @author: SEMBLANET Tom
-
-
-- Infinity velocity at Earth departure : free
-- Earth's gravity not taken in account
 
 """
 
@@ -16,48 +12,73 @@ import matplotlib.pyplot as plt
 import pykep as pk 
 import pygmo as pg 
 import numpy as np 
-import math as mt
 
 from scripts.load_bodies import load_asteroid, load_planet
-
-# Some constants
-MU_SUN = 132712440018e9 # [m^3/s^2]
-MU_EARTH = 398600.4418e9 # [m^3/s^2]
-R_EARTH = 6371.0084e3 # [m]
+import data.constants as cst
 
 class Earth2Asteroid:
 	""" 
-	`Earth2Asteroid2` is a UDP which can be used with the PyGMO open-source library.
-	It represents a low-thrust trajectory from the Earth to a target NEO. The trajectory
-	is modeled using the Sims-Flanagan model, extended to include a free velocity at infinity
-	at Earth departure.
-	The propulsion model can be both nuclear (NEP) or solar (SEP)
+	Optimal control problem representing a low-thrust transfer between the Earth environment and a 
+	target NEA. The spacecraft leaves the Moon with a infinity velocity `v_inf` relative to the Earth.
 
-	--> This model doesn't take into account the Earth gravity as the spacecraft is supposed to
-		depart from the center of the planet
+	Both the gravitational attraction of the Sun and the Earth are taken into account in this problem, the
+	goal is to find the optimal launch date, thrust profil and space path to join the NEA while minimizing 
+	the amount of fuel used.
+
+	Parameters:
+	-----------
+	target: <pykep.planet>
+		The target NEA
+	n_seg: int
+		Number of segment in which the trajectory is divided
+	grid_type: string
+		Type of grid used, either 'uniform' or 'nonuniform'. If 'nonuniform' is used
+		the nodes are denser near the Earth where the dynamic is more sensitive
+	t0 : array [<pykep.epoch>, <pykep.epoch>]
+		Lower and upper bounds of the launch date
+	tof : array [float, float]
+		Lower and upper bounds of the time of flight
+	m0 : float
+		Initial mass of the spacecraft [kg]
+	Tmax : float
+		Maximum thrust of the spacecraft [N]
+	Isp : float
+		Specific impulse of the spacecraft [s]
+
 	"""
 
-	def __init__(self, target, n_seg, grid_type, t0, tof, m0, Tmax, Isp):
+	def __init__(self, 
+				 target = None, 
+				 n_seg = 30, 
+				 grid_type='uniform', 
+				 t0 = [pk.epoch(0), pk.epoch(1000)], 
+				 tof = [0, 1000], 
+				 m0 = 600, 
+				 Tmax = 0.1, 
+				 Isp = 2700, 
+				 vinf = [0, 2.5e3]):
 		""" Initialization of the `Earth2Asteroid` class.
 
 			Parameters:
 			-----------
 			target: <pykep.planet>
 				Target NEO (Near-Earth Object)
-			n_seg : int
+			n_seg: int
 				Number of segments to use in the problem transcription (time grid)
-			grid_type : string
+			grid_type: string
 				"uniform" for uniform segments, "nonuniform" to use a denser grid in the first part of the trajectory
-			t0 : tuple
+			t0: tuple
 				List of two pykep.epoch defining the bounds on the launch epoch
-			tof : tuple
+			tof: tuple
 				List of two floats defining the bounds on the time of flight (days)
-			m0 : float
+			m0: float
 				Initial mass of the spacecraft (kg)
-			Tmax : float
+			Tmax: float
 				Maximum thrust at 1 AU (N)
-			Isp : float
+			Isp: float
 				Engine specific impulse (s)
+			vinf: array
+				Minimal and maximal velocities at infinity relative to the Earth at departure [m/s]
 			
 		"""
 
@@ -67,9 +88,8 @@ class Earth2Asteroid:
 		self.grid_type = grid_type
 		self.sc = pk.sims_flanagan.spacecraft(m0, Tmax, Isp)
 		self.earth = load_planet('EARTH')
-
-		# Maximal velocity at infinity at Earth departure [m/s]
-		vinf_max = 2500
+		self.moon = load_planet('MOON')
+		self.vinf = vinf
 
 		# Grid construction
 		if grid_type == 'uniform':
@@ -92,9 +112,9 @@ class Earth2Asteroid:
 								  for i in range(self.bwd_seg)]) * pk.DAY2SEC
 
 		# Boundaries 
-		# [<departure date>, <time of flight>, <final mass>, <vinf_mag>, <vinf_vec>, <throttle[0]>, ..., <throttle[n_seg]>]
-		self.lb = [t0[0].mjd2000] + [tof[0]] + [0] + [0] + [-1, -1, -1] + [-1, -1, -1] * n_seg
-		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [vinf_max] + [1, 1, 1] + [1, 1, 1] * n_seg
+		# [<departure date>, <time of flight>, <final mass>, <vinf_mag>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg]>]
+		self.lb = [t0[0].mjd2000] + [tof[0]] + [0] + [self.vinf[0]] + [-1, -1, -1] + [-1, -1, -1] * n_seg
+		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [self.vinf[1]] + [1, 1, 1] + [1, 1, 1] * n_seg
 
 	def fitness(self, x):
 		""" Fitness function of the problem 
@@ -112,7 +132,7 @@ class Earth2Asteroid:
 		"""	
 
 		# Objective function : maximize the final mass
-		obj = -x[2]
+		obj = -x[2] / self.sc.mass
 
 		# Equality and inequality constraints vectors
 		ceq = list()
@@ -229,13 +249,14 @@ class Earth2Asteroid:
 		ubwd = [[0.0] * 3] * (n_points_bwd)
 		dbwd = [[0.0] * 3] * (n_points_bwd)
 
-		# Computation of the initial and final epochs and ephemerides
+		# Computation of the initial epochs and ephemerides
 		ti = pk.epoch(t0)
-		ri, vi = self.earth.eph(ti)
+		ri, vi = self.moon.eph(ti)
 
 		# Adding the initial velocity at infinity (Earth departure)
 		vi += vinf_mag * vinf_unit
 
+		# Computation of the final epochs and ephemerides
 		tf = pk.epoch(t0 + tof)
 		rf, vf = self.target.eph(tf)
 
@@ -252,9 +273,13 @@ class Earth2Asteroid:
 		for i, t in enumerate(throttles[:fwd_seg]):
 			ufwd[i] = [Tmax * thr for thr in t]
 
-			rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor(
-				rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[i], MU_SUN, \
-				veff, -10, -10)
+			r_E, v_E = self.earth.eph(pk.epoch(fwd_grid[i]))
+			dfwd[i] = [a - b for a, b in zip(r_E, rfwd[i])]
+			r3 = sum([r**2 for r in dfwd[i]])**(3 / 2)
+			disturbance = [mfwd[i] * cst.MU_EARTH /
+						   r3 * ri for ri in dfwd[i]]
+			rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor_disturbance(
+				rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[i], cst.MU_SUN, veff, -10, -10)
 
 		# Backward propagation
 		bwd_grid = t0 + tof * self.bwd_grid
@@ -269,8 +294,13 @@ class Earth2Asteroid:
 		for i, t in enumerate(throttles[-1:-bwd_seg - 1:-1]):
 			ubwd[-i - 1] = [Tmax * thr for thr in t]
 
-			rbwd[-i - 2], vbwd[-i - 2], mbwd[-i - 2] = pk.propagate_taylor(
-				rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1], MU_SUN, veff, -10, -10)
+			r_E, v_E = self.earth.eph(pk.epoch(bwd_grid[-i - 1]))
+			dbwd[-i - 1] = [a - b for a, b in zip(r_E, rbwd[-i - 1])]
+			r3 = sum([r**2 for r in dbwd[-i - 1]])**(3 / 2)
+			disturbance = [mfwd[i] * cst.MU_EARTH /
+						   r3 * ri for ri in dbwd[-i - 1]]
+			rbwd[-i - 2], vbwd[-i - 2], mbwd[-i - 2] = pk.propagate_taylor_disturbance(
+				rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1], cst.MU_SUN, veff, -10, -10)
 
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
@@ -333,7 +363,7 @@ class Earth2Asteroid:
 		fwd_grid = t0 + tof * self.fwd_grid
 		bwd_grid = t0 + tof * self.bwd_grid
 
-		throttles = [x[3 + 3 * i: 6 + 3 * i] for i in range(n_seg)]
+		throttles = [x[7 + 3 * i: 10 + 3 * i] for i in range(n_seg)]
 		alphas = [min(1., np.linalg.norm(t)) for t in throttles]
 
 		times = np.concatenate((fwd_grid, bwd_grid))
@@ -341,9 +371,11 @@ class Earth2Asteroid:
 		rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd = self.propagate(
 			x)
 
-		# Plotting the Sun, the Earth and the target
+		# Plotting the Sun, the Earth, the Moon and the target
 		axes.scatter([0], [0], [0], color='y')
 		pk.orbit_plots.plot_planet(self.earth, pk.epoch(
+			t0), units=units, legend=True, color=(0.7, 0.7, 1), axes=axes)
+		pk.orbit_plots.plot_planet(self.moon, pk.epoch(
 			t0), units=units, legend=True, color=(0.7, 0.7, 1), axes=axes)
 		pk.orbit_plots.plot_planet(self.target, pk.epoch(
 			t0 + tof), units=units, legend=True, color=(0.7, 0.7, 1), axes=axes)
@@ -358,7 +390,7 @@ class Earth2Asteroid:
 
 		for i in range(fwd_seg):
 			pk.orbit_plots.plot_taylor(rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[
-										   i], MU_SUN, veff, N=10, units=units, color=(alphas[i], 0, 1 - alphas[i]), axes=axes)
+										   i], cst.MU_SUN, veff, N=10, units=units, color=(alphas[i], 0, 1 - alphas[i]), axes=axes)
 
 			xfwd[i + 1] = rfwd[i + 1][0] / units
 			yfwd[i + 1] = rfwd[i + 1][1] / units
@@ -379,7 +411,7 @@ class Earth2Asteroid:
 
 		for i in range(bwd_seg):
 			pk.orbit_plots.plot_taylor(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1],
-										   MU_SUN, veff, N=10, units=units, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=axes)
+										   cst.MU_SUN, veff, N=10, units=units, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=axes)
 			xbwd[-i - 2] = rbwd[-i - 2][0] / units
 			ybwd[-i - 2] = rbwd[-i - 2][1] / units
 			zbwd[-i - 2] = rbwd[-i - 2][2] / units
@@ -445,7 +477,7 @@ class Earth2Asteroid:
 		fwd_grid = t0 + tof * self.fwd_grid
 		bwd_grid = t0 + tof * self.bwd_grid
 
-		throttles = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
+		throttles = [np.linalg.norm(x[7 + 3 * i: 10 + 3 * i])
 					 for i in range(n_seg)]
 
 		dist_earth = [0.0] * (n_seg + 2)  # distances spacecraft - Earth
@@ -516,8 +548,8 @@ class Earth2Asteroid:
 
 		# Plot thrust profile
 		axes = axes.twinx()
+			
 		thrusts = throttles.copy()
-
 		# duplicate the last for plotting
 		thrusts = np.append(thrusts, thrusts[-1])
 		axes.step(np.concatenate(
@@ -530,7 +562,7 @@ class Earth2Asteroid:
 		return axes
 
 	def get_name(self):
-		return "Low-Thrust transfer between Earth and NEOs - Preliminary design (Free Velocity at Infinity)"
+		return "Low-Thrust transfer between Earth and NEOs - Preliminary design (Free Velocity at Infinity + Departure from Moon)"
 
 	def get_extra_info(self):
 		retval = "\tTarget NEO: " + self.target.name
@@ -587,54 +619,4 @@ class Earth2Asteroid:
 		print("Initial velocity at infinity vector: {}".format(vinf_dep))
 		print("Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000))
 
-
-if __name__ == '__main__':
-
-	from pykep.examples import algo_factory
-
-	# Loading of the target asteroid
-	ast = load_asteroid('2020 CD3')
-
-	# 2 - Launch window
-	lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
-	lw_upp = pk.epoch_from_string('2021-01-01 00:00:01')
-
-	# 3 - Time of flight
-	tof_low = 50
-	tof_upp = 5 * 365
-
-	# 4 - Spacecraft
-	m0 = 600
-	Tmax = 0.23
-	Isp = 2700
-
-	# 5 - Optimization algorithm
-	algorithm = algo_factory('slsqp')
-	algorithm.extract(pg.nlopt).xtol_rel = 1e-8
-	algorithm.extract(pg.nlopt).maxeval = 2000
-
-	# 6 - Problem
-	udp = Earth2Asteroid(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \
-		tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp)
-
-	problem = pg.problem(udp)
-	problem.c_tol = [1e-5] * problem.get_nc()
-
-	# 7 - Population
-	population = pg.population(problem, size=1, seed=123)
-
-	# 8 - Optimization
-	population = algorithm.evolve(population)
-
-	# 9 - Inspect the solution
-	print("Feasibility :", problem.feasibility_x(population.champion_x))
-	udp.report(population.champion_x)
-
-	# 10 - plot trajectory
-	udp.plot_traj(population.champion_x, plot_segments=True)
-	plt.title("The trajectory in the heliocentric frame")
-
-	udp.plot_dists_thrust(population.champion_x)
-
-	plt.show()
 

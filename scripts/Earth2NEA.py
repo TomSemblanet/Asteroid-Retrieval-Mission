@@ -7,8 +7,11 @@ Created on Thu Mar 18 2021 09:02:20
 
 """
 
+import os
 import pykep as pk 
 import pygmo as pg 
+import pickle as pkl
+from datetime import datetime as dt
 
 from scripts.loaders import load_sqp, load_kernels, load_bodies
 
@@ -57,14 +60,24 @@ population = pg.population(problem, size=1, seed=123)
 # 8 - Optimization
 population = algorithm.evolve(population)
 
-# 9 - Inspect the solution
-print("Feasibility :", problem.feasibility_x(population.champion_x))
-udp.report(population.champion_x)
+# If we are on RAINMAIN, we pickle the results to inspect them further
+if 'node' in os.uname()[1]:
+	rs = {'udp': udp, 'x': population.champion_x}
 
-# # 10 - plot trajectory
-# udp.plot_traj(population.champion_x, plot_segments=True)
-# plt.title("The trajectory in the heliocentric frame")
+	date = dt.now().strftime("%d:%m:%Y_%H:%M:%S")
+	with open('Earth - NEA - ' + str(date), 'wb') as file:
+		pkl.dump(rs, file)
 
-# udp.plot_dists_thrust(population.champion_x)
 
-# plt.show()
+else:
+	# 9 - Inspect the solution
+	print("Feasibility :", problem.feasibility_x(population.champion_x))
+	udp.report(population.champion_x)
+
+	# 10 - plot trajectory
+	udp.plot_traj(population.champion_x, plot_segments=True)
+	plt.title("The trajectory in the heliocentric frame")
+
+	udp.plot_dists_thrust(population.champion_x)
+
+	plt.show()

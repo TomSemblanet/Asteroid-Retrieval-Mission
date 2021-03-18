@@ -18,17 +18,21 @@ import data.constants as cst
 
 class Earth2Asteroid:
 	""" 
-	Optimal control problem representing a low-thrust transfer between the Earth environment and a 
-	target NEA. The spacecraft leaves the Moon with a infinity velocity `v_inf` relative to the Earth.
+	Optimal control problem representing a low-thrust transfer between a NEA and the Earth
+	environment. The spacecraft leaves the NEA with a zero relative velocity and reaches the Moon 
+	with a free velocity at infinity.
 
 	Both the gravitational attraction of the Sun and the Earth are taken into account in this problem, the
-	goal is to find the optimal launch date, thrust profil and space path to join the NEA while minimizing 
+	goal is to find the optimal launch date, thrust profil and space path to join the Moon while minimizing 
 	the amount of fuel used.
+
+	As the spacecraft is supposed to bring back a sample of the NEA, the {spacecraft, asteroid} system will be
+	denote S/A.
 
 	Parameters:
 	-----------
-	target: <pykep.planet>
-		The target NEA
+	departure: <pykep.planet>
+		The departure NEA
 	n_seg: int
 		Number of segment in which the trajectory is divided
 	grid_type: string
@@ -39,7 +43,7 @@ class Earth2Asteroid:
 	tof : array [float, float]
 		Lower and upper bounds of the time of flight
 	m0 : float
-		Initial mass of the spacecraft [kg]
+		Initial mass of the spacecraft + asteroid sample [kg]
 	Tmax : float
 		Maximum thrust of the spacecraft [N]
 	Isp : float
@@ -105,11 +109,11 @@ class Earth2Asteroid:
 		
 		self.fwd_grid = grid[:self.fwd_seg + 1]
 		self.fwd_dt = np.array([(self.fwd_grid[i + 1] - self.fwd_grid[i])
-								  for i in range(self.fwd_seg)]) * pk.DAY2SEC
+								  for i in range(self.fwd_seg)]) * cst.DAY2SEC
 
 		self.bwd_grid = grid[self.fwd_seg:]
 		self.bwd_dt = np.array([(self.bwd_grid[i + 1] - self.bwd_grid[i])
-								  for i in range(self.bwd_seg)]) * pk.DAY2SEC
+								  for i in range(self.bwd_seg)]) * cst.DAY2SEC
 
 		# Boundaries 
 		# [<departure date>, <time of flight>, <final mass>, <vinf_mag>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg]>]
@@ -161,12 +165,12 @@ class Earth2Asteroid:
 		ceq.extend(vinf_unit_con)
 
 		# Dimensioning of the mismatch constraints
-		ceq[0] /= pk.AU
-		ceq[1] /= pk.AU 
-		ceq[2] /= pk.AU
-		ceq[3] /= pk.EARTH_VELOCITY
-		ceq[4] /= pk.EARTH_VELOCITY
-		ceq[5] /= pk.EARTH_VELOCITY
+		ceq[0] /= cst.AU
+		ceq[1] /= cst.AU 
+		ceq[2] /= cst.AU
+		ceq[3] /= cst.EARTH_VELOCITY
+		ceq[4] /= cst.EARTH_VELOCITY
+		ceq[5] /= cst.EARTH_VELOCITY
 		ceq[6] /= self.sc.mass
 
 		# Assembly of the constraint vector
@@ -228,7 +232,7 @@ class Earth2Asteroid:
 		mi = self.sc.mass
 		Tmax = self.sc.thrust
 		isp = self.sc.isp 
-		veff = isp * pk.G0
+		veff = isp * cst.G0
 
 		# Extraction of information on the legs
 		throttles = [x[7 + 3 * i: 10  + 3 * i] for i in range(n_seg)]
@@ -319,7 +323,7 @@ class Earth2Asteroid:
 		"""
 		return pg.estimate_gradient(lambda x: self.fitness(x), x, 1e-8)
 
-	def plot_traj(self, x, units=pk.AU, plot_segments=False, plot_thrusts=False, axes=None):
+	def plot_traj(self, x, units=cst.AU, plot_segments=False, plot_thrusts=False, axes=None):
 		""" Plots the distance of the spacecraft from the Earth/Sun and the thrust profile
 
 			Parameters:
@@ -358,7 +362,7 @@ class Earth2Asteroid:
 		tof = x[1]
 
 		isp = self.sc.isp 
-		veff = isp * pk.G0
+		veff = isp * cst.G0
 
 		fwd_grid = t0 + tof * self.fwd_grid
 		bwd_grid = t0 + tof * self.bwd_grid
@@ -491,21 +495,21 @@ class Earth2Asteroid:
 		xfwd = [0.0] * (fwd_seg + 1)
 		yfwd = [0.0] * (fwd_seg + 1)
 		zfwd = [0.0] * (fwd_seg + 1)
-		xfwd[0] = rfwd[0][0] / pk.AU
-		yfwd[0] = rfwd[0][1] / pk.AU
-		zfwd[0] = rfwd[0][2] / pk.AU
+		xfwd[0] = rfwd[0][0] / cst.AU
+		yfwd[0] = rfwd[0][1] / cst.AU
+		zfwd[0] = rfwd[0][2] / cst.AU
 
-		r_E = [ri / pk.AU for ri in self.earth.eph(pk.epoch(fwd_grid[0]))[0]]
+		r_E = [ri / cst.AU for ri in self.earth.eph(pk.epoch(fwd_grid[0]))[0]]
 		dist_earth[0] = np.linalg.norm(
 			[r_E[0] - xfwd[0], r_E[1] - yfwd[0], r_E[2] - zfwd[0]])
 		dist_sun[0] = np.linalg.norm([xfwd[0], yfwd[0], zfwd[0]])
 
 		for i in range(fwd_seg):
-			xfwd[i + 1] = rfwd[i + 1][0] / pk.AU
-			yfwd[i + 1] = rfwd[i + 1][1] / pk.AU
-			zfwd[i + 1] = rfwd[i + 1][2] / pk.AU
+			xfwd[i + 1] = rfwd[i + 1][0] / cst.AU
+			yfwd[i + 1] = rfwd[i + 1][1] / cst.AU
+			zfwd[i + 1] = rfwd[i + 1][2] / cst.AU
 			r_E = [
-				ri / pk.AU for ri in self.earth.eph(pk.epoch(fwd_grid[i + 1]))[0]]
+				ri / cst.AU for ri in self.earth.eph(pk.epoch(fwd_grid[i + 1]))[0]]
 			dist_earth[
 				i + 1] = np.linalg.norm([r_E[0] - xfwd[i + 1], r_E[1] - yfwd[i + 1], r_E[2] - zfwd[i + 1]])
 			dist_sun[
@@ -515,22 +519,22 @@ class Earth2Asteroid:
 		xbwd = [0.0] * (bwd_seg + 1)
 		ybwd = [0.0] * (bwd_seg + 1)
 		zbwd = [0.0] * (bwd_seg + 1)
-		xbwd[-1] = rbwd[-1][0] / pk.AU
-		ybwd[-1] = rbwd[-1][1] / pk.AU
-		zbwd[-1] = rbwd[-1][2] / pk.AU
+		xbwd[-1] = rbwd[-1][0] / cst.AU
+		ybwd[-1] = rbwd[-1][1] / cst.AU
+		zbwd[-1] = rbwd[-1][2] / cst.AU
 
 		r_E = [
-			ri / pk.AU for ri in self.earth.eph(pk.epoch(bwd_grid[-1]))[0]]
+			ri / cst.AU for ri in self.earth.eph(pk.epoch(bwd_grid[-1]))[0]]
 		dist_earth[-1] = np.linalg.norm([r_E[0] - xbwd[-1],
 										 r_E[1] - ybwd[-1], r_E[2] - zbwd[-1]])
 		dist_sun[-1] = np.linalg.norm([xbwd[-1], ybwd[-1], zbwd[-1]])
 
 		for i in range(bwd_seg):
-			xbwd[-i - 2] = rbwd[-i - 2][0] / pk.AU
-			ybwd[-i - 2] = rbwd[-i - 2][1] / pk.AU
-			zbwd[-i - 2] = rbwd[-i - 2][2] / pk.AU
+			xbwd[-i - 2] = rbwd[-i - 2][0] / cst.AU
+			ybwd[-i - 2] = rbwd[-i - 2][1] / cst.AU
+			zbwd[-i - 2] = rbwd[-i - 2][2] / cst.AU
 			r_E = [
-				ri / pk.AU for ri in self.earth.eph(pk.epoch(bwd_grid[-i - 2]))[0]]
+				ri / cst.AU for ri in self.earth.eph(pk.epoch(bwd_grid[-i - 2]))[0]]
 			dist_earth[-i - 2] = np.linalg.norm(
 				[r_E[0] - xbwd[-i - 2], r_E[1] - ybwd[-i - 2], r_E[2] - zbwd[-i - 2]])
 			dist_sun[-i -
@@ -602,9 +606,9 @@ class Earth2Asteroid:
 
 		tf = t0 + tof
 		mP = mi - mf
-		deltaV = self.sc.isp * pk.G0 * np.log(mi / mf)
+		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
 
-		dt = np.append(self.fwd_dt, self.bwd_dt) * tof / pk.DAY2SEC
+		dt = np.append(self.fwd_dt, self.bwd_dt) * tof / cst.DAY2SEC
 		time_thrusts_on = sum(dt[i] for i in range(
 			len(thrusts)) if thrusts[i] > 0.1)
 
@@ -618,3 +622,5 @@ class Earth2Asteroid:
 		print("Thrust-on time:", time_thrusts_on, "days")
 		print("Initial velocity at infinity vector: {}".format(vinf_dep))
 		print("Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000))
+
+

@@ -27,12 +27,12 @@ load_kernels.load()
 ast = load_bodies.asteroid('2020 CD3')
 
 # 2 - Launch window
-lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2030-01-01 00:00:01')
+lw_low = pk.epoch_from_string('2042-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2046-01-01 00:00:01')
 
 # 3 - Time of flight
-tof_low = cst.YEAR2DAY * 0.1
-tof_upp = cst.YEAR2DAY * 5.0
+tof_low = cst.YEAR2DAY * 0.01
+tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
 m0 = 600
@@ -40,16 +40,15 @@ Tmax = 0.23
 Isp = 2700
 
 # 5 - Velocity at infinity
-vinf_min = 0
-vinf_max = 1.5e3
+vinf_max = 2.5e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2
+algorithm.extract(pg.nlopt).maxeval = 2500
 
 # 6 - Problem
-udp = Earth2NEA(target=ast, n_seg=30, grid_type='uniform', t0=(lw_low, lw_upp), \
-	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf=[vinf_min, vinf_max])
+udp = Earth2NEA(target=ast, n_seg=30, t0=(lw_low, lw_upp), \
+	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
 
 problem = pg.problem(udp)
 problem.c_tol = [1e-8] * problem.get_nc()
@@ -59,11 +58,6 @@ population = pg.population(problem, size=1, seed=123)
 
 # 8 - Optimization
 population = algorithm.evolve(population)
-
-
-
-
-
 
 # If we are on RAINMAIN, we pickle the results to inspect them further
 if 'node' in os.uname()[1]:
@@ -75,13 +69,10 @@ if 'node' in os.uname()[1]:
 
 else:
 	# 9 - Inspect the solution
-	print("Feasibility :", problem.feasibility_x(population.champion_x))
 	udp.report(population.champion_x)
 
-	# 10 - plot trajectory
+	# 10 - Plot the trajectory
 	udp.plot_traj(population.champion_x)
-	plt.title("The trajectory in the heliocentric frame")
 
-	udp.plot_dists_thrust(population.champion_x)
-
-	plt.show()
+	# 11 - Plot the thrust profil
+	udp.plot_thrust(population.champion_x)

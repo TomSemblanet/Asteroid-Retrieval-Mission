@@ -10,10 +10,10 @@ from data import constants as cst
 
 class Earth2NEA:
 
-	def __init__(self, target=None, n_seg=30, t0=[pk.epoch(0), pk.epoch(10)], tof=[1, 100], m0=500, Tmax=1, Isp=2500, vinf_max=2.5e3):
+	def __init__(self, nea=None, n_seg=30, t0=[pk.epoch(0), pk.epoch(10)], tof=[1, 100], m0=500, Tmax=1, Isp=2500, vinf_max=2.5e3):
 
 		# Creation of the planet and NEA objects
-		self.target = target
+		self.nea = nea
 		self.earth = load_bodies.planet('earth')
 		self.moon = load_bodies.planet('moon')
 
@@ -42,7 +42,7 @@ class Earth2NEA:
 		self.bwd_dt = np.array([(self.bwd_grid[i+1] - self.bwd_grid[i]) for i in range(self.n_bwd_seg)]) * pk.DAY2SEC
 
 		# Boundaries 
-		# [<departure date>, <time of flight>, <final mass>, <throttle[0]>, ..., <throttle[n_seg-1]>]
+		# [<departure date>, <time of flight>, <final mass>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg-1]>]
 		self.lb = [t0[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -1] + [-1, -1, -1] * n_seg
 		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] + [1, 1, 1] * n_seg
 
@@ -132,16 +132,16 @@ class Earth2NEA:
 		ubwd = [[0.0] * 3] * n_points_bwd  # Unit throttles array
 		dbwd = [[0.0] * 3] * n_points_bwd  # Distance Spacecraft / Earth
 
-		# Computation of the initial ephemerides
+		# Computation of the initial ephemerides (Departure frome the Moon)
 		ti = pk.epoch(t0)
 		ri, vi = self.moon.eph(ti)
 
 		# Adding the initial velocity at infinity (LGA)
 		vi += self.vinf_max * vinf
 
-		# Computation of the final ephemerides
+		# Computation of the final ephemerides (Arrival at the NEA)
 		tf = pk.epoch(t0 + tof)
-		rf, vf = self.target.eph(tf)
+		rf, vf = self.nea.eph(tf)
 
 		# Forward propagation
 		# -------------------
@@ -245,7 +245,7 @@ class Earth2NEA:
 		ax.plot([0], [0], [0], color='y')
 		pk.orbit_plots.plot_planet(self.earth, pk.epoch(
 			t0), units=pk.AU, color=(0.7, 0.7, 1), axes=ax)
-		pk.orbit_plots.plot_planet(self.target, pk.epoch(
+		pk.orbit_plots.plot_planet(self.nea, pk.epoch(
 			t0 + tof), units=pk.AU, legend=True, color=(0.7, 0.7, 1), axes=ax)
 
 		# Forward propagation for plotting

@@ -20,8 +20,8 @@ for name in NAME2SPK:
 	asteroids.append(ast_)
 
 # Initial and final time of interest
-ti = pk.epoch_from_string('2042-01-01 00:00:00')
-tf = pk.epoch_from_string('2046-12-31 23:59:59')
+ti = pk.epoch_from_string('2040-01-01 00:00:00')
+tf = pk.epoch_from_string('2050-12-31 23:59:59')
 
 # Construction of the time array
 time = np.linspace(float(str(ti.jd)), float(str(tf.jd)), int(1e3))

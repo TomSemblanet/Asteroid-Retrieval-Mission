@@ -27,28 +27,31 @@ load_kernels.load()
 ast = load_bodies.asteroid('2020 CD3')
 
 # 2 - Launch window
-lw_low = pk.epoch_from_string('2040-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2059-12-31 23:59:59')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.01
 tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
-m0 = 2000
-Tmax = 1
-Isp = 2500
+m0 = 600
+Tmax = 0.23
+Isp = 2700
 
-# 5 - Velocity at infinity
-vinf_max = 2.5e3
+# 5 - Asteroid sample mass
+mass = 100e6
+
+# 5 - Maximal velocity magnitude at Moon arrival
+v_arr_max = 2.5e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2000
+algorithm.extract(pg.nlopt).maxeval = 2500
 
 # 6 - Problem
-udp = Earth2NEA(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
-	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
+udp = Earth2NEA(target=ast, n_seg=30, t0=(lw_low, lw_upp), \
+	tof=(tof_low, tof_upp), m0=(m0+mass), Tmax=Tmax, Isp=Isp, v_arr_max=v_arr_max)
 
 problem = pg.problem(udp)
 problem.c_tol = [1e-8] * problem.get_nc()

@@ -60,7 +60,7 @@ problem = pg.problem(udp)
 problem.c_tol = [1e-8] * problem.get_nc()
 
 # 8 - Population
-population = pg.population(problem, size=1, seed=100)
+population = pg.population(problem, size=1, seed=123)
 
 # 9 - Optimization
 algorithm.evolve(population)

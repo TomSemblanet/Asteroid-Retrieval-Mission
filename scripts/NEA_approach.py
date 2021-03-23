@@ -15,12 +15,13 @@ earth = load_bodies.planet('earth')
 # Load all the asteroids of interest from SPICE
 asteroids = list()
 asteroids_names = [nm_ for nm_ in NAME2SPK]
-for name in NAME2SPK:
-	ast_ = load_bodies.asteroid(name)
-	asteroids.append(ast_)
+for i, name in enumerate(NAME2SPK):
+	if asteroids_names[i] == '2020 CD3':
+		ast_ = load_bodies.asteroid(name)
+		asteroids.append(ast_)
 
 # Initial and final time of interest
-ti = pk.epoch_from_string('2040-01-01 00:00:00')
+ti = pk.epoch_from_string('2020-01-01 00:00:00')
 tf = pk.epoch_from_string('2050-12-31 23:59:59')
 
 # Construction of the time array

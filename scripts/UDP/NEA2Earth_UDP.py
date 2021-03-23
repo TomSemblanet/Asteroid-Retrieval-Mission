@@ -8,9 +8,9 @@ from scripts.loaders import load_sqp, load_kernels, load_bodies
 
 from data import constants as cst
 
-class Earth2NEA:
+class NEA2Earth:
 
-	def __init__(self, nea=None, n_seg=30, t0=[pk.epoch(0), pk.epoch(10)], tof=[1, 100], m0=500, Tmax=1, Isp=2500, v_arr_max=15e3):
+	def __init__(self, nea=None, n_seg=30, t0=[pk.epoch(0), pk.epoch(10)], tof=[1, 100], m0=500, Tmax=1, Isp=2500):
 
 		# Creation of the planet and NEA objects
 		self.nea = nea
@@ -24,7 +24,6 @@ class Earth2NEA:
 		self.n_seg = n_seg
 		self.t0 = t0
 		self.tof = tof
-		self.v_arr_max = v_arr_max
 
 		# Grid construction
 		grid = np.array([i / n_seg for i in range(n_seg + 1)])
@@ -43,8 +42,8 @@ class Earth2NEA:
 
 		# Boundaries 
 		# [<departure date>, <time of flight>, <final mass>, <v_arr_unit>, <throttle[0]>, ..., <throttle[n_seg-1]>]
-		self.lb = [t0[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -1] +[-1, -1, -1] + [-1, -1, -1] * n_seg
-		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] + [1, 1, 1] + [1, 1, 1] * n_seg
+		self.lb = [t0[0].mjd2000] + [tof[0]] + [0] + [-1, -1, -1] * n_seg
+		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] * n_seg
 
 	def fitness(self, x):
 
@@ -56,23 +55,17 @@ class Earth2NEA:
 		cineq = list()
 
 		# Throttle, mismatch and velocity at infinity constraints vectors
-		v_arr_con = list()
 		throttle_con = list()
 		mismatch_con = list()
 
 		# Throttle constraints
-		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(self.n_seg)])
+		throttles = np.array([x[3 + 3 * i: 6 + 3 * i] for i in range(self.n_seg)])
 		for t in throttles:
 			throttle_con.append(t[0]**2 + t[1]**2 + t[2]**2 - 1)
 		cineq.extend(throttle_con)
 
-		# Initial velocity at infinity
-		v_arr = x[3:6]
-		v_arr_con.append(v_arr[0]**2 + v_arr[1]**2 + v_arr[2]**2 - 1)
-		cineq.extend(v_arr_con)
-
 		# Mismatch constraints
-		rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, _, _, _, _, dfwd, dbwd = self.propagate(x)
+		rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, _, _, _, _, _, _ = self.propagate(x)
 		mismatch_con.extend([a - b for a, b in zip(rfwd[-1], rbwd[0])])
 		mismatch_con.extend([a - b for a, b in zip(vfwd[-1], vbwd[0])])
 		mismatch_con.append(mfwd[-1] - mbwd[0])
@@ -99,7 +92,6 @@ class Earth2NEA:
 		t0  = x[0]
 		tof = x[1]
 		mf  = x[2]
-		v_arr_unit = x[3:6]
 
 		# Extraction of the number of segments for forward and backward propagation
 		n_seg = self.n_seg
@@ -113,7 +105,7 @@ class Earth2NEA:
 		veff = self.sc.isp * pk.G0
 
 		# Extraction of the throttle information on the leg
-		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(n_seg)])	
+		throttles = np.array([x[3 + 3 * i: 6 + 3 * i] for i in range(n_seg)])	
 
 		# Number of forward and backward points
 		n_points_fwd = n_fwd_seg + 1
@@ -138,11 +130,14 @@ class Earth2NEA:
 
 		# Computation of the final ephemerides (arrival at the Moon)
 		tf = pk.epoch(t0 + tof)
-		rf, vf = self.moon.eph(tf)
+		rf_m, vf_m = self.moon.eph(tf)
+		rf_e, vf_e = self.earth.eph(tf)
 
-		# The velocity at Moon arrival is not necessarily the same as the 
-		# Moon's one but is determined by the optimizer
-		vf = self.v_arr_max * v_arr_unit
+		# Set the arrival position as the Moon's position
+		rf = rf_m
+
+		# Set the arrival velocity as the Earth's velocity around the Sun
+		vf = vf_e
 
 		# Forward propagation
 		# -------------------
@@ -205,7 +200,7 @@ class Earth2NEA:
 		return (self.lb, self.ub)
 
 	def get_nic(self):
-		return self.n_seg + 1
+		return self.n_seg
 
 	def get_nec(self):
 		return 7
@@ -233,7 +228,7 @@ class Earth2NEA:
 		bwd_grid = t0 + tof * self.bwd_grid
 
 		# Thrust
-		throttles = [x[6 + 3 * i : 9 + 3 * i] for i in range(n_seg)]
+		throttles = [x[3 + 3 * i : 6 + 3 * i] for i in range(n_seg)]
 		alphas = [min(1., np.linalg.norm(t)) for t in throttles]
 
 		# Time vector
@@ -245,9 +240,9 @@ class Earth2NEA:
 		# Plotting the Sun, Earth and NEA
 		ax.plot([0], [0], [0], color='y')
 		pk.orbit_plots.plot_planet(self.earth, pk.epoch(
-			t0), units=pk.AU, color=(0.7, 0.7, 1), axes=ax)
+			t0 + tof), units=pk.AU, color=(0.7, 0.7, 1), axes=ax)
 		pk.orbit_plots.plot_planet(self.nea, pk.epoch(
-			t0 + tof), units=pk.AU, legend=True, color=(0.7, 0.7, 1), axes=ax)
+			t0), units=pk.AU, legend=True, color=(0.7, 0.7, 1), axes=ax)
 
 		# Forward propagation for plotting
 		xfwd = [0.0] * (n_fwd_seg + 1)
@@ -310,7 +305,7 @@ class Earth2NEA:
 		bwd_grid = t0 + tof * self.bwd_grid
 
 		# Thrust
-		throttles = [x[6 + 3 * i : 9 + 3 * i] for i in range(n_seg)]
+		throttles = [x[3 + 3 * i : 6 + 3 * i] for i in range(n_seg)]
 
 		# Time vector
 		times = np.concatenate((fwd_grid[:], bwd_grid[1:-1]))
@@ -335,7 +330,7 @@ class Earth2NEA:
 		mf = x[2]
 		v_arr_unit = x[3:6]
 
-		thrusts = [np.linalg.norm(x[6 + 3 * i: 9 + 3 * i])
+		thrusts = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
 				   for i in range(n_seg)]
 
 		tf = t0 + tof
@@ -346,13 +341,9 @@ class Earth2NEA:
 		time_thrusts_on = sum(dt[i] for i in range(
 			len(thrusts)) if thrusts[i] > 0.1)
 
-		v_arr = self.v_arr_max * v_arr_unit
-
 		print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
 		print("Time of flight:", tof, "days")
 		print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
 		print("Delta-v:", deltaV, "m/s")
 		print("Propellant consumption:", mP, "kg")
 		print("Thrust-on time:", time_thrusts_on, "days")
-		print("Velocity at moon arrival: {}".format(v_arr))
-		print("Velocity at moon arrival magnitude: {} km/s".format(np.linalg.norm(v_arr) / 1000))

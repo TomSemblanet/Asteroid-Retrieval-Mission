@@ -288,6 +288,9 @@ class Earth2NEA:
 			ybwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][1] / pk.AU
 			zbwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][2] / pk.AU
 
+		ax.scatter(xfwd[:-1], yfwd[:-1], zfwd[:-1], marker='o', s=5, c='k')
+		ax.scatter(xbwd[1:], ybwd[1:], zbwd[1:], marker='o', s=5, c='k')
+
 		plt.show()
 
 	def plot_thrust(self, x):

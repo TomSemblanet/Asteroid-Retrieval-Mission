@@ -17,6 +17,8 @@ from scripts.loaders import load_sqp, load_kernels, load_bodies
 
 from scripts.UDP.Earth2NEA_UDP import Earth2NEA
 
+from scripts.post_process import post_process
+
 from data import constants as cst
 
 
@@ -27,52 +29,42 @@ load_kernels.load()
 ast = load_bodies.asteroid('2020 CD3')
 
 # 2 - Launch window
-lw_low = pk.epoch_from_string('2040-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2020-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2020-12-31 23:59:59')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.01
-tof_upp = cst.YEAR2DAY * 3.00
+tof_upp = cst.YEAR2DAY * 4.00
 
 # 4 - Spacecraft
-m0 = 2000
+m0 = 600
 Tmax = 1
-Isp = 2500
+Isp = 2700
 
 # 5 - Velocity at infinity
 vinf_max = 2.5e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2000
+algorithm.extract(pg.nlopt).maxeval = 2
 
-# 6 - Problem
+# 6 - Monotonic Basin Hopping method
+mbh = pg.algorithm(pg.mbh(algo=algorithm))
+mbh.set_verbosity(5)
+
+# 7 - Problem
 udp = Earth2NEA(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
 
 problem = pg.problem(udp)
 problem.c_tol = [1e-8] * problem.get_nc()
 
-# 7 - Population
-population = pg.population(problem, size=1, seed=123)
+# 8 - Population
+population = pg.population(problem, size=1, seed=100)
 
-# 8 - Optimization
-population = algorithm.evolve(population)
+# 9 - Optimization
+algorithm.evolve(population)
+# population = mbh.evolve(population)
 
-# If we are on RAINMAIN, we pickle the results to inspect them further
-if 'node' in os.uname()[1]:
-	rs = {'udp': udp, 'x': population.champion_x}
-
-	date = dt.now().strftime("%d_%m_%Y_%H_%M_%S")
-	with open('Earth_NEA_' + str(date), 'wb') as file:
-		pkl.dump(obj=rs, file=file, protocol=4)
-
-else:
-	# 9 - Inspect the solution
-	udp.report(population.champion_x)
-
-	# 10 - Plot the trajectory
-	udp.plot_traj(population.champion_x)
-
-	# 11 - Plot the thrust profil
-	udp.plot_thrust(population.champion_x)
+# 10 - Post process
+post_process(udp, population.champion_x)

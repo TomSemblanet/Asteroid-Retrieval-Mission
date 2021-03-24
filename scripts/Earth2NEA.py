@@ -46,7 +46,7 @@ vinf_max = 2e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 200 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
+algorithm.extract(pg.nlopt).maxeval = 2 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
 
 # 6 - Monotonic Basin Hopping method
 # mbh = pg.algorithm(pg.mbh(algo=algorithm))

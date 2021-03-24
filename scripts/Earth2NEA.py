@@ -46,11 +46,7 @@ vinf_max = 2e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
-
-# 6 - Monotonic Basin Hopping method
-# mbh = pg.algorithm(pg.mbh(algo=algorithm))
-# mbh.set_verbosity(5)
+algorithm.extract(pg.nlopt).maxeval = 200 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
 
 # 7 - Problem
 udp = Earth2NEA(nea=ast, n_seg=100, t0=(lw_low, lw_upp), \
@@ -64,7 +60,6 @@ population = pg.population(problem, size=1, seed=200)
 
 # 9 - Optimization
 population = algorithm.evolve(population)
-# population = mbh.evolve(population)
 
 udp.check_con_violation(population.champion_x)
 
@@ -72,8 +67,6 @@ res = {'udp': udp, 'population': population}
 
 with open('res', 'wb') as f:
 	pkl.dump(res, f)
-
-
 
 # 10 - Post process
 post_process(udp, population.champion_x)

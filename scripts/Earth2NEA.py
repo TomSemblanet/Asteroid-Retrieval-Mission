@@ -29,42 +29,52 @@ load_kernels.load()
 ast = load_bodies.asteroid('2020 CD3')
 
 # 2 - Launch window
-lw_low = pk.epoch_from_string('2020-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2020-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2021-12-31 23:59:59')
 
 # 3 - Time of flight
-tof_low = cst.YEAR2DAY * 0.01
-tof_upp = cst.YEAR2DAY * 4.00
+tof_low = cst.YEAR2DAY * 0.1
+tof_upp = cst.YEAR2DAY * 5.00
 
 # 4 - Spacecraft
 m0 = 600
-Tmax = 1
-Isp = 2700
+Tmax = 0.5
+Isp = 3000
 
 # 5 - Velocity at infinity
-vinf_max = 2.5e3
+vinf_max = 2e3
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 2
+algorithm.extract(pg.nlopt).maxeval = 200 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
 
 # 6 - Monotonic Basin Hopping method
-mbh = pg.algorithm(pg.mbh(algo=algorithm))
-mbh.set_verbosity(5)
+# mbh = pg.algorithm(pg.mbh(algo=algorithm))
+# mbh.set_verbosity(5)
 
 # 7 - Problem
-udp = Earth2NEA(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
+udp = Earth2NEA(nea=ast, n_seg=100, t0=(lw_low, lw_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
 
 problem = pg.problem(udp)
 problem.c_tol = [1e-8] * problem.get_nc()
 
 # 8 - Population
-population = pg.population(problem, size=1, seed=123)
+population = pg.population(problem, size=1, seed=200)
 
 # 9 - Optimization
-algorithm.evolve(population)
+population = algorithm.evolve(population)
 # population = mbh.evolve(population)
+
+udp.check_con_violation(population.champion_x)
+
+res = {'udp': udp, 'population': population}
+
+with open('res', 'wb') as f:
+	pkl.dump(res, f)
+
+
 
 # 10 - Post process
 post_process(udp, population.champion_x)
+

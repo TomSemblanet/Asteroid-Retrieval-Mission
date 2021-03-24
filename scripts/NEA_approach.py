@@ -16,7 +16,6 @@ earth = load_bodies.planet('earth')
 asteroids = list()
 asteroids_names = [nm_ for nm_ in NAME2SPK]
 for i, name in enumerate(NAME2SPK):
-	if asteroids_names[i] == '2020 CD3':
 		ast_ = load_bodies.asteroid(name)
 		asteroids.append(ast_)
 

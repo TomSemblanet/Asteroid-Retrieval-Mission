@@ -10,7 +10,7 @@ from data import constants as cst
 
 class Earth2NEA:
 
-	def __init__(self, nea=None, n_seg=30, t0=[pk.epoch(0), pk.epoch(10)], tof=[1, 100], m0=500, Tmax=1, Isp=2500, vinf_max=2.5e3):
+	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, vinf_max):
 
 		# Creation of the planet and NEA objects
 		self.nea = nea
@@ -38,8 +38,8 @@ class Earth2NEA:
 		self.bwd_grid = grid[self.n_fwd_seg:]
 
 		# Time-step for each segments
-		self.fwd_dt = np.array([(self.fwd_grid[i+1] - self.fwd_grid[i]) for i in range(self.n_fwd_seg)]) * pk.DAY2SEC
-		self.bwd_dt = np.array([(self.bwd_grid[i+1] - self.bwd_grid[i]) for i in range(self.n_bwd_seg)]) * pk.DAY2SEC
+		self.fwd_dt = (self.fwd_grid[1:] - self.fwd_grid[:-1]) * pk.DAY2SEC
+		self.bwd_dt = (self.bwd_grid[1:] - self.bwd_grid[:-1]) * pk.DAY2SEC
 
 		# Boundaries 
 		# [<departure date>, <time of flight>, <final mass>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg-1]>]
@@ -48,8 +48,15 @@ class Earth2NEA:
 
 	def fitness(self, x):
 
-		# Objective function
-		obj = -x[2] / self.sc.mass
+		# Decoding of the decision vector
+		t0 = x[0]
+		tof = x[1]
+		mf = x[2]
+		vinf = x[3:6]
+		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(self.n_seg)])
+
+		# Objective function : maximization of the final mass
+		obj = - mf / self.sc.mass
 
 		# Equality and inequality constraints vectors
 		ceq = list()
@@ -61,21 +68,19 @@ class Earth2NEA:
 		mismatch_con = list()
 
 		# Throttle constraints
-		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(self.n_seg)])
 		for t in throttles:
 			throttle_con.append(t[0]**2 + t[1]**2 + t[2]**2 - 1)
 		cineq.extend(throttle_con)
 
 		# Initial velocity at infinity
-		vinf = x[3:6]
 		vinf_con.append(vinf[0]**2 + vinf[1]**2 + vinf[2]**2 - 1)
 		cineq.extend(vinf_con)
 
 		# Mismatch constraints
-		rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, _, _, _, _, dfwd, dbwd = self.propagate(x)
+		rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, _, _, _, _, _, _ = self.propagate(x)
 		mismatch_con.extend([a - b for a, b in zip(rfwd[-1], rbwd[0])])
 		mismatch_con.extend([a - b for a, b in zip(vfwd[-1], vbwd[0])])
-		mismatch_con.append(mfwd[-1] - mbwd[0])
+		mismatch_con.extend([mfwd[-1] - mbwd[0]])
 		ceq.extend(mismatch_con)
 
 		ceq[0] /= pk.AU
@@ -95,25 +100,23 @@ class Earth2NEA:
 
 	def propagate(self, x):
 
-		# Decoding the decision vector
-		t0  = x[0]
-		tof = x[1]
-		mf  = x[2]
-		vinf = x[3:6]
-
 		# Extraction of the number of segments for forward and backward propagation
 		n_seg = self.n_seg
 		n_fwd_seg = self.n_fwd_seg
 		n_bwd_seg = self.n_bwd_seg
 
+		# Decoding the decision vector
+		t0  = x[0]
+		tof = x[1]
+		mf  = x[2]
+		vinf = x[3:6]
+		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(n_seg)])
+
 		# Extraction of the spacecraft informations
-		mi = self.sc.mass
+		m0 = self.sc.mass
 		Tmax = self.sc.thrust
 		isp = self.sc.isp
-		veff = self.sc.isp * pk.G0
-
-		# Extraction of the throttle information on the leg
-		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(n_seg)])	
+		veff = self.sc.isp * pk.G0	
 
 		# Number of forward and backward points
 		n_points_fwd = n_fwd_seg + 1
@@ -122,17 +125,17 @@ class Earth2NEA:
 		# Return lists
 		rfwd = [[0.0] * 3] * n_points_fwd  # Positions array
 		vfwd = [[0.0] * 3] * n_points_fwd  # Velocities array
-		mfwd = [0.0] * n_points_fwd        # Masses array
+		mfwd = [0.0] * n_points_fwd		# Masses array
 		ufwd = [[0.0] * 3] * n_points_fwd  # Unit throttles array
 		dfwd = [[0.0] * 3] * n_points_fwd  # Distance Spacecraft / Earth
 
 		rbwd = [[0.0] * 3] * n_points_bwd  # Positions array
 		vbwd = [[0.0] * 3] * n_points_bwd  # Velocities array
-		mbwd = [0.0] * n_points_bwd        # Masses array
+		mbwd = [0.0] * n_points_bwd		# Masses array
 		ubwd = [[0.0] * 3] * n_points_bwd  # Unit throttles array
 		dbwd = [[0.0] * 3] * n_points_bwd  # Distance Spacecraft / Earth
 
-		# Computation of the initial ephemerides (Departure frome the Moon)
+		# Computation of the initial ephemerides (Departure from the Moon)
 		ti = pk.epoch(t0)
 		ri, vi = self.moon.eph(ti)
 
@@ -153,12 +156,11 @@ class Earth2NEA:
 		# Initial conditions
 		rfwd[0] = ri
 		vfwd[0] = vi 
-		mfwd[0] = mi
+		mfwd[0] = m0
 
 		# Propagate
 		for i, t in enumerate(throttles[:n_fwd_seg]):
 			ufwd[i] = [Tmax * thr for thr in t]
-
 			# Earth gravity disturbance
 			r_E, v_E = self.earth.eph(pk.epoch(fwd_grid[i]))
 			dfwd[i] = [a - b for a, b in zip(r_E, rfwd[i])]
@@ -167,7 +169,9 @@ class Earth2NEA:
 			disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
 
 			rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor_disturbance(
-                    rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[i], pk.MU_SUN, veff, -10, -10)
+   				  rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[i], pk.MU_SUN, veff, -10, -10)
+			# rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor(
+			# 				rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[i], pk.MU_SUN, veff, -10, -10)
 
 		# Backaward propagation
 		# ---------------------
@@ -193,7 +197,9 @@ class Earth2NEA:
 			disturbance = [mbwd[-1 - i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
 			rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor_disturbance(
-                    rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], disturbance, -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
+    			  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], disturbance, -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
+			# rbwd[-1 - (i + 1)], vbwd[-1 - (i + 1)], mbwd[-1 - (i + 1)] = pk.propagate_taylor(
+			# 		rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
 
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
@@ -263,6 +269,8 @@ class Earth2NEA:
 
 			pk.orbit_plots.plot_taylor_disturbance(rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[
 										   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+			# pk.orbit_plots.plot_taylor(rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[i], 
+			# 	cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
 
 			xfwd[i + 1] = rfwd[i + 1][0] / pk.AU
 			yfwd[i + 1] = rfwd[i + 1][1] / pk.AU
@@ -283,6 +291,8 @@ class Earth2NEA:
 
 			pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
 										   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+			# pk.orbit_plots.plot_taylor(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1],
+			# 							   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
 
 			xbwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][0] / pk.AU
 			ybwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][1] / pk.AU
@@ -317,7 +327,7 @@ class Earth2NEA:
 		# Time vector
 		times = np.concatenate((fwd_grid[:], bwd_grid[1:-1]))
 
-		throttles_mg = [np.linalg.norm(t) for t in throttles]
+		throttles_mg = [self.sc.thrust * np.linalg.norm(t) for t in throttles]
 
 		ax.plot(times, throttles_mg)
 
@@ -358,3 +368,53 @@ class Earth2NEA:
 		print("Thrust-on time:", time_thrusts_on, "days")
 		print("Initial velocity at infinity vector: {}".format(vinf_dep))
 		print("Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000))
+
+	def check_con_violation(self, x):
+
+		fitness_vec = self.fitness(x)
+
+		obj = fitness_vec[0]
+		ceq = fitness_vec[1:8]
+		cineq = fitness_vec[8:]
+
+		print("Variables:\n-----------\n")
+		print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
+		print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))
+		print("Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ))
+
+		vinf_bool = True
+		for i in [3, 4, 5]:
+			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
+				vinf_bool = True
+			else:
+				vinf_bool = False
+		print("Vinf :\n\t {}\n".format(vinf_bool))
+
+		thrust_bool = True
+		for i in range(6, len(x)):
+			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
+				thrust_bool = True
+			else:
+				thrust_bool = False
+		print("Thrust :\n\t {}\n".format(thrust_bool))	
+
+		print("Equality constraints:\n----------------------\n")
+		print("dX : {} km".format(ceq[0] * pk.AU / 1000))
+		print("dY : {} km".format(ceq[1] * pk.AU / 1000))
+		print("dZ : {} km".format(ceq[2] * pk.AU / 1000))
+
+		print("dVX : {} km/s".format(ceq[3] * pk.EARTH_VELOCITY / 1000))
+		print("dVY : {} km/s".format(ceq[4] * pk.EARTH_VELOCITY / 1000))
+		print("dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000))
+
+		print("dM : {} kg".format(ceq[6] * self.sc.mass))
+
+		print("Inequality constraints:\n------------------------\n")
+		print("Thrust :\n")
+		for i, cineq_ in enumerate(cineq[:-1]):
+			print("<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1))
+		print("\nVinf :\n{}".format(True if cineq[-1]<=0 else cineq[-1]))
+		print("\n\n")
+
+
+

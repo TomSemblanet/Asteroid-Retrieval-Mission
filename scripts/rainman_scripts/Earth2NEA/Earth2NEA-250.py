@@ -42,7 +42,7 @@ for year in launch_years:
 
 	# Spacecraft
 	m0 = 600
-	Tmax = 0.25
+	Tmax = 0.250
 	Isp = 3000
 
 	# Velocity at infinity (LGA)
@@ -50,10 +50,10 @@ for year in launch_years:
 
 	# Optimization algorithm
 	algorithm = load_sqp.load('slsqp')
-	algorithm.extract(pg.nlopt).maxeval = 2 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
+	algorithm.extract(pg.nlopt).maxeval = 200 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
 
 	# Problem
-	udp = Earth2NEA(nea=ast, n_seg=10, t0=(lw_low, lw_upp), \
+	udp = Earth2NEA(nea=ast, n_seg=100, t0=(lw_low, lw_upp), \
 		tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
 
 	problem = pg.problem(udp)

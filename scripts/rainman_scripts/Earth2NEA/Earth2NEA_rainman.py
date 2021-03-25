@@ -82,6 +82,6 @@ for year in launch_years:
 	# Pickle of the results
 	res = {'udp': udp, 'population': population}
 
-	with open('/scratch/students/t.semblanet/Earth_NEA_results/ ' + str(thrust) + '/Earth_NEA_'+ str(thrust) + '_'+str(year), 'wb') as f:
+	with open('/scratch/students/t.semblanet/Earth_NEA_results/' + str(thrust) + '/Earth_NEA_'+ str(thrust) + '_'+str(year), 'wb') as f:
 		pkl.dump(res, f)
 

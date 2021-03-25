@@ -38,7 +38,15 @@ def meta_load_file(dir_):
 		# Extraction of the UDP and the population from the Pickle object
 		udp, population = res['udp'], res['population']
 
+		# Check the violation of the constraints
 		udp.check_con_violation(population.champion_x)
+		
+		# Plot the trajectory in the heliocentric frame
+		plot_trajectory(udp, population.champion_x)
+
+		# Plot the thrust profil
+		plot_thrust(udp, population.champion_x)
+
 
 def load_file(name, id_):
 	""" Load a Pickle file containing the results of an optimisation runned on the

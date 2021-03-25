@@ -12,6 +12,8 @@ def load(kernels=None):
 	# Get the path to the spice kernels folder
 	if ('node' in host_nm or 'rainman' in host_nm):
 		kernels_path = '/scratch/students/t.semblanet/spice_kernels/'
+	elif 'pc' in host_nm:
+		kernels_path = '/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/data/spice_kernels/'
 	else:
 		kernels_path = '/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/data/spice_kernels/'
 

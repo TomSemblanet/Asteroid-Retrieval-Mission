@@ -34,6 +34,9 @@ def meta_load_file(dir_):
 
 		with open('/'.join([dir_, file]), 'rb') as fl:
 			res = pkl.load(fl)
+
+		udp, population = res['udp'], res['population']
+		print(population)
 		input()
 
 def load_file(name, id_):

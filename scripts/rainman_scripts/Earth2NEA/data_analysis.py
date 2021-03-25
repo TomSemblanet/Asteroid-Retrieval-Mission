@@ -64,9 +64,6 @@ def analysis(udp, dv, year):
 
 	"""
 
-	print("Year : {}".format(year))
-	input()
-
 	# Save the 3D trajectory of the spacecraft
 	fig, ax = udp.plot_traj(dv)
 

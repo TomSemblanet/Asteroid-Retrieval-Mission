@@ -13,7 +13,7 @@ import pykep as pk
 import pickle as pkl
 import matplotlib.pyplot as plt
 
-from scripts.loaders import load_kernels
+from scripts.utils.loaders import load_kernels
 
 def meta_load_file(dir_):
 	""" Load all the Pickle files containing the results of many optimization runned on

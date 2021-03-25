@@ -61,7 +61,7 @@ for year in launch_years:
 	algorithm.extract(pg.nlopt).maxeval = 200 # /!\ /!\ NOT TO HIGH (200 is OK) /!\ /!\ 
 
 	# Problem
-	udp = Earth2NEA(nea=ast, n_seg=100, t0=(lw_low, lw_upp), \
+	udp = Earth2NEA(nea=ast, n_seg=50, t0=(lw_low, lw_upp), \
 		tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
 
 	problem = pg.problem(udp)

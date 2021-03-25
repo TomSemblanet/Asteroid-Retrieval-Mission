@@ -35,7 +35,7 @@ def load_file(name, id_):
 
 	"""
 	# Construct the file name
-	file_name = '/'.join(['/scratch/students/t.semblanet', name + '_results', id_])
+	file_name = '/'.join(['/scratch/students/t.semblanet', name + '_results', id_, '_'.join([name, id_, '2021'])])
 	print(file_name)
 	input()
 
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 	# Get the optimization results
 	udp, dv = load_file(mission_nm, mission_id)
 
-	
+
 
 	# # Plot the trajectory
 	# plot_trajectory(udp, dv)

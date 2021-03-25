@@ -112,17 +112,6 @@ if __name__ == '__main__':
 	mission_nm = str(sys.argv[1])
 	mission_id = str(sys.argv[2])
 
-	dir_ = '/'.join(['/scratch/students/t.semblanet', mission_nm + '_results', mission_id])
+	dir_ = '/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/rainman', mission_nm + '_results', mission_id])
 
 	meta_load_file(dir_)
-
-	# Get the optimization results
-	# udp, dv = load_file(mission_nm, mission_id)
-
-
-
-	# # Plot the trajectory
-	# plot_trajectory(udp, dv)
-
-	# # Plot the thrust profil
-	# plot_thrust(udp, dv)

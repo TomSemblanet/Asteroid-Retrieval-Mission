@@ -15,6 +15,26 @@ import matplotlib.pyplot as plt
 
 from scripts.loaders import load_kernels
 
+def meta_load_file(dir_):
+	""" Load all the Pickle files containing the results of many optimization runned on
+		the ISAE-SUPAEOR super-computer RAINMAN 
+
+		Parameters:
+		-----------
+		dir_ : string
+			Directory where the files are stored
+
+	"""
+
+	# List of Pickle files
+	files_lst = os.listdir(file_name)
+
+	for file in files_lst:
+		print('/'.join([dir_, file]))
+		input()
+		# with open('/'.join([dir_, file]), 'rb') as fl:
+		# 	pkl.load(fl)
+
 def load_file(name, id_):
 	""" Load a Pickle file containing the results of an optimisation runned on the
 		ISAE-SUPAERO super-computer RAINMAN
@@ -82,8 +102,12 @@ if __name__ == '__main__':
 	mission_nm = str(sys.argv[1])
 	mission_id = str(sys.argv[2])
 
+	dir_ = '/'.join(['/scratch/students/t.semblanet', mission_nm + '_results', mission_id])
+
+	meta_load_file(dir_)
+
 	# Get the optimization results
-	udp, dv = load_file(mission_nm, mission_id)
+	# udp, dv = load_file(mission_nm, mission_id)
 
 
 

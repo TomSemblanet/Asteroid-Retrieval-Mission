@@ -19,6 +19,13 @@ from scripts.post_process import post_process
 from data import constants as cst
 
 
+# Recovery of the launch year
+year_l = sys.argv[1]
+year_u = sys.argv[2]
+
+# Recovery of the spacecraft thrust [mN] /!\ In MILLI-Newton /!\
+thrust = sys.argv[3]
+
 # Loading the main kernels
 load_kernels.load()
 
@@ -26,7 +33,7 @@ load_kernels.load()
 ast = load_bodies.asteroid('2020 CD3')
 
 # Launch years
-launch_years = np.arange(2021, 2050)
+launch_years = np.arange(year_l, year_u)
 
 
 # Optimization of the trajectory on various launch window
@@ -42,7 +49,7 @@ for year in launch_years:
 
 	# Spacecraft
 	m0 = 600
-	Tmax = 0.750
+	Tmax = thrust / 1000
 	Isp = 3000
 
 	# Velocity at infinity (LGA)
@@ -60,7 +67,7 @@ for year in launch_years:
 	problem.c_tol = [1e-8] * problem.get_nc()
 
 	# Population
-	seed=200
+	seed=220
 	
 	seed_ok = False
 	while seed_ok == False:
@@ -74,6 +81,6 @@ for year in launch_years:
 	# Pickle of the results
 	res = {'udp': udp, 'population': population}
 
-	with open('/scratch/students/t.semblanet/Earth_NEA_results/750/Earth_NEA_750_'+str(year), 'wb') as f:
+	with open('/scratch/students/t.semblanet/Earth_NEA_results/750/Earth_NEA_'+ str(thrust) + '_'+str(year), 'wb') as f:
 		pkl.dump(res, f)
 

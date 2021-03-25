@@ -14,7 +14,7 @@ import pygmo as pg
 import numpy as np
 import pickle as pkl
 
-from scripts.utils import load_sqp, load_kernels, load_bodies
+from scripts.utils.loaders import load_sqp, load_kernels, load_bodies
 from scripts.UDP.Earth2NEA_UDP import Earth2NEA
 from scripts.utils.post_process import post_process
 from data import constants as cst

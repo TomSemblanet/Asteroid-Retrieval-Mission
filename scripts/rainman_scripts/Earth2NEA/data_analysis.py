@@ -78,6 +78,19 @@ def analysis(udp, dv, year):
 		'_results', mission_id + '_data', year + 'thrust'])
 	fig.savefig(fname=fname_thrust)
 
+	# Save the trajectory numerical characteristic into a text file
+	f_traj = open('/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/rainman', mission_nm + \
+		'_results', mission_id + '_data', year + '_transfer_data.txt']), 'a')
+	data = udp.report(x=x, print=False)
+	print(data, file=f_traj)
+
+	# Save the constraints violation data into a text file
+	f_tr = open('/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/rainman', mission_nm + \
+		'_results', mission_id + '_data', year + '_constraints_violation_data.txt']), 'a')
+	con_viol = udp.check_con_violation(x=x, print=False)
+	print(data, file=f_tr)
+
+
 
 def load_file(name, id_):
 	""" Load a Pickle file containing the results of an optimisation runned on the

@@ -338,7 +338,7 @@ class Earth2NEA:
 		
 		return fig, ax
 
-	def report(self, x):
+	def report(self, x, print=True):
 
 		# Decoding the decision vector
 		n_seg = self.n_seg
@@ -361,16 +361,27 @@ class Earth2NEA:
 
 		vinf_dep = self.vinf_max * vinf
 
-		print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
-		print("Time of flight:", tof, "days")
-		print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
-		print("Delta-v:", deltaV, "m/s")
-		print("Propellant consumption:", mP, "kg")
-		print("Thrust-on time:", time_thrusts_on, "days")
-		print("Initial velocity at infinity vector: {}".format(vinf_dep))
-		print("Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000))
+		if print == True:
+			print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
+			print("Time of flight:", tof, "days")
+			print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
+			print("Delta-v:", deltaV, "m/s")
+			print("Propellant consumption:", mP, "kg")
+			print("Thrust-on time:", time_thrusts_on, "days")
+			print("Initial velocity at infinity vector: {}".format(vinf_dep))
+			print("Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000))
 
-	def check_con_violation(self, x):
+		else:
+			return '\n'.join(["Departure:", pk.epoch(t0), "(", t0, "mjd2000)", 
+							  "Time of flight:", tof, "days",
+							  "Arrival:", pk.epoch(tf), "(", tf, "mjd2000)",
+							  "Delta-v:", deltaV, "m/s",
+							  "Propellant consumption:", mP, "kg",
+							  "Thrust-on time:", time_thrusts_on, "days",
+							  "Initial velocity at infinity vector: {}".format(vinf_dep),
+							  "Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000)])
+
+	def check_con_violation(self, x, print=True):
 
 		fitness_vec = self.fitness(x)
 
@@ -378,44 +389,67 @@ class Earth2NEA:
 		ceq = fitness_vec[1:8]
 		cineq = fitness_vec[8:]
 
-		print("Variables:\n-----------\n")
-		print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
-		print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))
-		print("Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ))
+		if print == True:
+			print("Variables:\n-----------\n")
+			print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
+			print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))
+			print("Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ))
 
-		vinf_bool = True
-		for i in [3, 4, 5]:
-			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
-				vinf_bool = True
-			else:
-				vinf_bool = False
-		print("Vinf :\n\t {}\n".format(vinf_bool))
+			vinf_bool = True
+			for i in [3, 4, 5]:
+				if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
+					vinf_bool = True
+				else:
+					vinf_bool = False
+			print("Vinf :\n\t {}\n".format(vinf_bool))
 
-		thrust_bool = True
-		for i in range(6, len(x)):
-			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
-				thrust_bool = True
-			else:
-				thrust_bool = False
-		print("Thrust :\n\t {}\n".format(thrust_bool))	
+			thrust_bool = True
+			for i in range(6, len(x)):
+				if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
+					thrust_bool = True
+				else:
+					thrust_bool = False
+			print("Thrust :\n\t {}\n".format(thrust_bool))	
 
-		print("Equality constraints:\n----------------------\n")
-		print("dX : {} km".format(ceq[0] * pk.AU / 1000))
-		print("dY : {} km".format(ceq[1] * pk.AU / 1000))
-		print("dZ : {} km".format(ceq[2] * pk.AU / 1000))
+			print("Equality constraints:\n----------------------\n")
+			print("dX : {} km".format(ceq[0] * pk.AU / 1000))
+			print("dY : {} km".format(ceq[1] * pk.AU / 1000))
+			print("dZ : {} km".format(ceq[2] * pk.AU / 1000))
 
-		print("dVX : {} km/s".format(ceq[3] * pk.EARTH_VELOCITY / 1000))
-		print("dVY : {} km/s".format(ceq[4] * pk.EARTH_VELOCITY / 1000))
-		print("dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000))
+			print("dVX : {} km/s".format(ceq[3] * pk.EARTH_VELOCITY / 1000))
+			print("dVY : {} km/s".format(ceq[4] * pk.EARTH_VELOCITY / 1000))
+			print("dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000))
 
-		print("dM : {} kg".format(ceq[6] * self.sc.mass))
+			print("dM : {} kg".format(ceq[6] * self.sc.mass))
 
-		print("Inequality constraints:\n------------------------\n")
-		print("Thrust :\n")
-		for i, cineq_ in enumerate(cineq[:-1]):
-			print("<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1))
-		print("\nVinf :\n{}".format(True if cineq[-1]<=0 else cineq[-1]))
-		print("\n\n")
+			print("Inequality constraints:\n------------------------\n")
+			print("Thrust :\n")
+			for i, cineq_ in enumerate(cineq[:-1]):
+				print("<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1))
+			print("\nVinf :\n{}".format(True if cineq[-1]<=0 else cineq[-1]))
+			print("\n\n")
+
+		else:
+			return '\n'.join(["Variables:\n-----------\n",
+							  "Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ),
+							  "Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ),
+							  "Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ),
+							  "Vinf :\n\t {}\n".format(vinf_bool),
+							  "Thrust :\n\t {}\n".format(thrust_bool),
+							  "Equality constraints:\n----------------------\n",
+							  "dX : {} km".format(ceq[0] * pk.AU / 1000),
+							  "dY : {} km".format(ceq[1] * pk.AU / 1000),
+							  "dZ : {} km".format(ceq[2] * pk.AU / 1000), 
+							  "dVX : {} km/s".format(ceq[3] * pk.EARTH_VELOCITY / 1000),
+							  "dVY : {} km/s".format(ceq[4] * pk.EARTH_VELOCITY / 1000),
+							  "dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000),
+							  "dM : {} kg".format(ceq[6] * self.sc.mass),
+							  "Inequality constraints:\n------------------------\n"] + \
+							  ["<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1) for i, cineq_ in enumerate(cineq[:-1])] + \
+							  ["\nVinf :\n{}".format(True if cineq[-1]<=0 else cineq[-1])])
+
+
+
 
 
 

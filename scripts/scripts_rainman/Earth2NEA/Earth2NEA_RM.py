@@ -58,10 +58,10 @@ for year in launch_years:
 
 	# Optimization algorithm
 	algorithm = load_sqp.load('slsqp')
-	algorithm.extract(pg.nlopt).maxeval = 2
+	algorithm.extract(pg.nlopt).maxeval = 200
 
 	# Problem
-	udp = Earth2NEA(nea=ast, n_seg=10, t0=(lw_low, lw_upp), \
+	udp = Earth2NEA(nea=ast, n_seg=50, t0=(lw_low, lw_upp), \
 		tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max)
 
 	problem = pg.problem(udp)

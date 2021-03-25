@@ -88,7 +88,7 @@ def analysis(udp, dv, year):
 	f_tr = open('/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/rainman', mission_nm + \
 		'_results', mission_id + '_data', year + '_constraints_violation_data.txt']), 'a')
 	con_viol = udp.check_con_violation(x=dv, print=False)
-	print(data, file=f_tr)
+	print(con_viol, file=f_tr)
 
 
 

@@ -389,26 +389,28 @@ class Earth2NEA:
 		ceq = fitness_vec[1:8]
 		cineq = fitness_vec[8:]
 
+		vinf_bool = True
+		for i in [3, 4, 5]:
+			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
+				vinf_bool = True
+			else:
+				vinf_bool = False
+
+		thrust_bool = True
+		for i in range(6, len(x)):
+			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
+				thrust_bool = True
+			else:
+				thrust_bool = False
+
 		if print == True:
 			print("Variables:\n-----------\n")
 			print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
 			print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))
 			print("Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ))
 
-			vinf_bool = True
-			for i in [3, 4, 5]:
-				if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
-					vinf_bool = True
-				else:
-					vinf_bool = False
 			print("Vinf :\n\t {}\n".format(vinf_bool))
 
-			thrust_bool = True
-			for i in range(6, len(x)):
-				if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
-					thrust_bool = True
-				else:
-					thrust_bool = False
 			print("Thrust :\n\t {}\n".format(thrust_bool))	
 
 			print("Equality constraints:\n----------------------\n")

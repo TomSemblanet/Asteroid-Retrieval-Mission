@@ -30,10 +30,11 @@ def meta_load_file(dir_):
 	files_lst = os.listdir(dir_)
 
 	for file in files_lst:
-		print('/'.join([dir_, file]))
+		print("Loading file {}".format('/'.join([dir_, file])))
+
+		with open('/'.join([dir_, file]), 'rb') as fl:
+			res = pkl.load(fl)
 		input()
-		# with open('/'.join([dir_, file]), 'rb') as fl:
-		# 	pkl.load(fl)
 
 def load_file(name, id_):
 	""" Load a Pickle file containing the results of an optimisation runned on the

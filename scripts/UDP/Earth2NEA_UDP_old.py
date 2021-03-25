@@ -13,7 +13,7 @@ import pykep as pk
 import pygmo as pg 
 import numpy as np 
 
-from scripts.loaders import load_bodies
+from scripts.utils.loaders import load_bodies
 import data.constants as cst
 
 class Earth2NEA:

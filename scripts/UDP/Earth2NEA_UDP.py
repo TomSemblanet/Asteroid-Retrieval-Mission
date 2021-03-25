@@ -4,7 +4,7 @@ import pykep as pk
 import pygmo as pg 
 import numpy as np
 
-from scripts.loaders import load_sqp, load_kernels, load_bodies
+from scripts.utils.loaders import load_sqp, load_kernels, load_bodies
 
 from data import constants as cst
 

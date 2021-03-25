@@ -11,11 +11,11 @@ import pykep as pk
 import pygmo as pg 
 import pickle as pkl
 
-from scripts.loaders import load_sqp, load_kernels, load_bodies
+from scripts.utils.loaders import load_sqp, load_kernels, load_bodies
 
 from scripts.UDP.NEA2Earth_UDP import NEA2Earth
 
-from scripts.post_process import post_process
+from scripts.utils.post_process import post_process
 
 from data import constants as cst
 

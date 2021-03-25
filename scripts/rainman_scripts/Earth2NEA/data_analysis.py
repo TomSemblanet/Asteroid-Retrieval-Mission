@@ -35,9 +35,10 @@ def meta_load_file(dir_):
 		with open('/'.join([dir_, file]), 'rb') as fl:
 			res = pkl.load(fl)
 
+		# Extraction of the UDP and the population from the Pickle object
 		udp, population = res['udp'], res['population']
-		print(population)
-		input()
+
+		udp.check_con_violation(population.champion_x)
 
 def load_file(name, id_):
 	""" Load a Pickle file containing the results of an optimisation runned on the
@@ -60,9 +61,6 @@ def load_file(name, id_):
 	"""
 	# Construct the file name
 	file_name = '/'.join(['/scratch/students/t.semblanet', name + '_results', id_])
-
-	print(os.listdir(file_name))
-	input()
 
 	with open(file_name, 'rb') as file:
 		res = pkl.load(file)

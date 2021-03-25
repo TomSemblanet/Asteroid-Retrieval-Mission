@@ -41,6 +41,8 @@ launch_years = np.arange(year_l, year_u)
 for year in launch_years:
 
 	# Launch window
+	print(str(year)+'-01-01 00:00:00')
+	input()
 	lw_low = pk.epoch_from_string(str(year)+'-01-01 00:00:00')
 	lw_upp = pk.epoch_from_string(str(year)+'-12-31 23:59:59')
 

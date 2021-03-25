@@ -27,7 +27,7 @@ def meta_load_file(dir_):
 	"""
 
 	# List of Pickle files
-	files_lst = os.listdir(file_name)
+	files_lst = os.listdir(dir_)
 
 	for file in files_lst:
 		print('/'.join([dir_, file]))

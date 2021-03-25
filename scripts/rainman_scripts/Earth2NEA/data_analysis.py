@@ -35,8 +35,9 @@ def load_file(name, id_):
 
 	"""
 	# Construct the file name
-	file_name = '/'.join(['/scratch/students/t.semblanet', name + '_results', id_, '_'.join([name, id_, '2021'])])
-	print(file_name)
+	file_name = '/'.join(['/scratch/students/t.semblanet', name + '_results', id_])
+
+	print(os.listdir(file_name))
 	input()
 
 	with open(file_name, 'rb') as file:

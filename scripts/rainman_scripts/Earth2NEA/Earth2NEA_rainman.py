@@ -21,11 +21,11 @@ from data import constants as cst
 
 
 # Recovery of the launch year
-year_l = sys.argv[1]
-year_u = sys.argv[2]
+year_l = float(sys.argv[1])
+year_u = float(sys.argv[2])
 
 # Recovery of the spacecraft thrust [mN] /!\ In MILLI-Newton /!\
-thrust = sys.argv[3]
+thrust = float(sys.argv[3])
 
 # Loading the main kernels
 load_kernels.load()

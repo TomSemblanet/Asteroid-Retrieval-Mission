@@ -38,14 +38,48 @@ def meta_load_file(dir_):
 		# Extraction of the UDP and the population from the Pickle object
 		udp, population = res['udp'], res['population']
 
-		# Check the violation of the constraints
-		udp.check_con_violation(population.champion_x)
-		
-		# Plot the trajectory in the heliocentric frame
-		plot_trajectory(udp, population.champion_x)
+		analysis(udp, population.champion_x, file[-4:])
 
-		# Plot the thrust profil
-		plot_thrust(udp, population.champion_x)
+		# # Check the violation of the constraints
+		# udp.check_con_violation(population.champion_x)
+		
+		# # Plot the trajectory in the heliocentric frame
+		# plot_trajectory(udp, population.champion_x)
+
+		# # Plot the thrust profil
+		# plot_thrust(udp, population.champion_x)
+
+def analysis(udp, dv, year):
+	""" Analyses a trajectory for a given mission, save the Trajectory plot, the thrust
+		profile and the main informations about the trajectory
+
+		Parameters:
+		-----------
+		udp: <pykep.udp>
+			Original UDP containing informations necessary to the trajectory plot
+		dv: array
+			Optimized decision vector
+		year: string
+			Launch year
+
+	"""
+
+	print("Year : {}".format(year))
+	input()
+
+	# Save the 3D trajectory of the spacecraft
+	fig, ax = udp.plot_traj(dv)
+
+	fname_plot = '/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/rainman', mission_nm + \
+		'_results', mission_id + '_data', year + 'traj'])
+	fig.savefig(fname=fname_plot)
+
+	# Save the thrust profil of the spacecraft
+	fig, ax = udp.plot_thrust(dv)
+
+	fname_thrust = '/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/rainman', mission_nm + \
+		'_results', mission_id + '_data', year + 'thrust'])
+	fig.savefig(fname=fname_thrust)
 
 
 def load_file(name, id_):

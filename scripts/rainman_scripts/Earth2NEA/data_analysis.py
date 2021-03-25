@@ -102,7 +102,7 @@ def plot_thrust(udp, dv):
 			Optimized decision vector
 
 	"""
-	udp.plot_dists_thrust(dv)
+	udp.plot_thrust(dv)
 
 if __name__ == '__main__':
 	# Load the SPICE Kernels files 

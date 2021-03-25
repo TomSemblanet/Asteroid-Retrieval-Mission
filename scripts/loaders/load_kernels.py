@@ -6,6 +6,9 @@ def load(kernels=None):
 	# Get the host machine name
 	host_nm = os.uname()[1]
 
+	print(host_nm)
+	input()
+
 	# Get the path to the spice kernels folder
 	if ('node' in host_nm or 'rainman' in host_nm):
 		kernels_path = '/scratch/students/t.semblanet/spice_kernels/'

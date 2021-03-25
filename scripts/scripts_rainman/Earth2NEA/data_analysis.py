@@ -40,15 +40,6 @@ def meta_load_file(dir_):
 
 		analysis(udp, population.champion_x, file[-4:])
 
-		# # Check the violation of the constraints
-		# udp.check_con_violation(population.champion_x)
-		
-		# # Plot the trajectory in the heliocentric frame
-		# plot_trajectory(udp, population.champion_x)
-
-		# # Plot the thrust profil
-		# plot_thrust(udp, population.champion_x)
-
 def analysis(udp, dv, year):
 	""" Analyses a trajectory for a given mission, save the Trajectory plot, the thrust
 		profile and the main informations about the trajectory

@@ -372,12 +372,12 @@ class Earth2NEA:
 			print("Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000))
 
 		else:
-			return '\n'.join(["Departure:", pk.epoch(t0), "(", t0, "mjd2000)", 
-							  "Time of flight:", tof, "days",
-							  "Arrival:", pk.epoch(tf), "(", tf, "mjd2000)",
-							  "Delta-v:", deltaV, "m/s",
-							  "Propellant consumption:", mP, "kg",
-							  "Thrust-on time:", time_thrusts_on, "days",
+			return '\n'.join(["Departure:" + str(pk.epoch(t0)) + "(" + str(t0) + "mjd2000)", 
+							  "Time of flight:" + str(tof) + "days",
+							  "Arrival:" + str(pk.epoch(tf)), "(" + str(tf) + "mjd2000)",
+							  "Delta-v:"+ str(deltaV) + "m/s",
+							  "Propellant consumption:"+ str(mP) + "kg",
+							  "Thrust-on time:"+  str(time_thrusts_on) +  "days",
 							  "Initial velocity at infinity vector: {}".format(vinf_dep),
 							  "Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000)])
 

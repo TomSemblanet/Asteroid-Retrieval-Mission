@@ -84,6 +84,7 @@ for year in launch_years:
 		error = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
 
 		print("\nError : {} km".format(error))
+		
 
 	# Pickle of the results
 	res = {'udp': udp, 'population': population}

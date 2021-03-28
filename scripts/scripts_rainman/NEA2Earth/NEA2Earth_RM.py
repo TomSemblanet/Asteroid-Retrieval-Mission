@@ -49,7 +49,7 @@ for year in launch_years:
 	tof_upp = cst.YEAR2DAY * 5.00
 
 	# Spacecraft
-	m0 = 2000
+	m0 = 2000 + ast_mass
 	Tmax = 0.5
 	Isp = 3000
 
@@ -58,7 +58,7 @@ for year in launch_years:
 	algorithm.extract(pg.nlopt).maxeval = 200
 
 	# Problem
-	udp = Earth2NEA(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
+	udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
 		tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, nea_mass=ast_mass)
 
 	problem = pg.problem(udp)
@@ -88,7 +88,7 @@ for year in launch_years:
 	# Pickle of the results
 	res = {'udp': udp, 'population': population}
 
-	
+
 	if 'gary' in getpass.getuser():
 		storage_path = '/scratch/dcas/yv.gary/SEMBLANET/NEA_Earth_results/500/NEA_Earth_500_' + str(year)
 	else:

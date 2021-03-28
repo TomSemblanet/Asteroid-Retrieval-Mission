@@ -10,7 +10,7 @@ from data import constants as cst
 
 class Earth2NEA:
 
-	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, vinf_max):
+	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, vinf_max, earth_grv=True):
 
 		# Creation of the planet and NEA objects
 		self.nea = nea
@@ -25,6 +25,7 @@ class Earth2NEA:
 		self.t0 = t0
 		self.tof = tof
 		self.vinf_max = vinf_max
+		self.earth_grv = earth_grv
 
 		# Grid construction
 		grid = np.array([i / n_seg for i in range(n_seg + 1)])
@@ -161,17 +162,21 @@ class Earth2NEA:
 		# Propagate
 		for i, t in enumerate(throttles[:n_fwd_seg]):
 			ufwd[i] = [Tmax * thr for thr in t]
-			# Earth gravity disturbance
-			r_E, v_E = self.earth.eph(pk.epoch(fwd_grid[i]))
-			dfwd[i] = [a - b for a, b in zip(r_E, rfwd[i])]
-			r3 = sum([r**2 for r in dfwd[i]])**(3 / 2)
 
-			disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
+			if self.earth_grv == True:
+				# Earth gravity disturbance
+				r_E, v_E = self.earth.eph(pk.epoch(fwd_grid[i]))
+				dfwd[i] = [a - b for a, b in zip(r_E, rfwd[i])]
+				r3 = sum([r**2 for r in dfwd[i]])**(3 / 2)
 
-			rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor_disturbance(
-   				  rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[i], pk.MU_SUN, veff, -10, -10)
-			# rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor(
-			# 				rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[i], pk.MU_SUN, veff, -10, -10)
+				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
+
+				rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor_disturbance(
+	   				  rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[i], pk.MU_SUN, veff, -10, -10)
+			
+			else:
+				rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor(
+	   				  rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[i], pk.MU_SUN, veff, -10, -10)
 
 		# Backaward propagation
 		# ---------------------
@@ -189,17 +194,20 @@ class Earth2NEA:
 		for i, t in enumerate(throttles[-1:-n_bwd_seg - 1: -1]):
 			ubwd[-1 - i] = [Tmax * thr for thr in t]
 
-			# Earth gravity disturbance
-			r_E, v_E = self.earth.eph(pk.epoch(bwd_grid[-1 - i]))
-			dbwd[-1 - i] = [a - b for a, b in zip(r_E, rbwd[-1 - i])]
-			r3 = sum([r**2 for r in dbwd[-1 - i]])**(3 / 2)
+			if self.earth_grv == True:
+				# Earth gravity disturbance
+				r_E, v_E = self.earth.eph(pk.epoch(bwd_grid[-1 - i]))
+				dbwd[-1 - i] = [a - b for a, b in zip(r_E, rbwd[-1 - i])]
+				r3 = sum([r**2 for r in dbwd[-1 - i]])**(3 / 2)
 
-			disturbance = [mbwd[-1 - i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
+				disturbance = [mbwd[-1 - i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
-			rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor_disturbance(
-    			  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], disturbance, -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
-			# rbwd[-1 - (i + 1)], vbwd[-1 - (i + 1)], mbwd[-1 - (i + 1)] = pk.propagate_taylor(
-			# 		rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
+				rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor_disturbance(
+					  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], disturbance, -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
+
+			else:
+				rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor(
+					  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
 
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
@@ -264,13 +272,17 @@ class Earth2NEA:
 		zfwd[0] = rfwd[0][2] / pk.AU
 
 		for i in range(n_fwd_seg):
-			r3 = sum([r**2 for r in dfwd[i]])**(3 / 2)
-			disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
 
-			pk.orbit_plots.plot_taylor_disturbance(rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[
-										   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
-			# pk.orbit_plots.plot_taylor(rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[i], 
-			# 	cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+			if self.earth_grv == True:
+				r3 = sum([r**2 for r in dfwd[i]])**(3 / 2)
+				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
+
+				pk.orbit_plots.plot_taylor_disturbance(rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[
+											   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+
+			else:
+				pk.orbit_plots.plot_taylor(rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[
+											   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
 
 			xfwd[i + 1] = rfwd[i + 1][0] / pk.AU
 			yfwd[i + 1] = rfwd[i + 1][1] / pk.AU
@@ -286,20 +298,24 @@ class Earth2NEA:
 		zfwd[-1] = rbwd[-1][2] / pk.AU
 
 		for i in range(n_bwd_seg):
-			r3 = sum([r**2 for r in dbwd[-1 - i]])**(3 / 2)
-			disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
-			pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
-										   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
-			# pk.orbit_plots.plot_taylor(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1],
-			# 							   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+			if self.earth_grv == True:
+				r3 = sum([r**2 for r in dbwd[-1 - i]])**(3 / 2)
+				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
+
+				pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
+											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+
+			else:
+				pk.orbit_plots.plot_taylor(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1],
+											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
 
 			xbwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][0] / pk.AU
 			ybwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][1] / pk.AU
 			zbwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][2] / pk.AU
 
-		# ax.scatter(xfwd[:-1], yfwd[:-1], zfwd[:-1], marker='o', s=5, c='k')
-		# ax.scatter(xbwd[1:], ybwd[1:], zbwd[1:], marker='o', s=5, c='k')
+		ax.scatter(xfwd[:-1], yfwd[:-1], zfwd[:-1], marker='o', s=5, c='k')
+		ax.scatter(xbwd[1:], ybwd[1:], zbwd[1:], marker='o', s=5, c='k')
 
 		return fig, ax
 
@@ -338,7 +354,7 @@ class Earth2NEA:
 		
 		return fig, ax
 
-	def report(self, x, print=True):
+	def report(self, x, print_=True):
 
 		# Decoding the decision vector
 		n_seg = self.n_seg
@@ -361,7 +377,7 @@ class Earth2NEA:
 
 		vinf_dep = self.vinf_max * vinf
 
-		if print == True:
+		if print_ == True:
 			print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
 			print("Time of flight:", tof, "days")
 			print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
@@ -381,7 +397,7 @@ class Earth2NEA:
 							  "Initial velocity at infinity vector: {}".format(vinf_dep),
 							  "Initial velocity at infinity magnitude: {} km/s".format(np.linalg.norm(vinf_dep) / 1000)])
 
-	def check_con_violation(self, x, print=True):
+	def check_con_violation(self, x, print_=True):
 
 		fitness_vec = self.fitness(x)
 
@@ -403,7 +419,7 @@ class Earth2NEA:
 			else:
 				thrust_bool = False
 
-		if print == True:
+		if print_ == True:
 			print("Variables:\n-----------\n")
 			print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
 			print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))

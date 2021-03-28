@@ -11,6 +11,8 @@ import os
 import pickle 
 from datetime import datetime as dt
 
+import matplotlib.pyplot as plt
+
 def post_process(udp, x_best):
 
 	# If we are on RAINMAIN, we pickle the results to inspect them further
@@ -27,6 +29,8 @@ def post_process(udp, x_best):
 
 		# 10 - Plot the trajectory
 		udp.plot_traj(x_best)
+		plt.show()
 
 		# 11 - Plot the thrust profil
 		udp.plot_thrust(x_best)
+		plt.show()

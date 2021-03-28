@@ -1,4 +1,5 @@
 import pykep as pk 
+import getpass
 import os
 
 def load(kernels=None):
@@ -8,7 +9,10 @@ def load(kernels=None):
 
 	# Get the path to the spice kernels folder
 	if ('node' in host_nm or 'rainman' in host_nm):
-		kernels_path = '/scratch/students/t.semblanet/spice_kernels/'
+		if 'gary' in getpass.getuser():
+			kernels_path = '/scratch/dcas/yv.gary/SEMBLANET/spice_kernels/'
+		else:
+			kernels_path = '/scratch/students/t.semblanet/spice_kernels/'
 	elif 'pc' in host_nm:
 		kernels_path = '/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/data/spice_kernels/'
 	else:

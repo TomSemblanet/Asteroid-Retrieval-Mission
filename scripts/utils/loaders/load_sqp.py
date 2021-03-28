@@ -18,7 +18,7 @@ def load(name):
 	
 	if name == "slsqp":
 		uda = pg.nlopt('slsqp')
-		uda.xtol_rel = 1e-8
+		uda.xtol_rel = 0
 		uda.ftol_rel = 0
 		algo = pg.algorithm(uda)
 		algo.set_verbosity(1)

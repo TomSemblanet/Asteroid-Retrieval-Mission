@@ -17,7 +17,7 @@ import numpy as np
 import pickle as pkl
 
 from scripts.utils.loaders import load_sqp, load_kernels, load_bodies
-from scripts.UDP.Earth2NEA_UDP import Earth2NEA
+from scripts.UDP.NEA2Earth_UDP import NEA2Earth
 from scripts.utils.post_process import post_process
 from data import constants as cst
 

@@ -13,9 +13,9 @@ import pygmo as pg
 import pickle as pkl
 from datetime import datetime as dt
 
-from scripts.utils.loaders import load_sqp, load_kernels, load_bodies
+from scripts.utils import load_sqp, load_kernels, load_bodies
 
-from scripts.UDP.Earth2NEA_UDP import Earth2NEA
+from scripts.udp.Earth2NEA_UDP import Earth2NEA
 
 from scripts.utils.post_process import post_process
 

@@ -83,35 +83,6 @@ def analysis(host, udp, dv, year):
 	con_viol = udp.check_con_violation(x=dv, print_=False)
 	print(con_viol, file=f_tr)
 
-def plot_trajectory(udp, dv):
-	""" Plot the a trajectory resulting of an optimization on the 
-		ISAE-SUPAERO super-computer RAINMAN 
-
-		Parameters:
-		-----------
-		udp: <pykep.udp>
-			Original UDP containing informations necessary to the trajectory plot
-		dv: array
-			Optimized decision vector
-
-	"""
-	udp.plot_traj(dv)
-	plt.show()
-
-def plot_thrust(udp, dv):
-	""" Plot the the thrust over a trajectory resulting of an optimization on the 
-		ISAE-SUPAERO super-computer RAINMAN 
-
-		Parameters:
-		-----------
-		udp: <pykep.udp>
-			Original UDP containing informations necessary to the trajectory plot
-		dv: array
-			Optimized decision vector
-
-	"""
-	udp.plot_thrust(dv)
-
 if __name__ == '__main__':
 	# Load the SPICE Kernels files 
 	load_kernels.load()

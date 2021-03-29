@@ -14,9 +14,9 @@ import numpy as np
 import pickle as pkl
 from datetime import datetime as dt
 
-from scripts.utils.loaders import load_sqp, load_kernels, load_bodies
+from scripts.utils import load_sqp, load_kernels, load_bodies
 
-from scripts.UDP.NEA2Earth_UDP import NEA2Earth
+from scripts.udp.NEA2Earth_UDP import NEA2Earth
 
 from scripts.utils.post_process import post_process
 

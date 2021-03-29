@@ -76,7 +76,7 @@ problem = pg.problem(udp)
 problem.c_tol = [1e-8] * problem.get_nc()
 
 pos_err = 1e10
-dv = 1e10
+dV = 1e10
  
 while pos_err > 5000 and dV > 1000:
 
@@ -93,10 +93,10 @@ while pos_err > 5000 and dV > 1000:
 	fitness = udp.fitness(population.champion_x)
 
 	pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
-	dv = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
+	dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
 
 	print("\nError : {} km".format(pos_err))
-	print("\nDelta-v : {} km/s".format(dv / 1000))
+	print("\nDelta-v : {} km/s".format(dV / 1000))
 		
 
 # Pickle of the results

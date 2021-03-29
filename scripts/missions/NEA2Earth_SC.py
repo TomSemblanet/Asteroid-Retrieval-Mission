@@ -80,21 +80,21 @@ problem.c_tol = [1e-8] * problem.get_nc()
 pos_err = 1e10
 dV = 1e10
  
-while pos_err > 5000 or dV > 1000:
+# while pos_err > 5000 or dV > 1000:
 
-	seed = np.random.randint(1, 100000)
+seed = np.random.randint(1, 100000)
 
-	# Population
-	population = pg.population(problem, size=1, seed=seed)
+# Population
+population = pg.population(problem, size=1, seed=seed)
 
-	# Optimization
-	population = algorithm.evolve(population)
+# Optimization
+population = algorithm.evolve(population)
 
-	# Check feasibility
-	fitness = udp.fitness(population.champion_x)
+# Check feasibility
+fitness = udp.fitness(population.champion_x)
 
-	pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
-	dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
+pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
+dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
 
 # Pickle of the results
 res = {'udp': udp, 'population': population}

@@ -78,7 +78,7 @@ problem.c_tol = [1e-8] * problem.get_nc()
 pos_err = 1e10
 dV = 1e10
  
-while pos_err > 5000 and dV > 1000:
+while pos_err > 5000 or dV > 1000:
 
 	seed = np.random.randint(1, 100000)
 	print("Try with seed : <{}>".format(seed))

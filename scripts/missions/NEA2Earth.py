@@ -30,8 +30,8 @@ ast = load_bodies.asteroid('2020 CD3')
 ast_mass = 4900 # 2020-CD3 mass [kg]
 
 # 2 - Launch window
-lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2021-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2044-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.1
@@ -44,7 +44,7 @@ Isp = 3000
 
 # 5 - Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 200
+algorithm.extract(pg.nlopt).maxeval = 2
 
 # 7 - Problem
 udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
@@ -81,3 +81,26 @@ udp.check_con_violation(population.champion_x)
 
 # 11 - Post process the results
 post_process(udp, population.champion_x)
+
+
+# x = population.champion_x
+
+# x_ = np.zeros(4 + 60 * 3)
+# x_[0:4] = x[0:4]
+# thr = x[4:]
+# thr_ = np.ndarray(shape=(60, 3))
+# for i in range(int(len(thr_)/2)):
+# 	print(thr_[2*i])
+# 	print(thr[3*i:3*i+3])
+# 	thr_[2*i] = thr[3*i:3*i+3]
+# 	thr_[2*i+1] = thr[3*i:3*i+3]
+
+# print(thr_)
+
+
+
+
+
+
+
+

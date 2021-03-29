@@ -33,7 +33,7 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 comm = MPI.COMM_WORLD
 rank = comm.rank
 
-
+print("Processor ranked <{}> running".format())
 
 # Initial year
 year_i = int(sys.argv[1])
@@ -42,7 +42,7 @@ year_i = int(sys.argv[1])
 n_proc = int(sys.argv[2])
 
 # Year of NEA departure
-launch_year = year_i + comm.rank
+year = year_i + comm.rank
 
 # Loading the main kernels
 load_kernels.load()

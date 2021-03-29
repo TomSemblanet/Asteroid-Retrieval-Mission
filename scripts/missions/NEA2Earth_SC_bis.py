@@ -30,10 +30,9 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 
 """
 
+# Creation of the communicator 
 comm = MPI.COMM_WORLD
 rank = comm.rank
-
-print("Processor ranked <{}> running".format(rank))
 
 # Initial year
 year_i = int(sys.argv[1])
@@ -66,7 +65,8 @@ Isp = 3000
 
 # Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).maxeval = 5
+algorithm.extract(pg.nlopt).set_verbosity(0)
+algorithm.extract(pg.nlopt).maxeval = 200
 
 # Problem
 udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
@@ -81,23 +81,18 @@ dV = 1e10
 while pos_err > 5000 or dV > 1000:
 
 	seed = np.random.randint(1, 100000)
-	print("Try with seed : <{}>".format(seed))
 
-	# 8 - Population
+	# Population
 	population = pg.population(problem, size=1, seed=seed)
 
-	# 9 - Optimization
+	# Optimization
 	population = algorithm.evolve(population)
 
-	# 10 - Check feasibility
+	# Check feasibility
 	fitness = udp.fitness(population.champion_x)
 
 	pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
 	dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
-
-	print("\nError : {} km".format(pos_err))
-	print("\nDelta-v : {} km/s".format(dV / 1000))
-		
 
 # Pickle of the results
 res = {'udp': udp, 'population': population}

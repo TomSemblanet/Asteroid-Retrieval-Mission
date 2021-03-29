@@ -34,6 +34,8 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 comm = MPI.COMM_WORLD
 rank = comm.rank
 
+print("Process rank <{}> launched".format(rank))
+
 # Initial year
 year_i = int(sys.argv[1])
 
@@ -66,6 +68,7 @@ Isp = 3000
 # Optimization algorithm
 algorithm = load_sqp.load('slsqp')
 algorithm.extract(pg.nlopt).maxeval = 200
+algorithm.set_verbosity(0)
 
 # Problem
 udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \

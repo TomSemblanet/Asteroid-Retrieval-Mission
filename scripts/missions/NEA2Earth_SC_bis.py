@@ -33,7 +33,7 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 comm = MPI.COMM_WORLD
 rank = comm.rank
 
-print("Processor ranked <{}> running".format())
+print("Processor ranked <{}> running".format(rank))
 
 # Initial year
 year_i = int(sys.argv[1])

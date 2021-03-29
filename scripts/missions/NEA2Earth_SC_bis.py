@@ -65,7 +65,6 @@ Isp = 3000
 
 # Optimization algorithm
 algorithm = load_sqp.load('slsqp')
-algorithm.extract(pg.nlopt).set_verbosity(0)
 algorithm.extract(pg.nlopt).maxeval = 200
 
 # Problem

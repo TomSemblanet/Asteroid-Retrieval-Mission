@@ -422,13 +422,6 @@ class NEA2Earth:
 		ceq = fitness_vec[1:8]
 		cineq = fitness_vec[8:]
 
-		# varr_bool = True
-		# for i in [3, 4, 5]:
-		# 	if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
-		# 		varr_bool = True
-		# 	else:
-		# 		varr_bool = False
-
 		thrust_bool = True
 		for i in range(3, len(x)):
 			if (x[i] >= self.lb[i] and x[i] <= self.ub[i]):
@@ -461,8 +454,6 @@ class NEA2Earth:
 			print("Thrust :\n")
 			for i, cineq_ in enumerate(cineq):
 				print("<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1))
-			# print("\nVarr :\n{}".format(True if cineq[-2]<=0 else cineq[-2]))
-			# print("\nVrel :\n{}".format(True if cineq[-1]<=0 else cineq[-1]*self.vrel_max))
 			print("\n\n")
 
 		else:
@@ -481,9 +472,7 @@ class NEA2Earth:
 							  "dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000),
 							  "dM : {} kg".format(ceq[6] * self.sc.mass),
 							  "Inequality constraints:\n------------------------\n"] + \
-							  ["<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1) for i, cineq_ in enumerate(cineq[:-1])
-							  # ["Varr :\n{}".format(True if cineq[-2]<=0 else cineq[-2]), "Vrel :\n{}".format(True if cineq[-1]<=0 else cineq[-1]*self.vrel_max)
-							  ])
+							  ["<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1) for i, cineq_ in enumerate(cineq[:-1])])
 
 
 

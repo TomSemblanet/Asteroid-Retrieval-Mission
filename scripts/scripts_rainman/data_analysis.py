@@ -74,13 +74,13 @@ def analysis(host, udp, dv, year):
 	# Save the trajectory numerical characteristic into a text file
 	f_traj = open('/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/supercomputers/' + host, mission_nm + \
 		'_results', mission_id + '_data', year + '_transfer_data.txt']), 'a')
-	data = udp.report(x=dv, print=False)
+	data = udp.report(x=dv, print_=False)
 	print(data, file=f_traj)
 
 	# Save the constraints violation data into a text file
 	f_tr = open('/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/supercomputers/' + host, mission_nm + \
 		'_results', mission_id + '_data', year + '_constraints_violation_data.txt']), 'a')
-	con_viol = udp.check_con_violation(x=dv, print=False)
+	con_viol = udp.check_con_violation(x=dv, print_=False)
 	print(con_viol, file=f_tr)
 
 def plot_trajectory(udp, dv):

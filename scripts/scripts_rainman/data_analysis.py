@@ -123,6 +123,6 @@ if __name__ == '__main__':
 	mission_nm = str(sys.argv[2])
 	mission_id = str(sys.argv[3])
 
-	dir_ = '/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/supercomputers' + host, mission_nm + '_results', mission_id])
+	dir_ = '/'.join(['/home/cesure/t.semblanet/Desktop/Asteroid-Retrieval-Mission/supercomputers/' + host, mission_nm + '_results', mission_id])
 
 	meta_load_file(host, dir_)

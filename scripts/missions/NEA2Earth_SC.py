@@ -43,6 +43,12 @@ year_i = int(sys.argv[1])
 # Number of allocated processors
 n_proc = int(sys.argv[2])
 
+# Number of segments
+n_seg = int(sys.argv[3])
+
+# SQP programm 
+sqp = str(sys.argv[4])
+
 # Year of NEA departure
 year = year_i + comm.rank
 
@@ -67,12 +73,12 @@ Tmax = 0.5
 Isp = 3000
 
 # Optimization algorithm
-algorithm = load_sqp.load('slsqp')
+algorithm = load_sqp.load(sqp)
 algorithm.extract(pg.nlopt).maxeval = 200
 algorithm.set_verbosity(0)
 
 # Problem
-udp = NEA2Earth(nea=ast, n_seg=10, t0=(lw_low, lw_upp), \
+udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, nea_mass=ast_mass)
 
 problem = pg.problem(udp)
@@ -80,13 +86,10 @@ problem.c_tol = [1e-8] * problem.get_nc()
 
 pos_err = 1e10
 dV = 1e10
-
-
  
 while pos_err > 5000 or dV > 1000:
 
 	seed = np.random.randint(1, 100000)
-	print("<{}> : {}".format(rank, seed), flush=True)
 
 	# Population
 	population = pg.population(problem, size=1, seed=seed)
@@ -100,6 +103,8 @@ while pos_err > 5000 or dV > 1000:
 	pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
 	dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
 
+	print("<{}> : {}\tpos: {} km | dV : {} km/s".format(year, seed, pos_err, dV/1000), flush=True)
+
 print("*** Solution found for year {} ***".format(year), flush=True)
 
 # Pickle of the results
@@ -107,9 +112,9 @@ res = {'udp': udp, 'population': population}
 
 
 if 'gary' in getpass.getuser():
-	storage_path = '/scratch/dcas/yv.gary/SEMBLANET/NEA_Earth_results/500/NEA_Earth_500_' + str(year)
+	storage_path = '/scratch/dcas/yv.gary/SEMBLANET/NEA_Earth_results/500_' + str(n_seg) + '_' + sqp + '/NEA_Earth_500_' + str(year)
 else:
-	storage_path = '/scratch/students/t.semblanet/NEA_Earth_results/500/NEA_Earth_500_' + str(year)
+	storage_path = '/scratch/students/t.semblanet/NEA_Earth_results/500_' + str(n_seg) + '_' + sqp + '/NEA_Earth_500_' + str(year)
 
 with open(storage_path, 'wb') as f:
 	pkl.dump(res, f)

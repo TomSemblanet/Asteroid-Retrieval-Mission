@@ -35,6 +35,7 @@ comm = MPI.COMM_WORLD
 rank = comm.rank
 
 print("Process rank <{}> launched".format(rank))
+# sys.stdout.write('{} launched'.format(rank))
 
 # Initial year
 year_i = int(sys.argv[1])
@@ -71,7 +72,7 @@ algorithm.extract(pg.nlopt).maxeval = 200
 algorithm.set_verbosity(0)
 
 # Problem
-udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
+udp = NEA2Earth(nea=ast, n_seg=10, t0=(lw_low, lw_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, nea_mass=ast_mass)
 
 problem = pg.problem(udp)
@@ -79,10 +80,13 @@ problem.c_tol = [1e-8] * problem.get_nc()
 
 pos_err = 1e10
 dV = 1e10
+
+
  
 while pos_err > 5000 or dV > 1000:
 
 	seed = np.random.randint(1, 100000)
+	print("<{}> : {}".format(rank, seed))
 
 	# Population
 	population = pg.population(problem, size=1, seed=seed)

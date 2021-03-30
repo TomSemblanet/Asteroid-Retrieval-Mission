@@ -34,7 +34,7 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 comm = MPI.COMM_WORLD
 rank = comm.rank
 
-print("Process rank <{}> launched".format(rank))
+print("Process rank <{}> launched".format(rank), flush=True)
 # sys.stdout.write('{} launched'.format(rank))
 
 # Initial year
@@ -86,7 +86,7 @@ dV = 1e10
 while pos_err > 5000 or dV > 1000:
 
 	seed = np.random.randint(1, 100000)
-	print("<{}> : {}".format(rank, seed))
+	print("<{}> : {}".format(rank, seed), flush=True)
 
 	# Population
 	population = pg.population(problem, size=1, seed=seed)
@@ -99,6 +99,8 @@ while pos_err > 5000 or dV > 1000:
 
 	pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
 	dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
+
+print("*** Solution found for year {} ***".format(year), flush=True)
 
 # Pickle of the results
 res = {'udp': udp, 'population': population}

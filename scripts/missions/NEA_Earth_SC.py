@@ -121,7 +121,7 @@ while count < N:
 population.set_x(0, x_best)
 
 # - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
-print("Rank <{}> : Running Monotonic Basin Hopping algorithm", flush=True)
+print("Rank <{}> : Running Monotonic Basin Hopping algorithm".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # 9 - Improvement of the solution using MBH algorithm
@@ -132,7 +132,7 @@ mbh.set_verbosity(1)
 population = mbh.evolve(population)
 
 # - * - * - * - * - * - * - * - * - * - * - * - * - * 
-print("Rank <{}> : Operations finished", flush=True)
+print("Rank <{}> : Operations finished".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # 11 - Pickle the results

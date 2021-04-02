@@ -125,11 +125,11 @@ print("Rank <{}> : Running Monotonic Basin Hopping algorithm".format(rank), flus
 # - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # 9 - Improvement of the solution using MBH algorithm
-mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
-mbh.set_verbosity(1)
+# mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
+# mbh.set_verbosity(1)
 
-# 10 - Optimization
-population = mbh.evolve(population)
+# # 10 - Optimization
+# population = mbh.evolve(population)
 
 # - * - * - * - * - * - * - * - * - * - * - * - * - * 
 print("Rank <{}> : Operations finished".format(rank), flush=True)

@@ -83,7 +83,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 100 
+N = 1 
 count = 0
 
 found_sol = False
@@ -117,12 +117,12 @@ while count < N:
 
 print("Rank <{}> : Monotonic Basin Hopping launched", flush=True)
 
-# 9 - Improvement of the solution using MBH algorithm
-mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
-mbh.set_verbosity(1)
+# # 9 - Improvement of the solution using MBH algorithm
+# mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
+# mbh.set_verbosity(1)
 
-# 9 - Optimization
-population = mbh.evolve(population)
+# # 9 - Optimization
+# population = mbh.evolve(population)
 
 print("Rank <{}> : Operations finished", flush=True)
 

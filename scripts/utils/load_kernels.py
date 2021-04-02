@@ -8,7 +8,7 @@ def load(kernels=None):
 	host_nm = os.uname()[1]
 
 	# Get the path to the spice kernels folder
-	if ('node' in host_nm or 'rainman' in host_nm):
+	if ('node' in host_nm or 'rainman' in host_nm or 'bigmem' in host_nm):
 		if 'gary' in getpass.getuser():
 			kernels_path = '/scratch/dcas/yv.gary/SEMBLANET/spice_kernels/'
 		else:

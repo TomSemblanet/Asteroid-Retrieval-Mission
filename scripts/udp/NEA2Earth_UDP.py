@@ -8,6 +8,8 @@ from scripts.utils import load_sqp, load_kernels, load_bodies
 
 from data import constants as cst
 
+""" NEA - Earth Trajectory with fixed departure """
+
 class NEA2Earth:
 
 	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, nea_mass, earth_grv=True):
@@ -24,12 +26,14 @@ class NEA2Earth:
 		self.n_seg = n_seg
 		self.t0 = t0
 		self.tof = tof
-		# self.varr_max = varr_max
-		# self.vrel_max = vrel_max
 		self.earth_grv = earth_grv
 
+		# Distance to Earth at arrival
+		self.arr_dist =  arr_dist
+
 		# Grid construction
-		grid = np.array([i / n_seg for i in range(n_seg + 1)])
+		grid_f = lambda x: x**2 if x < 0.5 else 0.25 + 1.5 * (x - 0.5) 
+		grid = np.flip(np.array([1 - grid_f(i / n_seg) for i in range(n_seg + 1)]))
 
 		# Number of forward (fwd) and backward (bwd) segments
 		self.n_fwd_seg = int(np.searchsorted(grid, 0.5, side='right'))
@@ -43,8 +47,7 @@ class NEA2Earth:
 		self.fwd_dt = (self.fwd_grid[1:] - self.fwd_grid[:-1]) * pk.DAY2SEC
 		self.bwd_dt = (self.bwd_grid[1:] - self.bwd_grid[:-1]) * pk.DAY2SEC
 
-		# Boundaries 
-		# [<departure date>, <time of flight>, <final mass>, <throttle[0]>, ..., <throttle[n_seg-1]>]
+		# Boundaries [<time of flight>, <final mass>, <throttle[0]>, ..., <throttle[n_seg-1]>]
 		self.lb = [t0[0].mjd2000] + [tof[0]] + [nea_mass] + [-1, -1, -1] * n_seg
 		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] * n_seg
 
@@ -54,7 +57,6 @@ class NEA2Earth:
 		t0 = x[0]
 		tof = x[1]
 		mf = x[2]
-		# varr = x[3:6]
 		throttles = np.array([x[3 + 3 * i: 6 + 3 * i] for i in range(self.n_seg)])
 
 		# Objective function : maximization of the final mass
@@ -64,9 +66,7 @@ class NEA2Earth:
 		ceq = list()
 		cineq = list()
 
-		# Throttle, mismatch and velocity at infinity constraints vectors
-		# vrel_con = list()
-		# varr_con = list()
+		# Throttle, mismatch and arrival position constraints vectors
 		throttle_con = list()
 		mismatch_con = list()
 
@@ -74,16 +74,6 @@ class NEA2Earth:
 		for t in throttles:
 			throttle_con.append(t[0]**2 + t[1]**2 + t[2]**2 - 1)
 		cineq.extend(throttle_con)
-
-		# # Arrival velocity constraint
-		# varr_con.append(varr[0]**2 + varr[1]**2 + varr[2]**2 - 1)
-		# cineq.extend(varr_con)
-
-		# # Relative velocity with the Moon at arrival
-		# _, v_moon = self.moon.eph(t0 + tof)
-		# vf = varr * self.varr_max
-		# vrel_con.append(np.linalg.norm(vf - v_moon) - self.vrel_max)
-		# cineq.extend(vrel_con)
 
 		# Mismatch constraints
 		rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, _, _, _, _, _, _ = self.propagate(x)
@@ -100,8 +90,6 @@ class NEA2Earth:
 		ceq[5] /= pk.EARTH_VELOCITY
 		ceq[6] /= self.sc.mass
 
-		# cineq[-1] /= self.vrel_max
-
 		# Assembly of the fitness vector
 		retval = [obj]
 		retval.extend(ceq)
@@ -117,17 +105,16 @@ class NEA2Earth:
 		n_bwd_seg = self.n_bwd_seg
 
 		# Decoding the decision vector
-		t0  = x[0]
+		t0 = x[0]
 		tof = x[1]
 		mf  = x[2]
-		# varr = x[3:6]
 		throttles = np.array([x[3 + 3 * i: 6 + 3 * i] for i in range(n_seg)])
 
 		# Extraction of the spacecraft informations
 		m0 = self.sc.mass
 		Tmax = self.sc.thrust
 		isp = self.sc.isp
-		veff = self.sc.isp * pk.G0	
+		veff = self.sc.isp * pk.G0
 
 		# Number of forward and backward points
 		n_points_fwd = n_fwd_seg + 1
@@ -150,20 +137,22 @@ class NEA2Earth:
 		ti = pk.epoch(t0)
 		ri, vi = self.nea.eph(ti)
 
-		# Computation of the final ephemerides (Arrival at the Moon)
+		# Computation of the final ephemerides (Arrival at the Earth)
 		tf = pk.epoch(t0 + tof)
-		rf, _ = self.moon.eph(tf)
-		_, vf = self.earth.eph(tf)
 
-		# # Velocity at arrival
-		# vf = varr * self.varr_max
+		r_e, v_e = self.earth.eph(tf)
+		r_m, v_m = self.moon.eph(tf)
+
+		# rf = r_e - (v_e / np.linalg.norm(v_e)) * self.arr_dist
+		rf = r_m
+		vf = v_e
 
 		# Forward propagation
 		# -------------------
 
 		# Forward grid and segment length
 		fwd_grid = t0 + tof * self.fwd_grid
-		fwd_dt = tof * self.fwd_dt 
+		fwd_dt = tof * self.fwd_dt
 
 		# Initial conditions
 		rfwd[0] = ri
@@ -244,7 +233,7 @@ class NEA2Earth:
 		n_fwd_seg = self.n_fwd_seg 
 		n_bwd_seg = self.n_bwd_seg
 
-		# Initial time and time of flight
+		# Time of flight
 		t0 = x[0]
 		tof = x[1]
 
@@ -257,7 +246,7 @@ class NEA2Earth:
 		bwd_grid = t0 + tof * self.bwd_grid
 
 		# Thrust
-		throttles = [x[6 + 3 * i : 9 + 3 * i] for i in range(n_seg)]
+		throttles = [x[3 + 3 * i : 6 + 3 * i] for i in range(n_seg)]
 		alphas = [min(1., np.linalg.norm(t)) for t in throttles]
 
 		# Time vector
@@ -312,7 +301,7 @@ class NEA2Earth:
 
 			if self.earth_grv == True:
 				r3 = sum([r**2 for r in dbwd[-1 - i]])**(3 / 2)
-				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
+				disturbance = [mbwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
 				pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
 											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
@@ -328,6 +317,11 @@ class NEA2Earth:
 		ax.scatter(xfwd[:-1], yfwd[:-1], zfwd[:-1], marker='o', s=5, c='k')
 		ax.scatter(xbwd[1:], ybwd[1:], zbwd[1:], marker='o', s=5, c='k')
 
+		r_e, v_e = self.earth.eph(t0 + tof)
+
+		ax.scatter((r_e[0] - (v_e[0] / np.linalg.norm(v_e)) * self.arr_dist) / pk.AU, (r_e[1] - (v_e[1] / np.linalg.norm(v_e)) * self.arr_dist) / pk.AU, \
+			(r_e[2] - (v_e[2] / np.linalg.norm(v_e)) * self.arr_dist) / pk.AU, marker='o', s=10, color='green')
+
 		return fig, ax
 
 	def plot_thrust(self, x):
@@ -340,7 +334,7 @@ class NEA2Earth:
 		n_fwd_seg = self.n_fwd_seg 
 		n_bwd_seg = self.n_bwd_seg 
 
-		# Initial time and time of flight
+		# Time of flight
 		t0 = x[0]
 		tof = x[1]
 
@@ -373,8 +367,6 @@ class NEA2Earth:
 		t0 = x[0]
 		tof = x[1]
 		mf = x[2]
-		# varr = x[3:6]
-
 		thrusts = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
 				   for i in range(n_seg)]
 
@@ -386,11 +378,6 @@ class NEA2Earth:
 		time_thrusts_on = sum(dt[i] for i in range(
 			len(thrusts)) if thrusts[i] > 0.1)
 
-		# varr_vec = self.varr_max * varr
-
-		# _, v_moon = self.moon.eph(t0 + tof)
-		# _, v_earth = self.earth.eph(t0 + tof)
-
 		if print_ == True:
 			print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
 			print("Time of flight:", tof, "days")
@@ -398,12 +385,6 @@ class NEA2Earth:
 			print("Delta-v:", deltaV, "m/s")
 			print("Propellant consumption:", mP, "kg")
 			print("Thrust-on time:", time_thrusts_on, "days")
-			# print("Velocity at arrival: {}".format(varr_vec))
-			# print("Velocity at arrival magnitude: {} km/s".format(np.linalg.norm(varr_vec) / 1000))
-			# print("Velocity relative to the moon at arrival: {}".format(v_moon - varr_vec))
-			# print("Velocity relative to the moon at arrival magnitude: {} km/s".format(np.linalg.norm(v_moon - varr_vec) / 1000))
-			# print("Difference between velocity at arr and earth velocity : {} km/s".format(\
-			# 	(np.linalg.norm(varr_vec)-np.linalg.norm(v_earth)) / 1000))
 
 		else:
 			return '\n'.join(["Departure:" + str(pk.epoch(t0)) + "(" + str(t0) + "mjd2000)", 
@@ -434,20 +415,15 @@ class NEA2Earth:
 			print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
 			print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))
 			print("Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ))
-
-			# print("Varr :\n\t {}\n".format(varr_bool))
-
 			print("Thrust :\n\t {}\n".format(thrust_bool))	
 
 			print("Equality constraints:\n----------------------\n")
 			print("dX : {} km".format(ceq[0] * pk.AU / 1000))
 			print("dY : {} km".format(ceq[1] * pk.AU / 1000))
 			print("dZ : {} km".format(ceq[2] * pk.AU / 1000))
-
 			print("dVX : {} km/s".format(ceq[3] * pk.EARTH_VELOCITY / 1000))
 			print("dVY : {} km/s".format(ceq[4] * pk.EARTH_VELOCITY / 1000))
 			print("dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000))
-
 			print("dM : {} kg".format(ceq[6] * self.sc.mass))
 
 			print("Inequality constraints:\n------------------------\n")
@@ -464,14 +440,15 @@ class NEA2Earth:
 							  "Thrust :\n\t {}\n".format(thrust_bool),
 							  "Equality constraints:\n----------------------\n",
 							  "dX : {} km".format(ceq[0] * pk.AU / 1000),
-							  "dY : {} km".format(ceq[1] * pk.AU / 1000),
-							  "dZ : {} km".format(ceq[2] * pk.AU / 1000), 
+							  "dY : {} km".format(ceq[1] * pk.AU / 1000), 
+							  "dZ : {} km".format(ceq[2] * pk.AU / 1000),
 							  "dVX : {} km/s".format(ceq[3] * pk.EARTH_VELOCITY / 1000),
 							  "dVY : {} km/s".format(ceq[4] * pk.EARTH_VELOCITY / 1000),
 							  "dVZ : {} km/s".format(ceq[5] * pk.EARTH_VELOCITY / 1000),
 							  "dM : {} kg".format(ceq[6] * self.sc.mass),
-							  "Inequality constraints:\n------------------------\n"] + \
-							  ["<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1) for i, cineq_ in enumerate(cineq[:-1])])
+							  "Inequality constraints:\n------------------------\n",
+							  "Thrust :\n"] + 
+							  ["<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1) for i, cineq_ in enumerate(cineq)])
 
 
 

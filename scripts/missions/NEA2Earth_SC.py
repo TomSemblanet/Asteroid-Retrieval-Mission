@@ -30,92 +30,106 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 
 """
 
+# Loading the main kernels
+load_kernels.load()
+
 # Creation of the communicator 
 comm = MPI.COMM_WORLD
 rank = comm.rank
 
-print("Process rank <{}> launched".format(rank), flush=True)
-# sys.stdout.write('{} launched'.format(rank))
+print("Rank <{}> : Run".format(rank), flush=True)
 
-# Initial year
-year_i = int(sys.argv[1])
-
-# Number of allocated processors
-n_proc = int(sys.argv[2])
-
-# Number of segments
-n_seg = int(sys.argv[3])
-
-# SQP programm 
-sqp = str(sys.argv[4])
-
-# Year of NEA departure
-year = year_i + comm.rank
+# Year of interest
+year = 2026 + int(rank)
 
 # Loading the main kernels
 load_kernels.load()
 
-# Loading of the target asteroid
+# 1 - Asteroid data
+# -----------------
 ast = load_bodies.asteroid('2020 CD3')
-ast_mass = 4900 # 2020-CD3 mass [kg]
+ast_mass = 4900 
 
-# Launch window
-lw_low = pk.epoch_from_string(str(year)+'-01-01 00:00:00')
-lw_upp = pk.epoch_from_string(str(year)+'-12-31 23:59:59')
+# 2 - Launch window
+# -----------------
+lw_low = pk.epoch_from_string(str(year) + '-01-01 00:00:00')
+lw_upp = pk.epoch_from_string(str(year) + '-12-31 23:59:59')
 
-# Time of flight
+# 3 - Time of flight
+# ------------------
 tof_low = cst.YEAR2DAY * 0.1
-tof_upp = cst.YEAR2DAY * 5.00
+tof_upp = cst.YEAR2DAY * 3.00
 
-# Spacecraft
+# 4 - Spacecraft
+# --------------
 m0 = 2000 + ast_mass
 Tmax = 0.5
 Isp = 3000
 
-# Optimization algorithm
-algorithm = load_sqp.load(sqp)
-algorithm.extract(pg.nlopt).maxeval = 200
-algorithm.set_verbosity(0)
+# 5 - Optimization algorithm
+# --------------------------
+algorithm = load_sqp.load('ipopt')
 
-# Problem
-udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), \
-	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, nea_mass=ast_mass)
-
+# 6 - Problem
+# -----------
+udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
+	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, earth_grv=True)
 problem = pg.problem(udp)
-problem.c_tol = [1e-8] * problem.get_nc()
 
-pos_err = 1e10
-dV = 1e10
- 
-while pos_err > 5000 or dV > 1000:
+# 7 - Population
+# --------------
+population = pg.population(problem, size=1)
 
-	seed = np.random.randint(1, 100000)
+# 8 - Starting point
+# ------------------
+# Number of iterations
+N = 100 
+count = 0
 
-	# Population
-	population = pg.population(problem, size=1, seed=seed)
+found_sol = False
+
+# Best decision-vector
+x_best = population.get_x()[0]
+
+while count < N:
+	# Generation of a random decision vector
+	x = population.random_decision_vector()
+
+	# Generate random decision vector until one provides a good starting point
+	while (-udp.fitness(x)[0] < 0.99) :
+		x = population.random_decision_vector()
+
+	# Set the decision vector
+	population.set_x(0, x)
 
 	# Optimization
 	population = algorithm.evolve(population)
 
-	# Check feasibility
-	fitness = udp.fitness(population.champion_x)
+	# Mismatch error on position [km] and velocity [km/s]
+	error_pos = np.linalg.norm(udp.fitness(population.champion_x)[1:4]) * pk.AU / 1000
+	error_vel = np.linalg.norm(udp.fitness(population.champion_x)[4:7]) * pk.EARTH_VELOCITY / 1000
 
-	pos_err = np.linalg.norm(fitness[1:4]) * pk.AU / 1000
-	dV = udp.sc.isp * cst.G0 * np.log(- 1 / fitness[0])
+	# Update the best decision vector found
+	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 10e3 and error_vel < 0.01):
+		x_best = x 
 
-	print("<{}> : {}\tpos: {} km | dV : {} km/s".format(year, seed, pos_err, dV/1000), flush=True)
+	count += 1
 
-print("*** Solution found for year {} ***".format(year), flush=True)
+print("Rank <{}> : Monotonic Basin Hopping launched", flush=True)
 
-# Pickle of the results
+# 9 - Improvement of the solution using MBH algorithm
+mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
+mbh.set_verbosity(1)
+
+# 9 - Optimization
+population = mbh.evolve(population)
+
+print("Rank <{}> : Operations finished", flush=True)
+
+# 12 - Pickle the results
 res = {'udp': udp, 'population': population}
-
-
-if 'gary' in getpass.getuser():
-	storage_path = '/scratch/dcas/yv.gary/SEMBLANET/NEA_Earth_results/500_' + str(n_seg) + '_' + sqp + '/NEA_Earth_500_' + str(year)
-else:
-	storage_path = '/scratch/students/t.semblanet/NEA_Earth_results/500_' + str(n_seg) + '_' + sqp + '/NEA_Earth_500_' + str(year)
-
-with open(storage_path, 'wb') as f:
+with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(year), 'wb') as f:
 	pkl.dump(res, f)
+
+
 

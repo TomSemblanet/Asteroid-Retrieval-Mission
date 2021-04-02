@@ -28,9 +28,6 @@ class NEA2Earth:
 		self.tof = tof
 		self.earth_grv = earth_grv
 
-		# Distance to Earth at arrival
-		self.arr_dist =  arr_dist
-
 		# Grid construction
 		grid_f = lambda x: x**2 if x < 0.5 else 0.25 + 1.5 * (x - 0.5) 
 		grid = np.flip(np.array([1 - grid_f(i / n_seg) for i in range(n_seg + 1)]))

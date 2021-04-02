@@ -88,10 +88,8 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 1
+N = 50
 count = 0
-
-found_sol = False
 
 # Best decision-vector
 x_best = population.get_x()[0]
@@ -120,16 +118,8 @@ while count < N:
 
 	count += 1
 
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
-	print("Rank <{}> : Count {}".format(rank, count), flush=True)
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
-
 # Keep the best decision vector found
 population.set_x(0, x_best)
-
-# - * - * - * - * - * - * - * - * - * - * - * - * - * 
-print("Rank <{}> : Operations finished".format(rank), flush=True)
-# - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # 11 - Pickle the results
 res = {'udp': udp, 'population': population}

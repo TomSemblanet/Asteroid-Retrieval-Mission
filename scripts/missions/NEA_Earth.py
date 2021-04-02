@@ -99,7 +99,7 @@ while count < N:
 	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 10e3 and error_vel < 0.01):
 		x_best = x 
 
-	print("Rank <{}> : Count {}".format(count), flush=True)
+	print("Count {}".format(count), flush=True)
 
 	count += 1
 

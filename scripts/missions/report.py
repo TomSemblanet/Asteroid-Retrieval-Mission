@@ -29,7 +29,7 @@ from data import constants as cst
 files = os.listdir('/scratch/students/t.semblanet/NEA_Earth_results')
 
 for fl in files:
-	with open('/scratch/students/t.semblanet/NEA_Earth_results' + str(fl), 'rb') as f:
+	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(fl), 'rb') as f:
 		res = pkl.load(f)
 
 	population = res['population']

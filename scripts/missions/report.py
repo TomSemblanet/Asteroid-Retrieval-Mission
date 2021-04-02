@@ -25,6 +25,8 @@ from scripts.utils.post_process import post_process
 
 from data import constants as cst
 
+# Loading the main kernels
+load_kernels.load()
 
 files = os.listdir('/scratch/students/t.semblanet/NEA_Earth_results')
 

@@ -11,6 +11,7 @@
 
 module purge
 
+module load intel/2019.1.144
 module load mkl/2019.1.144
 module load openmpi/4.0.0-intel19.1
 module load python/3.7
@@ -20,4 +21,4 @@ source activate asteroids
 
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 
-mpiexec -n 24 python -m scripts.missions.NEA2Earth_SC 2025 24
+mpiexec -n 24 python -m scripts.missions.NEA_Earth_SC

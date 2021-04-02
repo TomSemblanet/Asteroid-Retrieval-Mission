@@ -30,6 +30,9 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 
 """
 
+# SQP algorithm
+sqp = str(sys.argv[1])
+
 # Loading the main kernels
 load_kernels.load()
 
@@ -70,7 +73,7 @@ Isp = 3000
 
 # 5 - Optimization algorithm
 # --------------------------
-algorithm = load_sqp.load('ipopt')
+algorithm = load_sqp.load(sqp)
 
 # 6 - Problem
 # -----------
@@ -124,24 +127,13 @@ while count < N:
 # Keep the best decision vector found
 population.set_x(0, x_best)
 
-# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
-print("Rank <{}> : Running Monotonic Basin Hopping algorithm".format(rank), flush=True)
-# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
-
-# 9 - Improvement of the solution using MBH algorithm
-mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
-mbh.set_verbosity(1)
-
-# 10 - Optimization
-population = mbh.evolve(population)
-
 # - * - * - * - * - * - * - * - * - * - * - * - * - * 
 print("Rank <{}> : Operations finished".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # 11 - Pickle the results
 res = {'udp': udp, 'population': population}
-with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(year), 'wb') as f:
+with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
 	pkl.dump(res, f)
 
 

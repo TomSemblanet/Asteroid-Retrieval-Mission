@@ -115,18 +115,21 @@ while count < N:
 
 	count += 1
 
-print("Rank <{}> : Monotonic Basin Hopping launched", flush=True)
+# Keep the best decision vector found
+population.set_x(0, x_best)
 
-# # 9 - Improvement of the solution using MBH algorithm
-# mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
-# mbh.set_verbosity(1)
+print("Rank <{}> : Running Monotonic Basin Hopping algorithm", flush=True)
 
-# # 9 - Optimization
-# population = mbh.evolve(population)
+# 9 - Improvement of the solution using MBH algorithm
+mbh = pg.algorithm(pg.mbh(algo=algorithm, stop=5))
+mbh.set_verbosity(1)
+
+# 10 - Optimization
+population = mbh.evolve(population)
 
 print("Rank <{}> : Operations finished", flush=True)
 
-# 12 - Pickle the results
+# 11 - Pickle the results
 res = {'udp': udp, 'population': population}
 with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(year), 'wb') as f:
 	pkl.dump(res, f)

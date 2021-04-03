@@ -10,7 +10,7 @@ from data import constants as cst
 
 class Earth2NEA:
 
-	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, vinf_max, earth_grv=True):
+	def __init__(self, nea, n_seg, tf, tof, m0, Tmax, Isp, vinf_max, earth_grv=True):
 
 		# Creation of the planet and NEA objects
 		self.nea = nea
@@ -22,13 +22,14 @@ class Earth2NEA:
 
 		# Copy of the arguments as attributs
 		self.n_seg = n_seg
-		self.t0 = t0
+		self.tf = tf
 		self.tof = tof
 		self.vinf_max = vinf_max
 		self.earth_grv = earth_grv
 
 		# Grid construction
-		grid = np.array([i / n_seg for i in range(n_seg + 1)])
+		grid_f = lambda x: x**2 if x < 0.5 else 0.25 + 1.5 * (x - 0.5) 
+		grid = np.flip(np.array([1 - grid_f(i / n_seg) for i in range(n_seg + 1)]))
 
 		# Number of forward (fwd) and backward (bwd) segments
 		self.n_fwd_seg = int(np.searchsorted(grid, 0.5, side='right'))
@@ -43,14 +44,14 @@ class Earth2NEA:
 		self.bwd_dt = (self.bwd_grid[1:] - self.bwd_grid[:-1]) * pk.DAY2SEC
 
 		# Boundaries 
-		# [<departure date>, <time of flight>, <final mass>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg-1]>]
-		self.lb = [t0[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -1] + [-1, -1, -1] * n_seg
-		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] + [1, 1, 1] * n_seg
+		# [<arrival date>, <time of flight>, <final mass>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg-1]>]
+		self.lb = [tf[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -1] + [-1, -1, -1] * n_seg
+		self.ub = [tf[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] + [1, 1, 1] * n_seg
 
 	def fitness(self, x):
 
 		# Decoding of the decision vector
-		t0 = x[0]
+		tf = x[0]
 		tof = x[1]
 		mf = x[2]
 		vinf = x[3:6]
@@ -107,11 +108,14 @@ class Earth2NEA:
 		n_bwd_seg = self.n_bwd_seg
 
 		# Decoding the decision vector
-		t0  = x[0]
+		tf  = x[0]
 		tof = x[1]
 		mf  = x[2]
 		vinf = x[3:6]
 		throttles = np.array([x[6 + 3 * i: 9 + 3 * i] for i in range(n_seg)])
+
+		# Departure time
+		t0 = tf - tof
 
 		# Extraction of the spacecraft informations
 		m0 = self.sc.mass
@@ -233,9 +237,12 @@ class Earth2NEA:
 		n_fwd_seg = self.n_fwd_seg 
 		n_bwd_seg = self.n_bwd_seg
 
-		# Initial time and time of flight
-		t0 = x[0]
+		# Arrival time and time of flight
+		tf = x[0]
 		tof = x[1]
+
+		# Departure time
+		t0 = tf - tof
 
 		# Spacecraft characteristic
 		isp = self.sc.isp
@@ -301,7 +308,7 @@ class Earth2NEA:
 
 			if self.earth_grv == True:
 				r3 = sum([r**2 for r in dbwd[-1 - i]])**(3 / 2)
-				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
+				disturbance = [mbwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
 				pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
 											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
@@ -329,9 +336,12 @@ class Earth2NEA:
 		n_fwd_seg = self.n_fwd_seg 
 		n_bwd_seg = self.n_bwd_seg 
 
-		# Initial time and time of flight
-		t0 = x[0]
+		# Arrival time and time of flight
+		tf = x[0]
 		tof = x[1]
+
+		# Departure time
+		t0 = tf - tof
 
 		# Reconstruction of the forward and backward grid
 		fwd_grid = t0 + tof * self.fwd_grid
@@ -359,7 +369,7 @@ class Earth2NEA:
 		# Decoding the decision vector
 		n_seg = self.n_seg
 		mi = self.sc.mass
-		t0 = x[0]
+		tf = x[0]
 		tof = x[1]
 		mf = x[2]
 		vinf = x[3:6]
@@ -367,7 +377,7 @@ class Earth2NEA:
 		thrusts = [np.linalg.norm(x[6 + 3 * i: 9 + 3 * i])
 				   for i in range(n_seg)]
 
-		tf = t0 + tof
+		t0 = tf - tof
 		mP = mi - mf
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
 
@@ -421,7 +431,7 @@ class Earth2NEA:
 
 		if print_ == True:
 			print("Variables:\n-----------\n")
-			print("Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
+			print("Arrival date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ))
 			print("Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ))
 			print("Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ))
 
@@ -449,7 +459,7 @@ class Earth2NEA:
 
 		else:
 			return '\n'.join(["Variables:\n-----------\n",
-							  "Departure date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ),
+							  "Arrival date :\n\t {}\n".format( x[0] >= self.lb[0] and x[0] <= self.ub[0] ),
 							  "Time of flight :\n\t {}\n".format( x[1] >= self.lb[1] and x[1] <= self.ub[1] ),
 							  "Final mass :\n\t {}\n".format( x[2] >= self.lb[2] and x[2] <= self.ub[2] ),
 							  "Vinf :\n\t {}\n".format(vinf_bool),

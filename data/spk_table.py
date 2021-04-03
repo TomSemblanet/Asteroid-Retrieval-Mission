@@ -7,7 +7,7 @@ Created on Tue Mar 16 2021 10:55:00
 
 """
 
-# This file contains a correspondance table between the usual name of a NEA (eg. 2011 UD21) 
+# This dictionnary contains a correspondance table between the usual name of a NEA (eg. 2011 UD21) 
 # and its SPK-ID (eg. 3582145). The SPK-ID is necessary to load a body from the SPICE Toolkit.
 
 NAME2SPK = {'2020 CD3': '54000953',

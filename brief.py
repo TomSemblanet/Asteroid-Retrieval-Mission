@@ -31,7 +31,7 @@ sqp = sys.argv[1]
 # Loading the main kernels
 load_kernels.load()
 
-files = os.listdir('/scratch/students/t.semblanet/NEA_Earth_results')
+files = os.listdir('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp))
 
 for fl in files:
 	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(fl), 'rb') as f:

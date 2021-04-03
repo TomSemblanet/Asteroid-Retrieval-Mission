@@ -448,7 +448,40 @@ class NEA2Earth:
 							  ["<{}> : {}\t{}".format(i, True if cineq_<=0 else cineq_, cineq_+1) for i, cineq_ in enumerate(cineq)])
 
 
+	def brief(self, x):
 
+		# Decoding the decision vector
+		n_seg = self.n_seg
+		mi = self.sc.mass
+		t0 = x[0]
+		tof = x[1]
+		mf = x[2]
+		thrusts = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
+				   for i in range(n_seg)]
+
+		tf = t0 + tof
+		mP = mi - mf
+		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
+
+		dt = np.append(self.fwd_dt, self.bwd_dt) * tof / cst.DAY2SEC
+		time_thrusts_on = sum(dt[i] for i in range(
+			len(thrusts)) if thrusts[i] > 0.1)
+
+		fitness_vec = self.fitness(x)
+
+		obj = fitness_vec[0]
+		ceq = fitness_vec[1:8]
+		cineq = fitness_vec[8:]
+
+		print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
+		print("Time of flight:", tof, "days")
+		print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
+		print("Delta-v:", deltaV, "m/s")
+		print("Propellant consumption:", mP, "kg")
+		print("Thrust-on time:", time_thrusts_on, "days")
+
+		print("Position error : {} km".format(np.linalg.norm(ceq[0:3]) * pk.AU / 1000))
+		print("Position velocity : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
 
 
 

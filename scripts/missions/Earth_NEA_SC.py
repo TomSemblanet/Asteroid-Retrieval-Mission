@@ -8,6 +8,7 @@ Created on Thu Mar 18 2021 09:02:20
 """
 
 import os
+import sys
 import pykep as pk 
 import pygmo as pg 
 import numpy as np

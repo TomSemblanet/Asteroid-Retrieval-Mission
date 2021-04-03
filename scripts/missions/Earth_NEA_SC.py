@@ -12,15 +12,13 @@ import pykep as pk
 import pygmo as pg 
 import numpy as np
 import pickle as pkl
-from datetime import datetime as dt
 
-from scripts.utils import load_sqp, load_kernels, load_bodies
-
-from scripts.udp.Earth2NEA_UDP import Earth2NEA
-
-from scripts.utils.post_process import post_process
+from mpi4py import MPI
 
 from data import constants as cst
+from scripts.udp.Earth2NEA_UDP import Earth2NEA
+from scripts.utils.post_process import post_process
+from scripts.utils import load_sqp, load_kernels, load_bodies
 
 # Creation of the communicator 
 comm = MPI.COMM_WORLD

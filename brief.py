@@ -25,13 +25,16 @@ from scripts.utils.post_process import post_process
 
 from data import constants as cst
 
+# SQP
+sqp = sys.argv[1]
+
 # Loading the main kernels
 load_kernels.load()
 
 files = os.listdir('/scratch/students/t.semblanet/NEA_Earth_results')
 
 for fl in files:
-	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(fl), 'rb') as f:
+	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(fl), 'rb') as f:
 		res = pkl.load(f)
 
 	population = res['population']

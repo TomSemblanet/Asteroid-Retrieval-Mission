@@ -72,7 +72,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 1
+N = 50
 count = 0
 
 found_sol = False
@@ -85,7 +85,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while (-udp.fitness(x)[0] < 0.99) :
+	while (-udp.fitness(x)[0] < 0.95) :
 		x = population.random_decision_vector()
 
 	# Set the decision vector

@@ -38,6 +38,5 @@ for fl in files:
 	udp = res['udp']
 
 	print("{} \n----\n\n".format(str(fl)))
-	udp.check_con_violation(population.champion_x)
-	udp.report(population.champion_x)
+	udp.brief(population.champion_x)
 

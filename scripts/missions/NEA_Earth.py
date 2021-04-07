@@ -74,7 +74,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 1
+N = 10
 count = 0
 
 found_sol = False
@@ -92,8 +92,6 @@ while count < N:
 
 	# Set the decision vector
 	population.set_x(0, x)
-
-	old_x = population.get_x()[0]
 
 	# Optimization
 	population = algorithm.evolve(population)
@@ -117,11 +115,16 @@ while count < N:
 
 	count += 1
 
-print("Solution found : {}".format(found_sol))
-post_process(udp, population.champion_x)
+# 12 - Pickle the results
+if found_sol==True:
 
-12 - Pickle the results
-res = {'udp': udp, 'population': population}
-with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/02_04_2021_results/' + str(year), 'wb') as f:
-	pkl.dump(res, f)
+	print("Best solution found : {}".format(found_sol))
+	post_process(udp, population.champion_x)
+
+	res = {'udp': udp, 'population': population}
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/07_04_2021_results/' + str(year), 'wb') as f:
+		pkl.dump(res, f)
+
+else:
+	print("Failure.")
 

@@ -45,7 +45,7 @@ print("Rank <{}> : Run".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # Year of interest
-year = 2026 + int(rank)
+year = 2025 + int(rank)
 
 # Loading the main kernels
 load_kernels.load()

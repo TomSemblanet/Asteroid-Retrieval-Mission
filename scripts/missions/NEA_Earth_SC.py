@@ -19,7 +19,7 @@ import pickle as pkl
 from mpi4py import MPI
 
 from data import constants as cst
-from scripts.udp.NEA2Earth_UDP import NEA2Earth
+from scripts.udp.NEA_Earth_UDP import NEA2Earth
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 

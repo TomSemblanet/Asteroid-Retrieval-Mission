@@ -63,7 +63,7 @@ lw_upp = pk.epoch_from_string(str(year) + '-12-31 23:59:59')
 # 3 - Time of flight
 # ------------------
 tof_low = cst.YEAR2DAY * 0.1
-tof_upp = cst.YEAR2DAY * 3.00
+tof_upp = cst.YEAR2DAY * 5.00
 
 # 4 - Spacecraft
 # --------------
@@ -71,14 +71,23 @@ m0 = 2000 + ast_mass
 Tmax = 0.5
 Isp = 3000
 
-# 5 - Optimization algorithm
+# 5 - Earth arrival 
+# -----------------
+phi_min = 175.0 * cst.DEG2RAD
+phi_max = 185.0 * cst.DEG2RAD
+
+theta_min = 89.0 * cst.DEG2RAD
+theta_max = 91.0 * cst.DEG2RAD
+
+# 6 - Optimization algorithm
 # --------------------------
 algorithm = load_sqp.load(sqp)
 
-# 6 - Problem
+# 7 - Problem
 # -----------
-udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), \
-	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, earth_grv=True)
+udp = NEA2Earth(nea=ast, n_seg=20, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
+	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
+	theta_max=theta_max, earth_grv=True)
 problem = pg.problem(udp)
 
 # 7 - Population
@@ -99,7 +108,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while (-udp.fitness(x)[0] < 0.99) :
+	while -udp.fitness(x)[0] < 0.90:
 		x = population.random_decision_vector()
 
 	# Set the decision vector
@@ -107,14 +116,16 @@ while count < N:
 
 	# Optimization
 	population = algorithm.evolve(population)
+	x = population.get_x()[0]
 
 	# Mismatch error on position [km] and velocity [km/s]
-	error_pos = np.linalg.norm(udp.fitness(population.champion_x)[1:4]) * pk.AU / 1000
-	error_vel = np.linalg.norm(udp.fitness(population.champion_x)[4:7]) * pk.EARTH_VELOCITY / 1000
+	error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
+	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
 
 	# Update the best decision vector found
-	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 10e3 and error_vel < 0.01):
-		x_best = x 
+	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 100e3 and error_vel < 0.05):
+		x_best = x
+		found_sol = True
 
 	count += 1
 
@@ -122,9 +133,19 @@ while count < N:
 population.set_x(0, x_best)
 
 # 11 - Pickle the results
-res = {'udp': udp, 'population': population}
-with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
-	pkl.dump(res, f)
+if found_sol == True:
+	res = {'udp': udp, 'population': population}
+	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
+		pkl.dump(res, f)
+
+	# - * - * - * - * - * - * - * - * - * - * - * - * 
+	print("Rank <{}> : Finished successfully!".format(rank), flush=True)
+	# - * - * - * - * - * - * - * - * - * - * - * - * 
+
+else:
+	# - * - * - * - * - * - * - * - * - * - * - * - * 
+	print("Rank <{}> : Finished with failure.".format(rank), flush=True)
+	# - * - * - * - * - * - * - * - * - * - * - * - * 
 
 
 

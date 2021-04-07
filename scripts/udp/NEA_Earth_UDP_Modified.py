@@ -12,7 +12,7 @@ from data import constants as cst
 
 class NEA2Earth:
 
-	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, nea_mass, phi_min, phi_max, theta_min, theta_max, earth_grv=True):
+	def __init__(self, nea, n_seg, t0, tof, m0, Tmax, Isp, nea_mass, earth_grv=True):
 
 		# Creation of the planet and NEA objects
 		self.nea = nea
@@ -27,13 +27,6 @@ class NEA2Earth:
 		self.t0 = t0
 		self.tof = tof
 		self.earth_grv = earth_grv
-		self.phi_min = phi_min
-		self.phi_max = phi_max
-		self.theta_min = theta_min
-		self.theta_max = theta_max
-
-		# Some constants
-		self.earth_SOI = 0.925e9
 
 		# Grid construction
 		grid_f = lambda x: x**2 if x < 0.5 else 0.25 + 1.5 * (x - 0.5) 
@@ -51,9 +44,9 @@ class NEA2Earth:
 		self.fwd_dt = (self.fwd_grid[1:] - self.fwd_grid[:-1]) * pk.DAY2SEC
 		self.bwd_dt = (self.bwd_grid[1:] - self.bwd_grid[:-1]) * pk.DAY2SEC
 
-		# Boundaries [<time of flight>, <final mass>, <phi>, <theta>, <throttle[0]>, ..., <throttle[n_seg-1]>]
-		self.lb = [t0[0].mjd2000] + [tof[0]] + [nea_mass] + [phi_min] + [theta_min] + [-1, -1, -1] * n_seg
-		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [phi_max] + [theta_max] + [1, 1, 1] * n_seg
+		# Boundaries [<time of flight>, <final mass>, <throttle[0]>, ..., <throttle[n_seg-1]>]
+		self.lb = [t0[0].mjd2000] + [tof[0]] + [nea_mass] + [-1, -1, -1] * n_seg
+		self.ub = [t0[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] * n_seg
 
 	def gradient(self, x):
 		return pg.estimate_gradient(lambda x: self.fitness(x), x, 1e-8)
@@ -73,9 +66,7 @@ class NEA2Earth:
 		t0 = x[0]
 		tof = x[1]
 		mf = x[2]
-		phi = x[3]
-		theta = x[4]
-		throttles = np.array([x[5 + 3 * i: 8 + 3 * i] for i in range(self.n_seg)])
+		throttles = np.array([x[3 + 3 * i: 6 + 3 * i] for i in range(self.n_seg)])
 
 		# Objective function : maximization of the final mass
 		obj = - mf / self.sc.mass
@@ -126,9 +117,7 @@ class NEA2Earth:
 		t0 = x[0]
 		tof = x[1]
 		mf  = x[2]
-		phi = x[3]
-		theta = x[4]
-		throttles = np.array([x[5 + 3 * i: 8 + 3 * i] for i in range(n_seg)])
+		throttles = np.array([x[3 + 3 * i: 6 + 3 * i] for i in range(n_seg)])
 
 		# Extraction of the spacecraft informations
 		m0 = self.sc.mass
@@ -159,65 +148,13 @@ class NEA2Earth:
 
 		# Computation of the final ephemerides (Arrival at the Earth)
 		tf = pk.epoch(t0 + tof)
-		r_e, v_e = self.earth.eph(tf)
 
-		# --------------------------------------------------------
+		_, v_e = self.earth.eph(tf)
+		r_m, _ = self.moon.eph(tf)
 
-		# Coordinate system
-		i_unt = (v_e / np.linalg.norm(v_e))
-		k_unt = np.cross(r_e / np.linalg.norm(r_e), i_unt)
-		j_unt = np.cross(k_unt, i_unt)
-
-		# Spherical coordinates
-		rho = self.earth_SOI
-
-		# Cartesian coordinates
-		i = rho * np.cos(phi) * np.sin(theta)
-		j = rho * np.sin(phi) * np.sin(theta)
-		k = rho * np.cos(theta)
-
-		# Construction of the vector in the new base
-		arr_vec = i * i_unt + j * j_unt + k * k_unt
-
-		# # ==============================================================================
-
-		# print("Phi : {}°".format(phi * cst.RAD2DEG))
-		# print("Theta : {}°".format(theta * cst.RAD2DEG))
-
-		# phi_deg = phi * cst.RAD2DEG
-		# theta_deg = theta * cst.RAD2DEG
-
-		# fig = plt.figure()
-		# ax = fig.gca(projection='3d')
-
-		# # Plot the Earth orbit
-		# pk.orbit_plots.plot_planet(self.earth, pk.epoch(t0 + tof), units=pk.AU, legend=True, color=(0.7, 0.7, 1), axes=ax)
-
-		# # Plot the Earth local coordinate frame
-		# ax.plot([r_e[0]/pk.AU, r_e[0]/pk.AU+ i_unt[0]], [r_e[1]/pk.AU, r_e[1]/pk.AU+ i_unt[1]], [r_e[2]/pk.AU, r_e[2]/pk.AU+ i_unt[2]], label='i')
-		# ax.plot([r_e[0]/pk.AU, r_e[0]/pk.AU+ j_unt[0]], [r_e[1]/pk.AU, r_e[1]/pk.AU+ j_unt[1]], [r_e[2]/pk.AU, r_e[2]/pk.AU+ j_unt[2]], label='j')
-		# ax.plot([r_e[0]/pk.AU, r_e[0]/pk.AU+ k_unt[0]], [r_e[1]/pk.AU, r_e[1]/pk.AU+ k_unt[1]], [r_e[2]/pk.AU, r_e[2]/pk.AU+ k_unt[2]], label='k')
-
-		# # Plot the arrival point
-		# ax.plot(np.array([r_e[0] + arr_vec[0]]) / pk.AU, np.array([r_e[1] + arr_vec[1]]) / pk.AU, np.array([r_e[2] + arr_vec[2]]) / pk.AU, marker='x')
-		
-		# # Plot the Sun
-		# ax.plot([0], [0], [0], marker='o', color='yellow')
-
-		# ax.set_xlim(r_e[0] / pk.AU - 0.01, r_e[0] / pk.AU + 0.01)
-		# ax.set_ylim(r_e[1] / pk.AU - 0.01, r_e[1] / pk.AU + 0.01)
-		# ax.set_zlim(r_e[2] / pk.AU - 0.01, r_e[2] / pk.AU + 0.01)
-
-		# plt.legend()
-		# plt.show()
-
-		# import sys
-		# sys.exit()
-
-		# # ==============================================================================
-
-		rf = r_e + arr_vec
-		vf = - arr_vec / np.linalg.norm(arr_vec) * np.linalg.norm(v_e)
+		# rf = r_e - (v_e / np.linalg.norm(v_e)) * self.arr_dist
+		rf = r_m
+		vf = v_e
 
 		# Forward propagation
 		# -------------------
@@ -306,7 +243,7 @@ class NEA2Earth:
 		bwd_grid = t0 + tof * self.bwd_grid
 
 		# Thrust
-		throttles = [x[5 + 3 * i : 8 + 3 * i] for i in range(n_seg)]
+		throttles = [x[3 + 3 * i : 6 + 3 * i] for i in range(n_seg)]
 		alphas = [min(1., np.linalg.norm(t)) for t in throttles]
 
 		# Time vector
@@ -338,11 +275,11 @@ class NEA2Earth:
 				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
 
 				pk.orbit_plots.plot_taylor_disturbance(rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[
-											   i], cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+											   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
 
 			else:
 				pk.orbit_plots.plot_taylor(rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[
-											   i], cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+											   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
 
 			xfwd[i + 1] = rfwd[i + 1][0] / pk.AU
 			yfwd[i + 1] = rfwd[i + 1][1] / pk.AU
@@ -364,11 +301,11 @@ class NEA2Earth:
 				disturbance = [mbwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
 				pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
-											   cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
 
 			else:
 				pk.orbit_plots.plot_taylor(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1],
-											   cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
 
 			xbwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][0] / pk.AU
 			ybwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][1] / pk.AU
@@ -378,6 +315,9 @@ class NEA2Earth:
 		ax.scatter(xbwd[1:], ybwd[1:], zbwd[1:], marker='o', s=5, c='k')
 
 		r_e, v_e = self.earth.eph(t0 + tof)
+
+		ax.scatter((r_e[0] - (v_e[0] / np.linalg.norm(v_e)) * self.arr_dist) / pk.AU, (r_e[1] - (v_e[1] / np.linalg.norm(v_e)) * self.arr_dist) / pk.AU, \
+			(r_e[2] - (v_e[2] / np.linalg.norm(v_e)) * self.arr_dist) / pk.AU, marker='o', s=10, color='green')
 
 		return fig, ax
 
@@ -400,7 +340,7 @@ class NEA2Earth:
 		bwd_grid = t0 + tof * self.bwd_grid
 
 		# Thrust
-		throttles = [x[5 + 3 * i : 8 + 3 * i] for i in range(n_seg)]
+		throttles = [x[3 + 3 * i : 6 + 3 * i] for i in range(n_seg)]
 
 		# Time vector
 		times = np.concatenate((fwd_grid[:], bwd_grid[1:-1]))
@@ -424,9 +364,7 @@ class NEA2Earth:
 		t0 = x[0]
 		tof = x[1]
 		mf = x[2]
-		phi = x[3]
-		theta = x[4]
-		thrusts = [np.linalg.norm(x[5 + 3 * i: 8 + 3 * i])
+		thrusts = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
 				   for i in range(n_seg)]
 
 		tf = t0 + tof
@@ -437,10 +375,6 @@ class NEA2Earth:
 		time_thrusts_on = sum(dt[i] for i in range(
 			len(thrusts)) if thrusts[i] > 0.1)
 
-		_, v_e = self.earth.eph(tf)
-		_, _, _, vbwd, _, _, _, _, _, _, _, _ = self.propagate(x) 
-
-
 		if print_ == True:
 			print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
 			print("Time of flight:", tof, "days")
@@ -448,9 +382,6 @@ class NEA2Earth:
 			print("Delta-v:", deltaV, "m/s")
 			print("Propellant consumption:", mP, "kg")
 			print("Thrust-on time:", time_thrusts_on, "days")
-			print("Phi:", phi * cst.RAD2DEG)
-			print("Theta:", theta * cst.RAD2DEG)
-			print("Earth arrival dV: {} km/s".format(np.linalg.norm(v_e - vbwd[-1]) / 1000))
 
 		else:
 			return '\n'.join(["Departure:" + str(pk.epoch(t0)) + "(" + str(t0) + "mjd2000)", 
@@ -458,10 +389,7 @@ class NEA2Earth:
 							  "Arrival:" + str(pk.epoch(tf)), "(" + str(tf) + "mjd2000)",
 							  "Delta-v:"+ str(deltaV) + "m/s",
 							  "Propellant consumption:"+ str(mP) + "kg",
-							  "Thrust-on time:"+  str(time_thrusts_on) +  "days",
-							  "Phi:" + str(phi * cst.RAD2DEG),
-							  "Theta:" + str(theta * cst.RAD2DEG),
-							  "Earth arrival dV: "+ str(np.linalg.norm(v_e - vbwd[-1]) / 1000) + " km/s"])
+							  "Thrust-on time:"+  str(time_thrusts_on) +  "days"])
 
 
 	def check_con_violation(self, x, print_=True):

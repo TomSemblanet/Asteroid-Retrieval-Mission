@@ -29,7 +29,7 @@ class Earth2NEA:
 
 		# Grid construction
 		grid_f = lambda x: x**2 if x < 0.5 else 0.25 + 1.5 * (x - 0.5) 
-		grid = np.flip(np.array([1 - grid_f(i / n_seg) for i in range(n_seg + 1)]))
+		grid = np.array([grid_f(i / n_seg) for i in range(n_seg + 1)])
 
 		# Number of forward (fwd) and backward (bwd) segments
 		self.n_fwd_seg = int(np.searchsorted(grid, 0.5, side='right'))
@@ -477,7 +477,40 @@ class Earth2NEA:
 							  ["\nVinf :\n{}".format(True if cineq[-1]<=0 else cineq[-1])])
 
 
+	def brief(self, x):
 
+		# Decoding the decision vector
+		n_seg = self.n_seg
+		mi = self.sc.mass
+		tf = x[0]
+		tof = x[1]
+		mf = x[2]
+		thrusts = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
+				   for i in range(n_seg)]
+
+		t0 = tf - tof
+		mP = mi - mf
+		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
+
+		dt = np.append(self.fwd_dt, self.bwd_dt) * tof / cst.DAY2SEC
+		time_thrusts_on = sum(dt[i] for i in range(
+			len(thrusts)) if thrusts[i] > 0.1)
+
+		fitness_vec = self.fitness(x)
+
+		obj = fitness_vec[0]
+		ceq = fitness_vec[1:8]
+		cineq = fitness_vec[8:]
+
+		print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
+		print("Time of flight:", tof, "days")
+		print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
+		print("Delta-v:", deltaV, "m/s")
+		print("Propellant consumption:", mP, "kg")
+		print("Thrust-on time:", time_thrusts_on, "days")
+
+		print("Position error : {} km".format(np.linalg.norm(ceq[0:3]) * pk.AU / 1000))
+		print("Position velocity : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
 
 
 

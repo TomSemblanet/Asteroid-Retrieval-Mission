@@ -33,6 +33,9 @@ using ISAE-SUPAERO super-computers Rainman or Pando.
 # SQP algorithm
 sqp = str(sys.argv[1])
 
+# Beginning year
+year_i = str(sys.argv[2])
+
 # Loading the main kernels
 load_kernels.load()
 
@@ -45,7 +48,7 @@ print("Rank <{}> : Run".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # Year of interest
-year = 2025 + int(rank)
+year = year_i + int(rank)
 
 # Loading the main kernels
 load_kernels.load()

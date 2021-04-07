@@ -97,7 +97,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 5
+N = 50
 count = 0
 
 found_sol = False

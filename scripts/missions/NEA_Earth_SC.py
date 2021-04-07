@@ -100,6 +100,8 @@ population = pg.population(problem, size=1)
 N = 5
 count = 0
 
+found_sol = False
+
 # Best decision-vector
 x_best = population.get_x()[0]
 

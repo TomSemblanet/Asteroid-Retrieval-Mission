@@ -19,7 +19,7 @@ import matplotlib.pyplot as plt
 
 from scripts.utils import load_sqp, load_kernels, load_bodies
 
-from scripts.udp.NEA2Earth_UDP import NEA2Earth
+from scripts.udp.NEA_Earth_UDP import NEA2Earth
 
 from scripts.utils.post_process import post_process
 

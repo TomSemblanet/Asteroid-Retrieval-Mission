@@ -97,7 +97,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 50
+N = 5
 count = 0
 
 found_sol = False
@@ -110,7 +110,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while -udp.fitness(x)[0] < 0.90:
+	while udp.get_deltaV(x) > 500:
 		x = population.random_decision_vector()
 
 	# Set the decision vector
@@ -125,7 +125,7 @@ while count < N:
 	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
 
 	# Update the best decision vector found
-	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 100e3 and error_vel < 0.05):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05):
 		x_best = x
 		found_sol = True
 
@@ -140,14 +140,14 @@ if found_sol == True:
 	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
 		pkl.dump(res, f)
 
-	# - * - * - * - * - * - * - * - * - * - * - * - * 
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("Rank <{}> : Finished successfully!".format(rank), flush=True)
-	# - * - * - * - * - * - * - * - * - * - * - * - * 
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 
 else:
-	# - * - * - * - * - * - * - * - * - * - * - * - * 
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("Rank <{}> : Finished with failure.".format(rank), flush=True)
-	# - * - * - * - * - * - * - * - * - * - * - * - * 
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 
 
 

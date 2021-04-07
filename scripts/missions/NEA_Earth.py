@@ -17,7 +17,7 @@ from datetime import datetime as dt
 
 import matplotlib.pyplot as plt
 from scripts.utils import load_sqp, load_kernels, load_bodies
-from scripts.udp.NEA2Earth_UDP import NEA2Earth
+from scripts.udp.NEA_Earth_UDP import NEA2Earth
 from scripts.utils.post_process import post_process
 from data import constants as cst
 
@@ -87,7 +87,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while -udp.fitness(x)[0] < 0.90:
+	while udp.get_deltaV(x) > 500:
 		x = population.random_decision_vector()
 
 	# Set the decision vector
@@ -95,31 +95,41 @@ while count < N:
 
 	# Optimization
 	population = algorithm.evolve(population)
-
 	x = population.get_x()[0]
 
 	# Mismatch error on position [km] and velocity [km/s]
 	error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
 	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
 
+	print("DeltaV : {} m/s".format(udp.get_deltaV(x)))
 	print("Error on position : {} km".format(error_pos))
 	print("Error on velocity : {} km/s".format(error_vel))
-	input()
+
+	print("Keep ? ")
+	continue_ = input()
+	
+	if continue_ == 'y':
+		x_best = x
+		found_sol = True
+		break
 
 	post_process(udp, x)
 
 	# Update the best decision vector found
-	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 100e3 and error_vel < 0.05):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05):
 		x_best = x
 		found_sol = True
 
 	count += 1
 
+# Update the best result
+population.set_x(0, x_best)
+
 # 12 - Pickle the results
 if found_sol==True:
 
 	print("Best solution found : {}".format(found_sol))
-	post_process(udp, population.champion_x)
+	post_process(udp, population.get_x()[0])
 
 	res = {'udp': udp, 'population': population}
 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/07_04_2021_results/' + str(year), 'wb') as f:

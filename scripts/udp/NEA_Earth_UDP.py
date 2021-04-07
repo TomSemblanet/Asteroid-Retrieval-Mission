@@ -283,6 +283,15 @@ class NEA2Earth:
 
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
+	def get_deltaV(self, x):
+		
+		mi = self.sc.mass
+		mf = x[2]
+
+		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
+
+		return deltaV
+
 	def plot_traj(self, x):
 
 		fig = plt.figure()

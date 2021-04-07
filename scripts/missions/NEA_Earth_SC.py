@@ -48,7 +48,7 @@ print("Rank <{}> : Run".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # Year of interest
-year = year_i + int(rank)
+year = int(year_i) + int(rank)
 
 # Loading the main kernels
 load_kernels.load()

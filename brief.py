@@ -41,5 +41,5 @@ for fl in files:
 	udp = res['udp']
 
 	print("{} \n----\n\n".format(str(fl)))
-	udp.brief(population.champion_x)
+	udp.brief(population.get_x()[0])
 

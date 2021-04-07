@@ -85,7 +85,7 @@ algorithm = load_sqp.load(sqp)
 
 # 7 - Problem
 # -----------
-udp = NEA2Earth(nea=ast, n_seg=20, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
+udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
 	theta_max=theta_max, earth_grv=True)
 problem = pg.problem(udp)
@@ -97,7 +97,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 5
+N = 100
 count = 0
 
 found_sol = False
@@ -145,9 +145,6 @@ if found_sol == True:
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 
 else:
-	res = {'udp': udp, 'population': population}
-	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
-		pkl.dump(res, f)
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("Rank <{}> : Finished with failure.".format(rank), flush=True)
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *

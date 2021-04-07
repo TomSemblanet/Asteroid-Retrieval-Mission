@@ -7,7 +7,7 @@
 #SBATCH --job-name=nea_earth                               			#### Job name
 #SBATCH -o    slurm.%j.out                              			#### standard output STDOUT
 #SBATCH -e    slurm.%j.err                              			#### error output STDERR
-#SBATCH --partition=bigmem                               			#### partition
+#SBATCH --partition=bigmem                               			#### partition 
 
 module purge
 

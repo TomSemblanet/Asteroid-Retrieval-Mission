@@ -145,6 +145,9 @@ if found_sol == True:
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 
 else:
+	res = {'udp': udp, 'population': population}
+	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
+		pkl.dump(res, f)
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("Rank <{}> : Finished with failure.".format(rank), flush=True)
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *

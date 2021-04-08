@@ -31,6 +31,7 @@ class NEA2Earth:
 		self.phi_max = phi_max
 		self.theta_min = theta_min
 		self.theta_max = theta_max
+		self.nea_mass = nea_mass
 
 		# Some constants
 		self.earth_SOI = 0.925e9

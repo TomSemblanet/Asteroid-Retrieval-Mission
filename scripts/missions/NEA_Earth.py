@@ -16,6 +16,7 @@ import pickle as pkl
 from datetime import datetime as dt
 
 import matplotlib.pyplot as plt
+
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.udp.NEA_Earth_UDP import NEA2Earth
 from scripts.utils.post_process import post_process
@@ -105,7 +106,7 @@ while count < N:
 	print("Error on position : {} km".format(error_pos))
 	print("Error on velocity : {} km/s".format(error_vel))
 
-	print("Keep ? ")
+	print("\n\nKeep ? ")
 	continue_ = input()
 	
 	if continue_ == 'y':
@@ -132,7 +133,7 @@ if found_sol==True:
 	post_process(udp, population.get_x()[0])
 
 	res = {'udp': udp, 'population': population}
-	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/07_04_2021_results/' + str(year), 'wb') as f:
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/08_04_2021_results/' + str(year), 'wb') as f:
 		pkl.dump(res, f)
 
 else:

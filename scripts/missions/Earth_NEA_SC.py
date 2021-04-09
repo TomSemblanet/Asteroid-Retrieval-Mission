@@ -32,6 +32,9 @@ print("Rank <{}> : Run".format(rank), flush=True)
 # SQP algorithm
 sqp = str(sys.argv[1])
 
+# NEA departure date
+nea_dpt_date = float(str(sys.argv[2]))
+
 # Loading the main kernels
 load_kernels.load()
 
@@ -42,8 +45,8 @@ ast = load_bodies.asteroid('2020 CD3')
 stay_time = 90
 
 # 2 - Arrival date
-arr_low = pk.epoch(15801.132 - 2 * cst.YEAR2DAY, 'mjd2000')
-arr_upp = pk.epoch(15801.132 - stay_time, 'mjd2000')
+arr_low = pk.epoch(nea_dpt_date - 1 * cst.YEAR2DAY, 'mjd2000')
+arr_upp = pk.epoch(nea_dpt_date - stay_time, 'mjd2000')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.1
@@ -72,7 +75,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 50
+N = 1
 count = 0
 
 found_sol = False
@@ -109,9 +112,27 @@ while count < N:
 population.set_x(0, x_best)
 
 # 11 - Pickle the results
-res = {'udp': udp, 'population': population}
-if found_sol == True:
-	with open('/scratch/students/t.semblanet/Earth_NEA_results/' + str(sqp) + '/' + str(rank), 'wb') as f:
+if found_sol == False:
+
+	# ID for file storing
+	ID = int(round(nea_dpt_date))
+
+	# If the folder of the day hasn't been created, we create it
+	if not os.path.exists('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y")):
+		os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y"))
+		os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
+		os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
+
+	res = {'udp': udp, 'population': population}
+	with open('/scratch/students/t.semblanet/results/' + date.today().strftime("%d-%m-%Y") + \
+		'Earth_NEA/' + str(ID) + '_' + str(sqp), 'wb') as f:
 		pkl.dump(res, f)
+
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+	print("Earth -> NEA\tRank <{}> : Finished successfully!".format(rank), flush=True)
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+
 else:
+	# - * - * - * - * - * - * - * - * - * - * - * - * - 
 	print("Rank <{}> : No solution found".format(rank))
+	# - * - * - * - * - * - * - * - * - * - * - * - * - 

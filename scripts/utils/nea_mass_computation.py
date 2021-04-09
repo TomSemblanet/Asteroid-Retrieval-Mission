@@ -12,3 +12,8 @@ def get_mass(H, a=0.5):
 	m = 4 / 3 * np.pi * (0.5 * D)**3 * 2600
 
 	return m
+
+
+if __name__ == '__main__':
+
+	print("{} kg".format(get_mass(H=28))

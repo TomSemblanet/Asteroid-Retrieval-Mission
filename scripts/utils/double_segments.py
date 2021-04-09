@@ -30,6 +30,8 @@ def double_segments_NEA_Earth(udp_=None, population_=None):
 		# Extraction of the population
 		population_ = res['population']
 
+		post_process(udp_, population_.get_x()[0])
+
 	# Extraction of the decision vector
 	x_ = population_.get_x()[0]
 	throttles_ = np.array([x_[5 + 3 * i: 8 + 3 * i] for i in range(udp_.n_seg)])
@@ -54,7 +56,7 @@ if __name__ == '__main__':
 	# Algorithm used to correct the dynamic changes
 	algorithm = load_sqp.load('ipopt')
 
-	# First double (30 -> 60)
+	# First double (20 -> 40)
 	udp, population = double_segments_NEA_Earth()
 
 	population = algorithm.evolve(population)
@@ -62,7 +64,7 @@ if __name__ == '__main__':
 	post_process(udp, population.get_x()[0])
 	udp.brief(population.get_x()[0])
 
-	# Second double (60 -> 120)
+	# Second double (40 -> 80)
 	udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
 
 	population = algorithm.evolve(population)

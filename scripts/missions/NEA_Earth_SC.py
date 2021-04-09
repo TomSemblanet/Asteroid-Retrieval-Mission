@@ -28,16 +28,28 @@ from scripts.utils import load_sqp, load_kernels, load_bodies
 This scripts runs the optimization of a transfer between a NEA and the Earth using low-thrust propulsion 
 using ISAE-SUPAERO super-computers Rainman or Pando. 
 
+Three arguments must be provided to the script when it's runned : 
+-----------------------------------------------------------------
+
+	1) The SQP algorithm used (eg. ipopt or slsqp)
+	2) The first year of the launch window (eg. 2040)
+	3) Wether or not the user wants to automatically run the associated Earth -> NEA scripts (True or False)
+
 """
 
 # SQP algorithm
 sqp = str(sys.argv[1])
 
-# Beginning year
+# First launch window year
 year_i = str(sys.argv[2])
+
+# Wether or not launch automatically the corresponding Earth -> NEA script
+earth_nea_run = str(sys.argv[3])
+
 
 # Loading the main kernels
 load_kernels.load()
+
 
 # Creation of the communicator 
 comm = MPI.COMM_WORLD
@@ -100,9 +112,10 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 100
+N = 1
 count = 0
 
+# Wether or not an acceptable solution as been found
 found_sol = False
 
 # Best decision-vector
@@ -138,14 +151,35 @@ while count < N:
 population.set_x(0, x_best)
 
 # 11 - Pickle the results
-if found_sol == True:
+if found_sol == False:
+	
+	# ID for file storing
+	nea_dpt_date = pk.epoch(x_best[0]).mjd2000
+	ID = int(round(float((nea_dpt_date)), 0))
+
+	# If the folder of the day hasn't been created, we create it
+	if not os.path.exists('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y")):
+		os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y"))
+		os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
+		os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
+
 	res = {'udp': udp, 'population': population}
-	with open('/scratch/students/t.semblanet/NEA_Earth_results/' + str(sqp) + '/' + str(year), 'wb') as f:
+	with open('/scratch/students/t.semblanet/results/' + date.today().strftime("%d-%m-%Y") + \
+		'NEA_Earth/' + str(ID) + '_' + str(sqp), 'wb') as f:
 		pkl.dump(res, f)
 
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-	print("Rank <{}> : Finished successfully!".format(rank), flush=True)
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+	print("NEA -> Earth\tRank <{}> : Finished successfully!".format(rank), flush=True)
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+
+	if earth_nea_run == True:
+
+		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+		print("Rank <{}> : Launch of the Earth -> NEA scripts associated".format(rank), flush=True)
+		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+
+		# Automatically launch the associated Earth -> NEA scripts
+		os.system("python -m scripts.missions.Earth_NEA_SC " + str(sqp) + " " + str(nea_dpt_date))
 
 else:
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *

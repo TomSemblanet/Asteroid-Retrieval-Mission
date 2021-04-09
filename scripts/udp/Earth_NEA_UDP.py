@@ -48,6 +48,18 @@ class Earth2NEA:
 		self.lb = [tf[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -1] + [-1, -1, -1] * n_seg
 		self.ub = [tf[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] + [1, 1, 1] * n_seg
 
+	def gradient(self, x):
+		return pg.estimate_gradient(lambda x: self.fitness(x), x, 1e-8)
+
+	def get_bounds(self):
+		return (self.lb, self.ub)
+
+	def get_nic(self):
+		return self.n_seg + 1
+
+	def get_nec(self):
+		return 7
+
 	def fitness(self, x):
 
 		# Decoding of the decision vector
@@ -215,17 +227,14 @@ class Earth2NEA:
 
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
-	def gradient(self, x):
-		return pg.estimate_gradient(lambda x: self.fitness(x), x, 1e-8)
+	def get_deltaV(self, x):
+		
+		mi = self.sc.mass
+		mf = x[2]
 
-	def get_bounds(self):
-		return (self.lb, self.ub)
+		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
 
-	def get_nic(self):
-		return self.n_seg + 1
-
-	def get_nec(self):
-		return 7
+		return deltaV
 
 	def plot_traj(self, x):
 

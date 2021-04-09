@@ -18,7 +18,7 @@ from datetime import date
 from mpi4py import MPI
 
 from data import constants as cst
-from scripts.udp.Earth2NEA_UDP import Earth2NEA
+from scripts.udp.Earth_NEA_UDP import Earth2NEA
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 

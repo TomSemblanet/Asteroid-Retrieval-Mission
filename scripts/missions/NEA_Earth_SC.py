@@ -182,6 +182,10 @@ if found_sol == False:
 		# Automatically launch the associated Earth -> NEA scripts
 		os.system("python -m scripts.missions.Earth_NEA_SC " + str(sqp) + " " + str(nea_dpt_date))
 
+		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+		print("Rank <{}> : End.", flush=True)
+		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+
 else:
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("Rank <{}> : Finished with failure.".format(rank), flush=True)

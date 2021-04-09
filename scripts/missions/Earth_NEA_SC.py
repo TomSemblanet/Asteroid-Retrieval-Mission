@@ -126,7 +126,7 @@ if found_sol == False:
 
 	res = {'udp': udp, 'population': population}
 	with open('/scratch/students/t.semblanet/results/' + date.today().strftime("%d-%m-%Y") + \
-		'Earth_NEA/' + str(ID) + '_' + str(sqp), 'wb') as f:
+		'/Earth_NEA/' + str(ID) + '_' + str(sqp), 'wb') as f:
 		pkl.dump(res, f)
 
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *

@@ -23,8 +23,8 @@ from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 
 # Creation of the communicator 
-comm = MPI.COMM_WORLD
-rank = comm.rank
+# comm = MPI.COMM_WORLD
+# rank = comm.rank
 
 # - * - * - * - * - * - * - * - * - * - * - * - * 
 print("Rank <{}> : Run".format(rank), flush=True)
@@ -42,12 +42,13 @@ load_kernels.load()
 # Loading of the target asteroid
 ast = load_bodies.asteroid('2020 CD3')
 
-# Minimum stay time [days]
-stay_time = 90
+# Maximum and minimum stay time [days]
+max_stay_time = 365
+min_stay_time = 90
 
 # 2 - Arrival date
-arr_low = pk.epoch(nea_dpt_date - 1 * cst.YEAR2DAY, 'mjd2000')
-arr_upp = pk.epoch(nea_dpt_date - stay_time, 'mjd2000')
+arr_low = pk.epoch(nea_dpt_date - max_stay_time, 'mjd2000')
+arr_upp = pk.epoch(nea_dpt_date - min_stay_time, 'mjd2000')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.1
@@ -89,7 +90,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while (-udp.fitness(x)[0] < 0.95) :
+	while udp.get_deltaV(x) > 500 :
 		x = population.random_decision_vector()
 
 	# Set the decision vector
@@ -103,7 +104,7 @@ while count < N:
 	error_vel = np.linalg.norm(udp.fitness(population.champion_x)[4:7]) * pk.EARTH_VELOCITY / 1000
 
 	# Update the best decision vector found
-	if (-udp.fitness(x)[0] > -udp.fitness(x_best)[0] and error_pos < 10e3 and error_vel < 0.01):
+	if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 2000 and error_pos < 10e3 and error_vel < 0.01):
 		x_best = x 
 		found_sol = True
  

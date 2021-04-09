@@ -172,9 +172,8 @@ if found_sol == False:
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("NEA -> Earth\tRank <{}> : Finished successfully!".format(rank), flush=True)
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-	print(type(earth_nea_run), flush=True)
-	print(earth_nea_run, flush=True)
-	if earth_nea_run == True:
+
+	if bool(earth_nea_run) == True:
 
 		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 		print("Rank <{}> : Launch of the Earth -> NEA scripts associated".format(rank), flush=True)

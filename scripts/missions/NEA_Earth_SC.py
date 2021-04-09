@@ -113,7 +113,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 1
+N = 50
 count = 0
 
 # Wether or not an acceptable solution as been found
@@ -152,7 +152,7 @@ while count < N:
 population.set_x(0, x_best)
 
 # 11 - Pickle the results
-if found_sol == False:
+if found_sol == True:
 	
 	# ID for file storing
 	nea_dpt_date = pk.epoch(x_best[0]).mjd2000
@@ -175,21 +175,18 @@ if found_sol == False:
 
 	if bool(earth_nea_run) == True:
 
-		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * -
 		print("Rank <{}> : Launch of the Earth -> NEA scripts associated".format(rank), flush=True)
-		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - 
 
 		# Automatically launch the associated Earth -> NEA scripts
 		os.system("python -m scripts.missions.Earth_NEA_SC " + str(sqp) + " " + str(nea_dpt_date))
 
-		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-		print("Rank <{}> : End.", flush=True)
-		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+		# - * - * - * - * - * - * - * - * - * - * - * - * -
+		print("Rank <{}> : End.".format(rank), flush=True)
+		# - * - * - * - * - * - * - * - * - * - * - * - * -
 
 else:
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 	print("Rank <{}> : Finished with failure.".format(rank), flush=True)
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-
-
-

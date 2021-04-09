@@ -16,11 +16,8 @@ import pickle as pkl
 from datetime import date
 
 from scripts.utils import load_sqp, load_kernels, load_bodies
-
 from scripts.udp.Earth_NEA_UDP import Earth2NEA
-
 from scripts.utils.post_process import post_process
-
 from data import constants as cst
 
 # Loading the main kernels

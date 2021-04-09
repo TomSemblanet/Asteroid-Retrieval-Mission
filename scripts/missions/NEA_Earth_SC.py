@@ -15,6 +15,7 @@ import pykep as pk
 import pygmo as pg 
 import numpy as np
 import pickle as pkl
+from datetime import date
 
 from mpi4py import MPI
 

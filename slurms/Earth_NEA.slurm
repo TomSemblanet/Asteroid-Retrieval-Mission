@@ -16,8 +16,8 @@ module load mkl/2019.1.144
 module load openmpi/4.0.0-intel19.1
 module load python/3.7
  
-source deactivate
-source activate asteroids
+conda deactivate
+conda activate asteroids
 
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 

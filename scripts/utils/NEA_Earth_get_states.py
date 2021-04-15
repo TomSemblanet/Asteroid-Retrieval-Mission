@@ -87,8 +87,6 @@ def get_states(udp, population, N):
 
 	# Time vector
 	times = np.concatenate((fwd_grid, bwd_grid[1:]))
-	print(times)
-	input()
 	dts = times[1:] - times[:-1]
 
 	# Propagation 
@@ -114,7 +112,7 @@ def get_states(udp, population, N):
 			buffer_rfwd = r_fwd__[:, :-1]
 			buffer_vfwd = v_fwd__[:, :-1]
 			buffer_mfwd = m_fwd__[:-1]
-			buffer_ufwd = np.transpose(np.repeat([ufwd[i]], N, axis=0))
+			buffer_ufwd = np.transpose(np.repeat([ufwd[i]], (N), axis=0))
 			buffer_tfwd = np.array([times[i] + (j * fwd_dt[i] / (N-1)) * cst.SEC2DAY for j in range(N-1)])
 
 		elif (i > 0 and i < (n_fwd_seg - 1)):
@@ -130,6 +128,7 @@ def get_states(udp, population, N):
 			buffer_mfwd = np.append(buffer_mfwd, m_fwd__, axis=0)
 			buffer_ufwd = np.append(buffer_ufwd, np.transpose(np.repeat([ufwd[i]], (N-1), axis=0)), axis=1)
 			buffer_tfwd = np.append(buffer_tfwd, [times[i] + (j * fwd_dt[i] / N) * cst.SEC2DAY for j in range(N)])
+
 
 	# ============     BACKWARD     =================
 
@@ -151,28 +150,27 @@ def get_states(udp, population, N):
 			buffer_vbwd = v_bwd__
 			buffer_mbwd = m_bwd__
 			buffer_ubwd = np.transpose(np.repeat([ubwd[i]], N, axis=0))
-			buffer_tfbwd = np.array([times[i] + (j * bwd_dt[-1 - i] / (N)) * cst.SEC2DAY for j in range(N)])
+			buffer_tbwd = np.array([times[-1 - i] - (j * bwd_dt[-1 - i] / (N)) * cst.SEC2DAY for j in range(N)])
 
 		else:
 			buffer_rbwd = np.append(buffer_rbwd, r_bwd__[:, 1:], axis=1)
 			buffer_vbwd = np.append(buffer_vbwd, v_bwd__[:, 1:], axis=1)
 			buffer_mbwd = np.append(buffer_mbwd, m_bwd__[1:], axis=0)
 			buffer_ubwd = np.append(buffer_ubwd, np.transpose(np.repeat([ubwd[i]], (N-1), axis=0)), axis=1)
+			buffer_tbwd = np.append(buffer_tbwd, [times[-1 - i] - (j * bwd_dt[-1 - i] / (N-1)) * cst.SEC2DAY for j in range(N-1)])
 
 	# Flip the matrix because it's backward propagation (not for u)
 	buffer_rbwd = np.flip(buffer_rbwd, axis=1)
 	buffer_vbwd = np.flip(buffer_vbwd, axis=1)
 	buffer_mbwd = np.flip(buffer_mbwd, axis=0)
+	buffer_tbwd = np.flip(buffer_tbwd, axis=0)
 
 	# Concatenation of the forward and backward arrays
 	R = np.concatenate((buffer_rfwd, buffer_rbwd), axis=1)
 	V = np.concatenate((buffer_vfwd, buffer_vbwd), axis=1)
 	M = np.concatenate((buffer_mfwd, buffer_mbwd), axis=0)
 	U = np.concatenate((buffer_ufwd, buffer_ubwd), axis=1)
-
-
-
-
+	T = np.concatenate((buffer_tfwd, buffer_tbwd), axis=0)
 
 	plt.plot(R[0], label='x')
 	plt.plot(R[1], label='y')
@@ -206,6 +204,13 @@ def get_states(udp, population, N):
 	plt.plot(U[2], label='uz')
 
 	plt.title("Control")
+	plt.legend()
+	plt.grid()
+	plt.show()
+
+	plt.plot(T, label='t')
+
+	plt.title("Time")
 	plt.legend()
 	plt.grid()
 	plt.show()

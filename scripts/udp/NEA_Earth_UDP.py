@@ -292,11 +292,6 @@ class NEA2Earth:
 				rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor(
 					  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
 
-
-		# plt.plot(np.concatenate(([np.linalg.norm(d) for d in dfwd], [np.linalg.norm(d) for d in dbwd])))
-		# plt.show()
-		# sys.exit()
-
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
 	def get_deltaV(self, x):
@@ -578,7 +573,8 @@ class NEA2Earth:
 		print("Thrust-on time:", time_thrusts_on, "days")
 
 		print("Position error : {} km".format(np.linalg.norm(ceq[0:3]) * pk.AU / 1000))
-		print("Position velocity : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
+		print("Velocity error : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
+		print("Mass error : {} kg".format(ceq[6]))
 
 
 

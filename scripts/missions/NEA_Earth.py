@@ -78,7 +78,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 10
+N = 20
 count = 0
 
 found_sol = False
@@ -91,7 +91,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while udp.get_deltaV(x) > 500:
+	while udp.get_deltaV(x) > 1000:
 		x = population.random_decision_vector()
 
 	# Set the decision vector
@@ -106,10 +106,8 @@ while count < N:
 	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
 	error_mas = np.linalg.norm(udp.fitness(x)[7]) * udp.sc.mass
 
-	# post_process(udp, x)
-
 	# Update the best decision vector found
-	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and error_vel < 1):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and error_mas < 5):
 		x_best = x
 		found_sol = True
 

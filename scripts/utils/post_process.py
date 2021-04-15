@@ -19,7 +19,7 @@ from scripts.utils import load_kernels
 def post_process(udp, x_best):
 
 	# Inspect the solution
-	udp.report(x_best)
+	udp.brief(x_best)
 
 	# Plot the trajectory
 	udp.plot_traj(x_best)

@@ -114,7 +114,7 @@ population = pg.population(problem, size=1)
 # 8 - Starting point
 # ------------------
 # Number of iterations
-N = 1
+N = 50
 count = 0
 
 # Wether or not an acceptable solution as been found
@@ -154,7 +154,7 @@ while count < N:
 population.set_x(0, x_best)
 
 # 11 - Pickle the results
-if found_sol == False:
+if found_sol == True:
 	
 	# ID for file storing
 	nea_dpt_date = pk.epoch(x_best[0]).mjd2000

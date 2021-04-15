@@ -76,7 +76,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	# 8 - Starting point
 	# ------------------
 	# Number of iterations
-	N = 1
+	N = 50
 	count = 0
 
 	found_sol = False
@@ -114,7 +114,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	population.set_x(0, x_best)
 
 	# 11 - Pickle the results
-	if found_sol == False:
+	if found_sol == True:
 
 		# ID for file storing
 		ID = int(round(nea_dpt_date))

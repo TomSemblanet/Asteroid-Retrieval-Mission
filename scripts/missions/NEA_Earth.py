@@ -104,11 +104,12 @@ while count < N:
 	# Mismatch error on position [km] and velocity [km/s]
 	error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
 	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
+	error_mas = np.linalg.norm(udp.fitness(x)[7]) * udp.sc.mass
 
 	# post_process(udp, x)
 
 	# Update the best decision vector found
-	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and error_vel < 1):
 		x_best = x
 		found_sol = True
 

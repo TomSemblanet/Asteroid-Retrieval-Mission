@@ -23,6 +23,7 @@ from data import constants as cst
 from scripts.udp.NEA_Earth_UDP import NEA2Earth
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
+from scripts.missions.Earth_NEA_SC import Earth_NEA
 
 """ 
 
@@ -34,7 +35,7 @@ Three arguments must be provided to the script when it's runned :
 
 	1) The SQP algorithm used (eg. ipopt or slsqp)
 	2) The first year of the launch window (eg. 2040)
-	3) Wether or not the user wants to automatically run the associated Earth -> NEA scripts (True or False)
+	3) Weither or not the user wants to automatically run the associated Earth -> NEA scripts (True or False)
 
 """
 
@@ -127,7 +128,7 @@ while count < N:
 	x = population.random_decision_vector()
 
 	# Generate random decision vector until one provides a good starting point
-	while udp.get_deltaV(x) > 500:
+	while udp.get_deltaV(x) > 1000:
 		x = population.random_decision_vector()
 
 	# Set the decision vector
@@ -140,9 +141,10 @@ while count < N:
 	# Mismatch error on position [km] and velocity [km/s]
 	error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
 	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
+	error_mas = udp.fitness(x)[7] * udp.sc.mass
 
 	# Update the best decision vector found
-	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and error_mas < 10):
 		x_best = x
 		found_sol = True
 
@@ -152,7 +154,7 @@ while count < N:
 population.set_x(0, x_best)
 
 # 11 - Pickle the results
-if found_sol == True:
+if found_sol == False:
 	
 	# ID for file storing
 	nea_dpt_date = pk.epoch(x_best[0]).mjd2000
@@ -180,7 +182,7 @@ if found_sol == True:
 		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - 
 
 		# Automatically launch the associated Earth -> NEA scripts
-		os.system("python -m scripts.missions.Earth_NEA_SC " + str(sqp) + " " + str(nea_dpt_date))
+		Earth_NEA(sqp, nea_dpt_date, rank)
 
 		# - * - * - * - * - * - * - * - * - * - * - * - * -
 		print("Rank <{}> : End.".format(rank), flush=True)

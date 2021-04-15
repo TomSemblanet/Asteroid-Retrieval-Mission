@@ -1,5 +1,7 @@
 import matplotlib.pyplot as plt
 
+import sys
+
 import pykep as pk 
 import pygmo as pg 
 import numpy as np
@@ -246,6 +248,10 @@ class NEA2Earth:
 
 				rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor_disturbance(
 	   				  rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[i], pk.MU_SUN, veff, -10, -10)
+
+				if i == len(rfwd) - 2:
+					r_E_next, _ = self.earth.eph(pk.epoch(fwd_grid[i + 1]))
+					dfwd[i + 1] = [a - b for a, b in zip(r_E_next, rfwd[i + 1])]
 			
 			else:
 				rfwd[i + 1], vfwd[i + 1], mfwd[i + 1] = pk.propagate_taylor(
@@ -278,9 +284,18 @@ class NEA2Earth:
 				rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor_disturbance(
 					  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], disturbance, -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
 
+				if (len(dbwd) - 1) - (i + 1) == 0:
+					r_E, v_E = self.earth.eph(pk.epoch(bwd_grid[-1 - (i+1)]))
+					dbwd[-1 - (i+1)] = [a - b for a, b in zip(r_E, rbwd[-1 - (i+1)])]
+
 			else:
 				rbwd[-1 - (i+1)], vbwd[-1 - (i+1)], mbwd[-1 - (i+1)] = pk.propagate_taylor(
 					  rbwd[-1 - i], vbwd[-1 - i], mbwd[-1 - i], ubwd[-1 - i], -bwd_dt[-1 - i], pk.MU_SUN, veff, -10, -10)
+
+
+		# plt.plot(np.concatenate(([np.linalg.norm(d) for d in dfwd], [np.linalg.norm(d) for d in dbwd])))
+		# plt.show()
+		# sys.exit()
 
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 

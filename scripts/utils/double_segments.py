@@ -1,3 +1,4 @@
+import sys
 import pykep as pk 
 import pygmo as pg 
 import numpy as np
@@ -17,20 +18,6 @@ def double_segments_NEA_Earth(udp_=None, population_=None):
 
 	# Loading the main kernels
 	load_kernels.load()
-
-	# For the example
-	if (udp_ == None and population_ == None):
-		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/08_04_2021_results/2044', 'rb') as f:
-			res = pkl.load(f)
-
-		# Extraction of the UDP
-		udp_ = res['udp']
-		udp_.nea_mass = 4900
-
-		# Extraction of the population
-		population_ = res['population']
-
-		post_process(udp_, population_.get_x()[0])
 
 	# Extraction of the decision vector
 	x_ = population_.get_x()[0]
@@ -53,19 +40,18 @@ def double_segments_NEA_Earth(udp_=None, population_=None):
 
 if __name__ == '__main__':
 
+	# Path to the Pickle file
+	file_path = sys.argv[1]
+
+	# Extraction of the Pickle file
+	with open(file_path, 'rb') as file:
+		data = pkl.load(file)
+
 	# Algorithm used to correct the dynamic changes
 	algorithm = load_sqp.load('ipopt')
 
-	# First double (20 -> 40)
-	udp, population = double_segments_NEA_Earth()
-
-	population = algorithm.evolve(population)
-
-	post_process(udp, population.get_x()[0])
-	udp.brief(population.get_x()[0])
-
-	# Second double (40 -> 80)
-	udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
+	# First double
+	udp, population = double_segments_NEA_Earth(udp_=data['udp'], population_=data['population'])
 
 	population = algorithm.evolve(population)
 

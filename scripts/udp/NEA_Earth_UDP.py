@@ -574,7 +574,7 @@ class NEA2Earth:
 
 		print("Position error : {} km".format(np.linalg.norm(ceq[0:3]) * pk.AU / 1000))
 		print("Velocity error : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
-		print("Mass error : {} kg".format(ceq[6]))
+		print("Mass error : {} kg".format(ceq[6] * self.sc.mass))
 
 
 

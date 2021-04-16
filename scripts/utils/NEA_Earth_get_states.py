@@ -221,7 +221,7 @@ if __name__ == '__main__':
 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/08_04_2021_results/2044', 'rb') as f:
 		res = pkl.load(f)
 
-	# load_kernels.load()
-	# post_process(res['udp'], res['population'].get_x()[0])
+	load_kernels.load()
+	post_process(res['udp'], res['population'].get_x()[0])
 
 	get_states(res['udp'], res['population'], 50)

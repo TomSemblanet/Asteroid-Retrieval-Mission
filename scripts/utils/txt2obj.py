@@ -12,3 +12,4 @@ if __name__ == '__main__':
 
 	if mission == 'NEA_Earth':
 		
+		

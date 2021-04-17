@@ -215,7 +215,6 @@ def get_states(udp, population, N):
 	plt.grid()
 	plt.show()
 
-
 if __name__ == '__main__':
 
 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/08_04_2021_results/2044', 'rb') as f:

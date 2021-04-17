@@ -107,7 +107,7 @@ while count < N:
 	error_mas = np.linalg.norm(udp.fitness(x)[7]) * udp.sc.mass
 
 	# Update the best decision vector found
-	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and error_mas < 5):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and abs(error_mas) < 10):
 		x_best = x
 		found_sol = True
 

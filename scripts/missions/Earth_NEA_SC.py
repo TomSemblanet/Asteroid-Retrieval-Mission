@@ -76,7 +76,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	# 8 - Starting point
 	# ------------------
 	# Number of iterations
-	N = 50
+	N = 100
 	count = 0
 
 	found_sol = False
@@ -104,7 +104,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 		error_mas = udp.fitness(x)[7] * udp.sc.mass
 
 		# Update the best decision vector found
-		if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 2000 and error_pos < 10e3 and error_vel < 0.01 and error_mas < 10):
+		if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 2000 and error_pos < 10e3 and error_vel < 0.01 and abs(error_mas) < 10):
 			x_best = x 
 			found_sol = True
 	 

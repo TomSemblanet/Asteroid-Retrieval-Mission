@@ -17,5 +17,5 @@ if __name__ == '__main__':
 	x = results['population'].get_x()[0]
 
 	# Writing of the decision vector into a file text
-	txt_file_nm = '/home/cesure/t.semblanet/Asteroid-Retrieval-Mission/local/txt_files/' + str(round(x[0], 5)) + '.txt'
-	np.savetxt(txt_file_nm, x, fmt='%.2f')
+	txt_file_nm = '/home/cesure/t.semblanet/Asteroid-Retrieval-Mission/local/txt_files/' + str(round(x[0], 0)) + '.txt'
+	np.savetxt(txt_file_nm, x, fmt='%.20f')

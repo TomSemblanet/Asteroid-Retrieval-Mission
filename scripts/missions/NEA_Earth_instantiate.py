@@ -35,9 +35,6 @@ x = np.array([])
 for line in lines:
 	x = np.append(x, float(line[:-2]))
 
-print(x)
-input()
-
 # Loading the main kernels
 load_kernels.load()
 
@@ -83,9 +80,6 @@ population = pg.population(problem, size=1)
 
 # Update the best result
 population.set_x(0, x)
-
-# Re-optimization
-population = algorithm.evolve(population)
 
 # Inspect the solution
 post_process(udp, population.get_x()[0])

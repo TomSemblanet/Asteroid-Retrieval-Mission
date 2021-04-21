@@ -76,7 +76,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	# 8 - Starting point
 	# ------------------
 	# Number of iterations
-	N = 100
+	N = 1
 	count = 0
 
 	found_sol = False
@@ -89,7 +89,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 		x = population.random_decision_vector()
 
 		# Generate random decision vector until one provides a good starting point
-		while udp.get_deltaV(x) > 1000 :
+		while udp.get_deltaV(x) > 4000 :
 			x = population.random_decision_vector()
 
 		# Set the decision vector
@@ -104,7 +104,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 		error_mas = udp.fitness(x)[7] * udp.sc.mass
 
 		# Update the best decision vector found
-		if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 2000 and error_pos < 10e3 and error_vel < 0.01 and abs(error_mas) < 10):
+		if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 4000 and error_pos < 10e3 and error_vel < 0.01 and abs(error_mas) < 10):
 			x_best = x 
 			found_sol = True
 	 
@@ -114,7 +114,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	population.set_x(0, x_best)
 
 	# 11 - Pickle the results
-	if found_sol == True:
+	if found_sol == False:
 
 		# ID for file storing
 		ID = int(round(nea_dpt_date))

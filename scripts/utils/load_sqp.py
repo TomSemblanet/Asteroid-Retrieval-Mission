@@ -22,14 +22,14 @@ def load(name):
 		uda.ftol_rel = 0
 		uda.maxeval = 150
 		algo = pg.algorithm(uda)
-		algo.set_verbosity(0)
+		algo.set_verbosity(1)
 		return algo
 
 	elif name == "ipopt":
 		uda = pg.ipopt() 
 		uda.set_integer_option("print_level", 0)
 		uda.set_integer_option("acceptable_iter", 4)
-		uda.set_integer_option("max_iter", 150)
+		uda.set_integer_option("max_iter", 1)
 
 		uda.set_numeric_option("tol", 1e-8)
 		uda.set_numeric_option("dual_inf_tol", 1e-8)

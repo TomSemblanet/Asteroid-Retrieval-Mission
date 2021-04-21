@@ -1,8 +1,10 @@
+import os
 import sys
 import pykep as pk 
 import pygmo as pg 
 import numpy as np
 import pickle as pkl
+from datetime import date
 
 from scripts.udp.NEA_Earth_UDP import NEA2Earth
 from scripts.utils import load_sqp, load_kernels, load_bodies
@@ -52,9 +54,25 @@ if __name__ == '__main__':
 
 	# First double
 	udp, population = double_segments_NEA_Earth(udp_=data['udp'], population_=data['population'])
-
 	population = algorithm.evolve(population)
 
-	post_process(udp, population.get_x()[0])
-	udp.brief(population.get_x()[0])
+	# Recovery of the results
+	x = population.get_x()[0]
+
+	post_process(udp, x)
+	udp.brief(x)
+
+	# ID for file storing
+	nea_dpt_date = pk.epoch(x[0]).mjd2000
+	ID = int(round(float((nea_dpt_date)), 0))
+
+	# If the folder of the day hasn't been created, we create it
+	if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):
+		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y"))
+		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
+		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
+
+	# Storage of the results
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/' + str(ID) + '_d', 'wb') as f:
+		pkl.dump({'udp': udp, 'population': population}, f)
 

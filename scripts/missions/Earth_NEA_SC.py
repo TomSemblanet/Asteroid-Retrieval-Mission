@@ -117,7 +117,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	if found_sol == False:
 
 		# ID for file storing
-		ID = int(round(nea_dpt_date))
+		ID = int(round(x_best[0]))
 
 		# If the folder of the day hasn't been created, we create it
 		if not os.path.exists('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y")):

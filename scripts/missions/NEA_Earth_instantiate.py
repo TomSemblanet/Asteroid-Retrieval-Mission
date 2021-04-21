@@ -35,6 +35,9 @@ x = np.array([])
 for line in lines:
 	x = np.append(x, float(line[:-2]))
 
+print(x)
+input()
+
 # Loading the main kernels
 load_kernels.load()
 
@@ -81,9 +84,16 @@ population = pg.population(problem, size=1)
 # Update the best result
 population.set_x(0, x)
 
+# Re-optimization
+population = algorithm.evolve(population)
+
+# Inspect the solution
+post_process(udp, population.get_x()[0])
+
 # ID for file storing
 nea_dpt_date = pk.epoch(x[0]).mjd2000
 ID = int(round(float((nea_dpt_date)), 0))
+
 
 # If the folder of the day hasn't been created, we create it
 if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):

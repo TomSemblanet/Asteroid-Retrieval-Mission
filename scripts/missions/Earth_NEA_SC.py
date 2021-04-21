@@ -137,7 +137,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 	else:
 		# - * - * - * - * - * - * - * - * - * - * - * - * - 
 		print("Rank <{}> : No solution found".format(rank))
-		# - * - * - * - * - * - * - * - * - * - * - * - * - 
+		# - * - * - * - * - * - * - * - * - * - * - * - * -
 
 if __name__ == '__main__':
 

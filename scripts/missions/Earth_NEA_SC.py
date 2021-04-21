@@ -142,7 +142,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 if __name__ == '__main__':
 
 	sqp = str(sys.argv[1])
-	nea_dpt_date = str(sys.argv[2])
+	nea_dpt_date = float(sys.argv[2])
 	rank = -1
 
 	Earth_NEA(sqp, nea_dpt_date, rank)

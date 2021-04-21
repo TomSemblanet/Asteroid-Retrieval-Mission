@@ -18,4 +18,4 @@ if __name__ == '__main__':
 
 	# Writing of the decision vector into a file text
 	txt_file_nm = '/home/cesure/t.semblanet/Asteroid-Retrieval-Mission/local/txt_files/' + str(int(x[0])) + '.txt'
-	np.savetxt(txt_file_nm, x, fmt='%.30f')
+	np.savetxt(txt_file_nm, x, fmt='%.50f')

@@ -128,7 +128,7 @@ path = str(sys.argv[1])
 
 # Write the file
 file = open(path, 'a')
-file.write("Year {} : {} m/s\n".format(year, average_dV))
+file.write("Year {} : {}\n".format(year, average_dV))
 
 # - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *
 print("Year {}, results stored in {}".format(year, path), flush=True)

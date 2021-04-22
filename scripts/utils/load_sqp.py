@@ -22,7 +22,7 @@ def load(name):
 		uda.ftol_rel = 0
 		uda.maxeval = 150
 		algo = pg.algorithm(uda)
-		algo.set_verbosity(0)
+		algo.set_verbosity(1)
 		return algo
 
 	elif name == "ipopt":

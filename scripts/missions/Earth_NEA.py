@@ -29,12 +29,13 @@ ast = load_bodies.asteroid('2020 CD3')
 # NEA departure date (mjd2000)
 nea_dpt_date = float(str(sys.argv[1]))
 
-# Minimum stay time [days]
-stay_time = 90
+# Maximum and minimum stay time [days]
+max_stay_time = 365
+min_stay_time = 90
 
 # 2 - Arrival date
-arr_low = pk.epoch(nea_dpt_date - 1 * cst.YEAR2DAY, 'mjd2000')
-arr_upp = pk.epoch(nea_dpt_date - stay_time, 'mjd2000')
+arr_low = pk.epoch(nea_dpt_date - max_stay_time, 'mjd2000')
+arr_upp = pk.epoch(nea_dpt_date - min_stay_time, 'mjd2000')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.1
@@ -49,10 +50,10 @@ Isp = 3000
 vinf_max = 2e3
 
 # 5 - Optimization algorithm
-algorithm = load_sqp.load('ipopt')
+algorithm = load_sqp.load('slsqp')
 
 # 7 - Problem
-udp = Earth2NEA(nea=ast, n_seg=20, tf=(arr_low, arr_upp), \
+udp = Earth2NEA(nea=ast, n_seg=30, tf=(arr_low, arr_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 
@@ -60,66 +61,44 @@ problem = pg.problem(udp)
 # --------------
 population = pg.population(problem, size=1)
 
-# 8 - Starting point
-# ------------------
-# Number of iterations
-N = 20
-count = 0
+# 8 - Optimization
+# ----------------
 
-found_sol = False
+x = population.random_decision_vector()
 
-# Best decision-vector
-x_best = population.get_x()[0]
+# Generate random decision vector until one provides a good starting point
+# while (udp.get_deltaV(x) > 3000 or str(udp.get_deltaV(x)) == 'nan'):
+x = population.random_decision_vector()
 
-while count < N:
-	# Generation of a random decision vector
-	x = population.random_decision_vector()
+# Set the decision vector
+population.set_x(0, x)
 
-	# Generate random decision vector until one provides a good starting point
-	while udp.get_deltaV(x) > 2000:
-		x = population.random_decision_vector()
-
-	# Set the decision vector
-	population.set_x(0, x)
-
-	# Optimization
-	population = algorithm.evolve(population)
-	x = population.get_x()[0]
-
-	# Mismatch error on position [km] and velocity [km/s]
-	error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
-	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
-	error_mas = np.linalg.norm(udp.fitness(x)[7]) * udp.sc.mass
-
-	# Update the best decision vector found
-	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 2000 and error_pos < 100e3 and error_vel < 0.05 and error_mas < 5):
-		x_best = x 
-		found_sol = True
-
-	count += 1
-
-# Update the best result
-population.set_x(0, x_best)
+# Optimization
+population = algorithm.evolve(population)
+x = population.get_x()[0]
 
 
-# 12 - Pickle the results
-if found_sol == True:
+# Mismatch error on position [km] and velocity [km/s]
+error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
+error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
+error_mas = np.linalg.norm(udp.fitness(x)[7]) * udp.sc.mass
 
-	# ID for file storing
-	ID = int(round(nea_dpt_date))
+# 9 - Post process
+# ----------------
+post_process(udp, x)
 
-	print("Acceptable solution found!\nStored with the ID : <{}>".format(ID))
-	input()
+# ID for file storing
+ID = int(round(nea_dpt_date))
 
-	# If the folder of the day hasn't been created, we create it
-	if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):
-		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y"))
-		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
-		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
+print("Acceptable solution found!\nStored with the ID : <{}>".format(ID))
+input()
 
-	# Storage of the results
-	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/' + str(ID), 'wb') as f:
-		pkl.dump({'udp': udp, 'population': population}, f)
+# If the folder of the day hasn't been created, we create it
+if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):
+	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y"))
+	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
+	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
 
-else:
-	print("Failure.")
+# Storage of the results
+with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/' + str(ID) + '_2', 'wb') as f:
+	pkl.dump({'udp': udp, 'population': population}, f)

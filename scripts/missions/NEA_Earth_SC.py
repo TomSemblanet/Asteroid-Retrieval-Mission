@@ -141,10 +141,9 @@ while count < N:
 	# Mismatch error on position [km] and velocity [km/s]
 	error_pos = np.linalg.norm(udp.fitness(x)[1:4]) * pk.AU / 1000
 	error_vel = np.linalg.norm(udp.fitness(x)[4:7]) * pk.EARTH_VELOCITY / 1000
-	error_mas = udp.fitness(x)[7] * udp.sc.mass
 
 	# Update the best decision vector found
-	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05 and abs(error_mas) < 10):
+	if (udp.get_deltaV(x) < udp.get_deltaV(x_best) and udp.get_deltaV(x) < 500 and error_pos < 100e3 and error_vel < 0.05):
 		x_best = x
 		found_sol = True
 
@@ -168,7 +167,7 @@ if found_sol == True:
 
 	res = {'udp': udp, 'population': population}
 	with open('/scratch/students/t.semblanet/results/' + date.today().strftime("%d-%m-%Y") + \
-		'/NEA_Earth/' + str(ID) + '_' + str(sqp), 'wb') as f:
+		'/NEA_Earth/' + str(ID) + '_' + str(sqp) + '_' + str(rank), 'wb') as f:
 		pkl.dump(res, f)
 
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *

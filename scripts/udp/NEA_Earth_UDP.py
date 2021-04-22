@@ -295,12 +295,16 @@ class NEA2Earth:
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
 	def get_deltaV(self, x):
+
+		# Get the mass error [kg]
+		mass_err = self.fitness(x)[7]
 		
+		# Initial and final mass [kg]
 		mi = self.sc.mass
-		mf = x[2]
+		mf = x[2] - (abs(mass_err)*self.sc.mass)
 
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
-
+		
 		return deltaV
 
 	def plot_traj(self, x):

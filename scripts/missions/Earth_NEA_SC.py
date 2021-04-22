@@ -88,10 +88,6 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 		# Generation of a random decision vector
 		x = population.random_decision_vector()
 
-		# Generate random decision vector until one provides a good starting point
-		while udp.get_deltaV(x) > 4000 :
-			x = population.random_decision_vector()
-
 		# Set the decision vector
 		population.set_x(0, x)
 
@@ -101,10 +97,9 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 		# Mismatch error on position [km] and velocity [km/s]
 		error_pos = np.linalg.norm(udp.fitness(population.champion_x)[1:4]) * pk.AU / 1000
 		error_vel = np.linalg.norm(udp.fitness(population.champion_x)[4:7]) * pk.EARTH_VELOCITY / 1000
-		error_mas = udp.fitness(x)[7] * udp.sc.mass
 
 		# Update the best decision vector found
-		if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 4000 and error_pos < 10e3 and error_vel < 0.01 and abs(error_mas) < 10):
+		if (udp.get_deltaV(x) > udp.get_deltaV(x_best) and udp.get_deltaV(x) < 4000 and error_pos < 100e3 and error_vel < 0.1):
 			x_best = x 
 			found_sol = True
 	 
@@ -127,7 +122,7 @@ def Earth_NEA(sqp, nea_dpt_date, rank):
 
 		res = {'udp': udp, 'population': population}
 		with open('/scratch/students/t.semblanet/results/' + date.today().strftime("%d-%m-%Y") + \
-			'/Earth_NEA/' + str(ID) + '_' + str(sqp), 'wb') as f:
+			'/Earth_NEA/' + str(ID) + '_' + str(sqp) + '_' + str(rank), 'wb') as f:
 			pkl.dump(res, f)
 
 		# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - *

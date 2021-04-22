@@ -45,8 +45,8 @@ class Earth2NEA:
 
 		# Boundaries 
 		# [<arrival date>, <time of flight>, <final mass>, <vinf_unit>, <throttle[0]>, ..., <throttle[n_seg-1]>]
-		self.lb = [tf[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -1] + [-1, -1, -1] * n_seg
-		self.ub = [tf[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 1] + [1, 1, 1] * n_seg
+		self.lb = [tf[0].mjd2000] + [tof[0]] + [0]  + [-1, -1, -0.2] + [-1, -1, -1] * n_seg
+		self.ub = [tf[1].mjd2000] + [tof[1]] + [m0] + [1, 1, 0.2] + [1, 1, 1] * n_seg
 
 	def gradient(self, x):
 		return pg.estimate_gradient(lambda x: self.fitness(x), x, 1e-8)
@@ -228,12 +228,16 @@ class Earth2NEA:
 		return rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd
 
 	def get_deltaV(self, x):
+
+		# Get the mass error [kg]
+		mass_err = self.fitness(x)[7]
 		
+		# Initial and final mass [kg]
 		mi = self.sc.mass
-		mf = x[2]
+		mf = x[2] - (abs(mass_err)*self.sc.mass)
 
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
-
+		
 		return deltaV
 
 	def plot_traj(self, x):
@@ -498,6 +502,18 @@ class Earth2NEA:
 		thrusts = [np.linalg.norm(x[6 + 3 * i: 9 + 3 * i])
 				   for i in range(n_seg)]
 
+		# Recuperation of the constraints violation
+		fitness_vec = self.fitness(x)
+
+		obj = fitness_vec[0]
+		ceq = fitness_vec[1:8]
+		cineq = fitness_vec[8:]
+
+		# /TEST\
+		print("Before : {}".format(mf))
+		mf -= abs(ceq[6]) * self.sc.mass
+		print("After : {}".format(mf))
+
 		t0 = tf - tof
 		mP = mi - mf
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf)
@@ -505,12 +521,6 @@ class Earth2NEA:
 		dt = np.append(self.fwd_dt, self.bwd_dt) * tof / cst.DAY2SEC
 		time_thrusts_on = sum(dt[i] for i in range(
 			len(thrusts)) if thrusts[i] > 0.1)
-
-		fitness_vec = self.fitness(x)
-
-		obj = fitness_vec[0]
-		ceq = fitness_vec[1:8]
-		cineq = fitness_vec[8:]
 
 		print("Departure:", pk.epoch(t0), "(", t0, "mjd2000)")
 		print("Time of flight:", tof, "days")

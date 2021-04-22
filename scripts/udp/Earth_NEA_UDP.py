@@ -494,7 +494,8 @@ class Earth2NEA:
 		tf = x[0]
 		tof = x[1]
 		mf = x[2]
-		thrusts = [np.linalg.norm(x[3 + 3 * i: 6 + 3 * i])
+		vinf = x[3:6]
+		thrusts = [np.linalg.norm(x[6 + 3 * i: 9 + 3 * i])
 				   for i in range(n_seg)]
 
 		t0 = tf - tof
@@ -519,7 +520,6 @@ class Earth2NEA:
 		print("Thrust-on time:", time_thrusts_on, "days")
 
 		print("Position error : {} km".format(np.linalg.norm(ceq[0:3]) * pk.AU / 1000))
-		print("Position velocity : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
-
-
+		print("Velocity error : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))
+		print("Mass error : {} kg".format(ceq[6] * self.sc.mass))
 

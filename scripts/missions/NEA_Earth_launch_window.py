@@ -101,7 +101,7 @@ population = pg.population(problem, size=1)
 sum_ = 0
 
 # Number of iterations
-N = 50
+N = 1
 count = 0
 
 while count < N:

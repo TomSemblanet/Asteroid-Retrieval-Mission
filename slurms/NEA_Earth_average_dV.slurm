@@ -21,4 +21,4 @@ source activate asteroids
 
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 
-mpiexec -n 24 python -m scripts.missions.NEA_Earth_SC /scratch/students/t.semblanet/results/average_dV.txt
+mpiexec -n 24 python -m scripts.missions.NEA_Earth_launch_window /scratch/students/t.semblanet/results/average_dV.txt

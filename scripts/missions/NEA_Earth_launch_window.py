@@ -123,6 +123,10 @@ while count < N:
 # Computation of the average deltaV
 average_dV = sum_ / N
 
-file = open('average_dV.txt', 'a')
+# Location and name of the results file
+path = str(sys.argv[1])
+
+# Write the file
+file = open(path, 'a')
 file.write("Year {} : {} m/s\n".format(year, average_dV))
 

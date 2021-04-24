@@ -8,7 +8,7 @@ import numpy as np
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
 
-def mbh_(file_path=None):
+def mbh(udp=None, population=None, file_path=None):
 	""" Runs an optimization of a NEA -> Earth trajectory using the Monotonic-Bassin-Hopping 
 		algorithm. Briefly, this algorithm explores the environment of the solution to enhance
 		the results. """
@@ -16,35 +16,38 @@ def mbh_(file_path=None):
 	# Loading the main kernels
 	load_kernels.load()
 
-	# Path to the Pickle file
-	file_path = sys.argv[1]
-
-	# Extraction of the Pickle file
-	with open(file_path, 'rb') as file:
-		data = pkl.load(file)
-
 	# Algorithm used to optimize the solution
 	intern_algo = load_sqp.load('ipopt')
 
-	# User-Defined Problem (udp) and population
-	udp = data['udp']
-	population = data['population']
+	if (udp is None and population is None):
+		# Path to the Pickle file
+		file_path = sys.argv[1]
+
+		# Extraction of the Pickle file
+		with open(file_path, 'rb') as file:
+			data = pkl.load(file)
+
+		# User-Defined Problem (udp) and population
+		udp = data['udp']
+		population = data['population']
 
 	# Monotonic-Basin-Hopping algorithmn instantiation
-	mbh = pg.algorithm(pg.mbh(algo=intern_algo, stop=5))
-	mbh.set_verbosity(3)
+	mbh_ = pg.algorithm(pg.mbh(algo=intern_algo, stop=5))
+	mbh_.set_verbosity(3)
 
 	# Optimization
-	population = mbh.evolve(population)
+	population = mbh_.evolve(population)
 
 	# Post-process
-	post_process(udp, population.get_x()[0])
-	udp.brief(population.get_x()[0])
+	x = population.get_x()[0]
+	post_process(udp, x)
+
+	return x
 
 
 if __name__ == '__main__':
 	
-	mbh_(sys.argv[1])
+	mbh(file_path=sys.argv[1])
 
 
 

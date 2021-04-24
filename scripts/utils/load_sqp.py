@@ -20,7 +20,7 @@ def load(name):
 		uda = pg.nlopt('slsqp')
 		uda.xtol_rel = 0
 		uda.ftol_rel = 0
-		uda.maxeval = 150
+		uda.maxeval = 200
 		algo = pg.algorithm(uda)
 		algo.set_verbosity(1)
 		return algo
@@ -29,17 +29,17 @@ def load(name):
 		uda = pg.ipopt() 
 		uda.set_integer_option("print_level", 5)
 		uda.set_integer_option("acceptable_iter", 4)
-		uda.set_integer_option("max_iter", 30)
+		uda.set_integer_option("max_iter", 1000)
 
-		uda.set_numeric_option("tol", 1e-8)
-		uda.set_numeric_option("dual_inf_tol", 1e-8)
-		uda.set_numeric_option("constr_viol_tol", 1e-8)
-		uda.set_numeric_option("compl_inf_tol", 1e-8)
+		uda.set_numeric_option("tol", 1e-5)
+		uda.set_numeric_option("dual_inf_tol", 1e-5)
+		uda.set_numeric_option("constr_viol_tol", 1e-5)
+		uda.set_numeric_option("compl_inf_tol", 1e-5)
 
 		uda.set_numeric_option("acceptable_tol", 1e-3)
 		uda.set_numeric_option("acceptable_dual_inf_tol", 1e-2)
-		uda.set_numeric_option("acceptable_constr_viol_tol", 1e-6)
-		uda.set_numeric_option("acceptable_compl_inf_tol", 1e-6)
+		uda.set_numeric_option("acceptable_constr_viol_tol", 1e-5)
+		uda.set_numeric_option("acceptable_compl_inf_tol", 1e-5)
 
 		algo = pg.algorithm(uda)
 		return algo

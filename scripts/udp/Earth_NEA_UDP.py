@@ -236,17 +236,19 @@ class Earth2NEA:
 
 		# Get the mass error [kg]
 		mass_err = (mfwd[-1] - mbwd[0])
-
-		# Final mass [kg]
-		mf = x[2]
 		
 		# Initial and final mass [kg]
 		mi = self.sc.mass
+		mf = x[2]
 
 		# Correction of the final mass [kg]
 		mf_corr = mf + mass_err
 
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf_corr)
+
+		print("Final mass corrected : {} kg".format(mf_corr))
+		print("Computed deltaV : {} m/s".format(deltaV))
+		input()
 		
 		return deltaV
 

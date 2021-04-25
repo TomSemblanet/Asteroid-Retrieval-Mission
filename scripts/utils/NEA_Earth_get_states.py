@@ -217,7 +217,10 @@ def get_states(udp, population, N):
 
 if __name__ == '__main__':
 
-	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/08_04_2021_results/2044', 'rb') as f:
+	# Pickle file to load
+	file = sys.argv[1]
+
+	with open(file, 'rb') as f:
 		res = pkl.load(f)
 
 	load_kernels.load()

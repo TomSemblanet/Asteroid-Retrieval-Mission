@@ -191,7 +191,7 @@ algorithm = load_sqp.load('ipopt')
 
 # 6 - Problem
 # -----------
-n_seg = 30
+n_seg = 100
 
 udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \

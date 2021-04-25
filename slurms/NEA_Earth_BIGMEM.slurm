@@ -21,4 +21,4 @@ source activate asteroids
 
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 
-mpiexec -n 24 python -m scripts.missions.NEA_Earth_SC ipopt 2044
+mpiexec -n 12 python -m scripts.missions.NEA_Earth_SC ipopt 2044

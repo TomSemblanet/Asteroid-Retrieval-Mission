@@ -17,6 +17,7 @@ from datetime import date
 
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
+from scipts.utils.pickle_results import save
 
 from scripts.udp.Earth_NEA_UDP import Earth2NEA
 from scripts.missions.Earth_NEA_Initial_Guess import initial_guess
@@ -88,14 +89,4 @@ post_process(udp, x)
 
 # 11 - Pickle the results
 # -----------------------
-print("Stored with the ID : <{}>".format(ID))
-
-# If the folder of the day hasn't been created, we create it
-if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):
-	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y"))
-	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
-	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
-
-# Storage of the results
-with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/' + str(ID), 'wb') as f:
-	pkl.dump({'udp': udp, 'population': population}, f)
+save(host='laptop', mission='Earth_NEA', udp=udp, population=population)

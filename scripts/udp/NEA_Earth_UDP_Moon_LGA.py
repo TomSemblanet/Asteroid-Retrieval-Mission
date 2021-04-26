@@ -468,6 +468,7 @@ class NEA2Earth:
 		print("Arrival:", pk.epoch(tf), "(", tf, "mjd2000)")
 		print("Delta-v:", deltaV, "m/s")
 		print("Thrust-on time:", time_thrusts_on, "days")
+		print("Velocity at infinity : {} km/s".format(np.linalg.norm(vinf_moon)*self.vinf_max / 1000))
 
 		print("Position error : {} km".format(np.linalg.norm(ceq[0:3]) * pk.AU / 1000))
 		print("Velocity error : {} km/s".format(np.linalg.norm(ceq[3:6]) * pk.EARTH_VELOCITY / 1000))

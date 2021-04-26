@@ -23,6 +23,7 @@ def save(host, mission, udp, population):
 			pkl.dump({'udp': udp, 'population': population}, f)
 
 	elif host == 'rainman':
+		print(":)", flush=True)
 		# If the folder of the day hasn't been created, we create it
 		if not os.path.exists('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y")):
 			os.mkdir('/scratch/students/t.semblanet/results'+ date.today().strftime("%d-%m-%Y"))

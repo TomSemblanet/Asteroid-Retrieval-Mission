@@ -21,4 +21,5 @@ conda activate asteroids
 
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 
-mpiexec -n 24 python -m scripts.missions.NEA_Earth.NEA_Earth_SC 
+mpiexec -n 24 python -m scripts.missions.NEA_Earth.NEA_Earth_Moon_LGA_SC
+ 

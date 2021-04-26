@@ -26,12 +26,12 @@ def save(host, mission, udp, population):
 		print(":)", flush=True)
 		# If the folder of the day hasn't been created, we create it
 		if not os.path.exists('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y")):
-			os.mkdir('/scratch/students/t.semblanet/results'+ date.today().strftime("%d-%m-%Y"))
-			os.mkdir('/scratch/students/t.semblanet/results'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
-			os.mkdir('/scratch/students/t.semblanet/results'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
+			os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y"))
+			os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
+			os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
 
 		# Storage of the results
-		with open('/scratch/students/t.semblanet/results'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
+		with open('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
 			pkl.dump({'udp': udp, 'population': population}, f)
 
 	# - * - * - * - * - * - * - * - * - * - * - * - *

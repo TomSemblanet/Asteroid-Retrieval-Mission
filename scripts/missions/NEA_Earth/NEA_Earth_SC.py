@@ -40,7 +40,7 @@ Three arguments must be provided to the script when it's runned :
 """
 
 # First launch window year
-year = str(sys.argv[2])
+year = str(sys.argv[1])
 
 # Loading the main kernels
 load_kernels.load()

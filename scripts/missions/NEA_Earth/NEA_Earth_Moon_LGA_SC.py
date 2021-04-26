@@ -39,11 +39,8 @@ Three arguments must be provided to the script when it's runned :
 
 """
 
-# SQP algorithm
-sqp = str(sys.argv[1])
-
 # First launch window year
-year = str(sys.argv[2])
+year = str(sys.argv[1])
 
 # Loading the main kernels
 load_kernels.load()
@@ -89,7 +86,7 @@ vinf_max = 2.5e3
 
 # 6 - Optimization algorithm
 # --------------------------
-algorithm = load_sqp.load(sqp)
+algorithm = load_sqp.load('ipopt')
 
 # 7 - Problem
 # -----------

@@ -39,9 +39,6 @@ Three arguments must be provided to the script when it's runned :
 
 """
 
-# SQP algorithm
-sqp = str(sys.argv[1])
-
 # First launch window year
 year = str(sys.argv[2])
 
@@ -93,7 +90,7 @@ theta_max = 91.0 * cst.DEG2RAD
 
 # 6 - Optimization algorithm
 # --------------------------
-algorithm = load_sqp.load(sqp)
+algorithm = load_sqp.load('ipopt')
 
 # 7 - Problem
 # -----------

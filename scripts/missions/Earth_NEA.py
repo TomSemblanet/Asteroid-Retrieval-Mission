@@ -33,7 +33,7 @@ load_kernels.load()
 ast = load_bodies.asteroid('2020 CD3')
 
 # NEA departure date (mjd2000)
-nea_dpt_date = int(sys.argv[1])
+nea_dpt_date = float(sys.argv[1])
 
 # Maximum and minimum stay time [days]
 max_stay_time = 365
@@ -72,9 +72,9 @@ population = pg.population(problem, size=1)
 
 # 8 - Optimization
 # ----------------
-xi = initial_guess(year_=nea_dpt_date, n_seg=n_seg)
+xi = initial_guess(nea_dpt_date_=nea_dpt_date, n_seg=n_seg)
 
-# Set the initial decision vector
+Set the initial decision vector
 population.set_x(0, xi)
 
 # 9 - Optimization

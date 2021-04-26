@@ -56,19 +56,13 @@ def taylor_disturbance(r0, v0, m0, thrust, disturbance, tof, mu, veff, N=60):
 
 def get_states(udp, population, N):
 
-	# Loading the main kernels
-	load_kernels.load()
-
 	# Extraction of the decision vector
 	x = population.get_x()[0]
 
-	# Extraction of the number of segment of forward and backward propagation
+	# Extraction of the number of segment on forward and backward propagation
 	n_seg = udp.n_seg 
-	n_fwd_seg = udp.n_fwd_seg 
+	n_fwd_seg = udp.n_fwd_seg
 	n_bwd_seg = udp.n_bwd_seg
-
-	# Array containing the positons, velocities and thrusts
-	R = 0. * np.ndarray(shape=(3, N * (n_fwd_seg + n_bwd_seg)))
 
 	# Time of flight
 	t0 = x[0]
@@ -128,7 +122,6 @@ def get_states(udp, population, N):
 			buffer_mfwd = np.append(buffer_mfwd, m_fwd__, axis=0)
 			buffer_ufwd = np.append(buffer_ufwd, np.transpose(np.repeat([ufwd[i]], (N-1), axis=0)), axis=1)
 			buffer_tfwd = np.append(buffer_tfwd, [times[i] + (j * fwd_dt[i] / N) * cst.SEC2DAY for j in range(N)])
-
 
 	# ============     BACKWARD     =================
 
@@ -223,7 +216,10 @@ if __name__ == '__main__':
 	with open(file, 'rb') as f:
 		res = pkl.load(f)
 
+	# Loads the Spice kernels
 	load_kernels.load()
+
 	post_process(res['udp'], res['population'].get_x()[0])
 
 	get_states(res['udp'], res['population'], 50)
+	

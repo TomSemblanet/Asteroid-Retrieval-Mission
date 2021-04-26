@@ -145,7 +145,7 @@ from data import constants as cst
 # 	# ax.plot([x_ear, x_ear + k_unt_e[0]/300], [y_ear + 0, y_ear + k_unt_e[1]/300], [z_ear + 0, z_ear + k_unt_e[2]/300])
 # 	# ax.plot([x_ear, x_ear + vec_earth_basis[0]/5], [y_ear + 0, y_ear + vec_earth_basis[1]/5], [z_ear + 0, z_ear + vec_earth_basis[2]/5], linewidth=2)
 
-# 	# plt.show()
+# 	# plt.show()	
 
 # 	return x_
 
@@ -169,7 +169,7 @@ lw_upp = pk.epoch_from_string(str(year) + '-12-31 23:59:59')
 # 3 - Time of flight
 # ------------------
 tof_low = cst.YEAR2DAY * 0.70
-tof_upp = cst.YEAR2DAY * 5.00
+tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
 # --------------
@@ -191,7 +191,7 @@ algorithm = load_sqp.load('ipopt')
 
 # 6 - Problem
 # -----------
-n_seg = 100
+n_seg = 30
 
 udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \

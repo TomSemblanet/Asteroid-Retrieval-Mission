@@ -45,7 +45,7 @@ def initial_guess(year_, n_seg):
 	# 3 - Time of flight
 	# ------------------
 	tof_low = cst.YEAR2DAY * 0.70
-	tof_upp = cst.YEAR2DAY * 5.00
+	tof_upp = cst.YEAR2DAY * 3.00
 
 	# 4 - Spacecraft
 	# --------------

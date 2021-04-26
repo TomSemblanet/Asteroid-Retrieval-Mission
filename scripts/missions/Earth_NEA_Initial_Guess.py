@@ -22,13 +22,13 @@ from scripts.udp.Earth_NEA_velocity_UDP import Earth_NEA_Vel
 from scripts.utils.post_process import post_process
 from data import constants as cst
 
-def initial_guess(year_, n_seg):
+def initial_guess(nea_dpt_date_, n_seg):
 
 	# Loading of the target asteroid
 	ast = load_bodies.asteroid('2020 CD3')
 
 	# NEA departure date (mjd2000)
-	nea_dpt_date = year_
+	nea_dpt_date = nea_dpt_date_
 
 	# 1 - Maximum and minimum stay time [days]
 	# ----------------------------------------

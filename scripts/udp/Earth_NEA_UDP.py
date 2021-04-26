@@ -107,6 +107,11 @@ class Earth2NEA:
 		mf_corr = mf + mass_err
 		obj = - mf_corr / self.sc.mass
 
+		# print("Mass initial : {}".format(self.sc.mass))
+		# print("Mass corrected : {}".format(mf_corr))
+		# print("Objective : {}".format(obj))
+		# print("Delta V : {} m/s".format(self.get_deltaV(x)))
+
 		# Assembly of the fitness vector
 		retval = [obj]
 		retval.extend(ceq)
@@ -246,9 +251,9 @@ class Earth2NEA:
 
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf_corr)
 
-		print("Final mass corrected : {} kg".format(mf_corr))
-		print("Computed deltaV : {} m/s".format(deltaV))
-		input()
+		# print("Final mass corrected : {} kg".format(mf_corr))
+		# print("Computed deltaV : {} m/s".format(deltaV))
+		# input()
 		
 		return deltaV
 

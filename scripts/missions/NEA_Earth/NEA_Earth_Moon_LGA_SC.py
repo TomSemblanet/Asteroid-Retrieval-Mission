@@ -115,4 +115,4 @@ x = population.get_x()[0]
 	
 # 10 - Pickle the results
 # -----------------------
-save(host='rainman', mission='NEA_Earth', udp=udp, mission=mission)
+save(host='rainman', mission='NEA_Earth', udp=udp, population=population)

@@ -22,7 +22,7 @@ from mpi4py import MPI
 from data import constants as cst
 from scripts.udp.NEA_Earth_UDP_Moon_LGA import NEA2Earth
 from scripts.utils.post_process import post_process
-from scripts.missions.NEA_Earth.NEA_Earth_Initial_Guess import initial_guess
+from scripts.missions.NEA_Earth.NEA_Earth_Moon_LGA_Initial_Guess import initial_guess
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.pickle_results import save
 

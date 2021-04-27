@@ -99,6 +99,4 @@ def initial_guess(nea_dpt_date_, n_seg):
 	population = algorithm.evolve(population)
 	x = population.get_x()[0]
 
-	post_process(udp, x)
-
 	return x

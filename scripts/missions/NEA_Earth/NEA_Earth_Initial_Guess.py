@@ -100,8 +100,6 @@ def initial_guess(year_, n_seg):
 	population = algorithm.evolve(population)
 	x = population.get_x()[0]
 
-	post_process(udp, x)
-
 	return x
 
 

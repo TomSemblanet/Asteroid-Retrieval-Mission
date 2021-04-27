@@ -6,10 +6,11 @@ import numpy as np
 import pickle as pkl
 from datetime import date
 
-from scripts.udp.NEA_Earth_UDP_Moon_LGA import NEA2Earth
-from scripts.udp.Earth_NEA_UDP import Earth2NEA
+from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
+from scripts.udp.Earth_NEA.Earth_NEA_UDP import Earth2NEA
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
+from scripts.utils.pickle_results import save
 
 from data import constants as cst
 
@@ -95,21 +96,6 @@ if __name__ == '__main__':
 
 	post_process(udp, x)
 
-	# Define a random ID for the results storage
-	ID = np.random.randint(0, 1e9)
-	print("Stored with the ID : <{}>".format(ID))
-
-	# If the folder of the day hasn't been created, we create it
-	if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):
-		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y"))
-		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
-		os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
-
-	# Storage of the results
-	if 'NEA_Earth' in file_path:
-		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/' + str(ID) + '_d', 'wb') as f:
-			pkl.dump({'udp': udp, 'population': population}, f)
-	elif 'Earth_NEA' in file_path:
-		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/' + str(ID) + '_d', 'wb') as f:
-			pkl.dump({'udp': udp, 'population': population}, f)
+	# Storage
+	save(host='laptop', mission='NEA_Earth', udp=udp, population=population)
 

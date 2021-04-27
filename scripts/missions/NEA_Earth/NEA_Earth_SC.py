@@ -96,7 +96,7 @@ algorithm = load_sqp.load('ipopt')
 
 # 7 - Problem
 # -----------
-n_seg = 50
+n_seg = 30
 
 udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
@@ -122,6 +122,11 @@ x = population.get_x()[0]
 
 # 10 - Pickle the results
 # -----------------------
-if udp.get_deltaV(x) <= dV_max:
+dV = udp.get_deltaV(x)
+if dV <= dV_max:
 	host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
 	save(host=host, mission='NEA_Earth', udp=udp, population=population)
+else:
+	# * - * - * - * - * - * - * - * - * - 
+	print("Delta-V : {} m/s > {} m/s".format(dV, dV_max), flush=True)
+	# * - * - * - * - * - * - * - * - * - 

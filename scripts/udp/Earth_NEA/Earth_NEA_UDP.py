@@ -250,10 +250,6 @@ class Earth2NEA:
 		mf_corr = mf + mass_err
 
 		deltaV = self.sc.isp * cst.G0 * np.log(mi / mf_corr)
-
-		# print("Final mass corrected : {} kg".format(mf_corr))
-		# print("Computed deltaV : {} m/s".format(deltaV))
-		# input()
 		
 		return deltaV
 

@@ -45,6 +45,9 @@ Three arguments must be provided to the script when it's runned :
 # First launch window year
 year = str(sys.argv[1])
 
+# Maximum dV [m/s]
+dV_max = float(sys.argv[2])
+
 # Loading the main kernels
 load_kernels.load()
 
@@ -119,5 +122,6 @@ x = population.get_x()[0]
 
 # 10 - Pickle the results
 # -----------------------
-host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
-save(host=host, mission='NEA_Earth', udp=udp, population=population)
+if udp.get_deltaV(x) <= dV_max:
+	host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
+	save(host=host, mission='NEA_Earth', udp=udp, population=population)

@@ -23,13 +23,15 @@ from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 
 
-def Earth_NEA(sqp, nea_dpt_date, rank):
+# NEA Departure day
+nea_dpt_date = str(sys.argv[1])
 
-# If manual run, creation of the communicator
-if rank == -1:
-	# Creation of the communicator 
-	comm = MPI.COMM_WORLD
-	rank = comm.rank
+# Maximum dV [m/s]
+dV_max = float(sys.argv[2])
+
+# Creation of the communicator 
+comm = MPI.COMM_WORLD
+rank = comm.rank
 
 # - * - * - * - * - * - * - * - * - * - * - * - * 
 print("Rank <{}> : Run".format(rank), flush=True)
@@ -91,5 +93,12 @@ post_process(udp, x)
 
 # 11 - Pickle the results
 # -----------------------
-host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
-save(host='laptop', mission='Earth_NEA', udp=udp, population=population)
+dV = udp.get_deltaV(x)
+
+if dV <= dV_max:
+	host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
+	save(host='laptop', mission='Earth_NEA', udp=udp, population=population)
+else:
+	# * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - 
+	print("Delta-V : {} m/s > {} m/s".format(dV, dV_max), flush=True)
+	# * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - 

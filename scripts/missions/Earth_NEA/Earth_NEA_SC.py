@@ -18,13 +18,14 @@ from datetime import date
 from mpi4py import MPI
 
 from data import constants as cst
-from scripts.udp.Earth_NEA_UDP import Earth2NEA
+from scripts.udp.Earth_NEA.Earth_NEA_UDP import Earth2NEA
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
+from scripts.missions.Earth_NEA.Earth_NEA_Initial_Guess import initial_guess
 
 
 # NEA Departure day
-nea_dpt_date = str(sys.argv[1])
+nea_dpt_date = float(sys.argv[1])
 
 # Maximum dV [m/s]
 dV_max = float(sys.argv[2])
@@ -52,7 +53,7 @@ arr_low = pk.epoch(nea_dpt_date - max_stay_time, 'mjd2000')
 arr_upp = pk.epoch(nea_dpt_date - min_stay_time, 'mjd2000')
 
 # 3 - Time of flight
-tof_low = cst.YEAR2DAY * 0.1
+tof_low = cst.YEAR2DAY * 0.50
 tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
@@ -64,10 +65,11 @@ Isp = 3000
 vinf_max = 2e3
 
 # 5 - Optimization algorithm
-algorithm = load_sqp.load(sqp)
+algorithm = load_sqp.load('ipopt')
 
 # 7 - Problem
-udp = Earth2NEA(nea=ast, n_seg=30, tf=(arr_low, arr_upp), \
+n_seg = 30
+udp = Earth2NEA(nea=ast, n_seg=n_seg, tf=(arr_low, arr_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 
@@ -79,11 +81,14 @@ population = pg.population(problem, size=1)
 # ----------------
 xi = initial_guess(nea_dpt_date_=nea_dpt_date, n_seg=n_seg)
 
-Set the initial decision vector
+# Set the initial decision vector
 population.set_x(0, xi)
 
 # 9 - Optimization
 # ----------------
+# * - * - * - * - * - * - * - * - * - 
+print("Main optimization", flush=True)
+# * - * - * - * - * - * - * - * - * - 
 population = algorithm.evolve(population)
 x = population.get_x()[0]
 

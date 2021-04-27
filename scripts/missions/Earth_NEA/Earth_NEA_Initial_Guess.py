@@ -17,8 +17,8 @@ from datetime import date
 
 from scripts.utils import load_sqp, load_kernels, load_bodies
 
-from scripts.udp.Earth_NEA_position_UDP import Earth_NEA_Pos
-from scripts.udp.Earth_NEA_velocity_UDP import Earth_NEA_Vel
+from scripts.udp.Earth_NEA.Earth_NEA_position_UDP import Earth_NEA_Pos
+from scripts.udp.Earth_NEA.Earth_NEA_velocity_UDP import Earth_NEA_Vel
 from scripts.utils.post_process import post_process
 from data import constants as cst
 

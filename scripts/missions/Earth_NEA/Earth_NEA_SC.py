@@ -101,7 +101,7 @@ dV = udp.get_deltaV(x)
 
 if dV <= dV_max:
 	host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
-	save(host='laptop', mission='Earth_NEA', udp=udp, population=population)
+	save(host=host, mission='Earth_NEA', udp=udp, population=population)
 else:
 	# * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - 
 	print("Delta-V : {} m/s > {} m/s".format(dV, dV_max), flush=True)

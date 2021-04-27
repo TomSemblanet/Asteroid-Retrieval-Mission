@@ -9,6 +9,8 @@ Created on Thu Mar 18 2021 09:02:20
 
 import os
 import sys
+import getpass
+
 import pykep as pk 
 import pygmo as pg 
 import numpy as np
@@ -91,10 +93,6 @@ print("Main optimization", flush=True)
 # * - * - * - * - * - * - * - * - * - 
 population = algorithm.evolve(population)
 x = population.get_x()[0]
-
-# 10 - Post process 
-# -----------------
-post_process(udp, x)
 
 # 11 - Pickle the results
 # -----------------------

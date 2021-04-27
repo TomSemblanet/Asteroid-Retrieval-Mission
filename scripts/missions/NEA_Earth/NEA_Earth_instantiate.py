@@ -18,9 +18,10 @@ from datetime import date
 import matplotlib.pyplot as plt
 
 from scripts.utils import load_sqp, load_kernels, load_bodies
-from scripts.udp.NEA_Earth_UDP import NEA2Earth
+from scripts.udp.NEA_Earth_UDP_Moon_LGA import NEA2Earth
 from scripts.utils.post_process import post_process
 from data import constants as cst
+from scripts.utils.pickle_results import save
 
 
 # Path of the text file containing the decision vector of interest
@@ -45,12 +46,12 @@ ast_mass = 4900
 
 # 2 - Launch window
 # -----------------
-lw_low = pk.epoch_from_string('2021-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2050-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2044-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
 
 # 3 - Time of flight
 # ------------------
-tof_low = cst.YEAR2DAY * 0.1
+tof_low = cst.YEAR2DAY * 0.70
 tof_upp = cst.YEAR2DAY * 5.00
 
 # 4 - Spacecraft
@@ -61,17 +62,12 @@ Isp = 3000
 
 # 5 - Earth arrival 
 # -----------------
-phi_min = 175.0 * cst.DEG2RAD
-phi_max = 185.0 * cst.DEG2RAD
-
-theta_min = 89.0 * cst.DEG2RAD
-theta_max = 91.0 * cst.DEG2RAD
+vinf_max = 2.5e3
 
 # 6 - Problem
 # -----------
 udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
-	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
-	theta_max=theta_max, earth_grv=True)
+	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 
 # 7 - Population
@@ -84,20 +80,11 @@ population.set_x(0, x)
 # Inspect the solution
 post_process(udp, population.get_x()[0])
 
-# ID for file storing
-nea_dpt_date = pk.epoch(x[0]).mjd2000
-ID = int(round(float((nea_dpt_date)), 0))
 
+# Pickle the results
+# ------------------
+save(host='laptop', mission='NEA_Earth', udp=udp, population=population)
 
-# If the folder of the day hasn't been created, we create it
-if not os.path.exists('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y")):
-	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y"))
-	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
-	os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
-
-# Storage of the results
-with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/' + str(ID), 'wb') as f:
-	pkl.dump({'udp': udp, 'population': population}, f)
 
 
 

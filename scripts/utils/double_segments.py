@@ -6,7 +6,7 @@ import numpy as np
 import pickle as pkl
 from datetime import date
 
-from scripts.udp.NEA_Earth_UDP import NEA2Earth
+from scripts.udp.NEA_Earth_UDP_Moon_LGA import NEA2Earth
 from scripts.udp.Earth_NEA_UDP import Earth2NEA
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
@@ -24,16 +24,15 @@ def double_segments_NEA_Earth(udp_=None, population_=None):
 
 	# Extraction of the decision vector
 	x_ = population_.get_x()[0]
-	throttles_ = np.array([x_[5 + 3 * i: 8 + 3 * i] for i in range(udp_.n_seg)])
+	throttles_ = np.array([x_[6 + 3 * i: 9 + 3 * i] for i in range(udp_.n_seg)])
 
 	# Construction of a new UDP
 	udp = NEA2Earth(nea=udp_.nea, n_seg=2 * udp_.n_seg, t0=(udp_.t0[0], udp_.t0[1]), tof=(udp_.tof[0], udp_.tof[1]), m0=udp_.sc.mass, \
-					  Tmax=udp_.sc.thrust, Isp=udp_.sc.isp, nea_mass=udp_.nea_mass, phi_min=udp_.phi_min, phi_max=udp_.phi_max, theta_min=udp_.theta_min, \
-					  theta_max=udp_.theta_max, earth_grv=udp_.earth_grv)
+					  Tmax=udp_.sc.thrust, Isp=udp_.sc.isp, nea_mass=udp_.nea_mass, vinf_max=udp_.vinf_max, earth_grv=udp_.earth_grv)
 	problem = pg.problem(udp)
 
 	# Construction of the new decision vector
-	x = np.concatenate((x_[:5], np.repeat(a=throttles_, repeats=2, axis=0).flatten()))
+	x = np.concatenate((x_[:6], np.repeat(a=throttles_, repeats=2, axis=0).flatten()))
 
 	# Construction of the new population
 	population = pg.population(problem, size=1)

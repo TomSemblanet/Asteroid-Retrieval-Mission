@@ -17,12 +17,13 @@ from datetime import date
 
 import matplotlib.pyplot as plt
 
-from scripts.utils import load_sqp, load_kernels, load_bodies
-from scripts.udp.NEA_Earth_UDP_Moon_LGA import NEA2Earth
-from scripts.utils.post_process import post_process
 from data import constants as cst
-from scripts.utils.pickle_results import save
 
+from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
+
+from scripts.utils.pickle_results import save
+from scripts.utils.post_process import post_process
+from scripts.utils import load_sqp, load_kernels, load_bodies
 
 # Path of the text file containing the decision vector of interest
 file_path = sys.argv[1]

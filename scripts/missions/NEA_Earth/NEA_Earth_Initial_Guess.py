@@ -20,8 +20,8 @@ import matplotlib.pyplot as plt
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
 
-from scripts.udp.NEA_Earth_position_UDP import NEA2Earth_Pos
-from scripts.udp.NEA_Earth_velocity_UDP import NEA2Earth_Vel
+from scripts.udp.NEA_Earth.NEA_Earth_position_UDP import NEA2Earth_Pos
+from scripts.udp.NEA_Earth.NEA_Earth_velocity_UDP import NEA2Earth_Vel
 
 from data import constants as cst
 
@@ -55,11 +55,7 @@ def initial_guess(year_, n_seg):
 
 	# 5 - Earth arrival 
 	# -----------------
-	phi_min = 175.0 * cst.DEG2RAD
-	phi_max = 185.0 * cst.DEG2RAD
-
-	theta_min = 89.0 * cst.DEG2RAD
-	theta_max = 91.0 * cst.DEG2RAD
+	vinf_max = 2.5e3
 
 	# 5 - Optimization algorithm
 	# --------------------------
@@ -68,8 +64,7 @@ def initial_guess(year_, n_seg):
 	# 6 - Optimization on position
 	# ----------------------------
 	udp = NEA2Earth_Pos(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
-		Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
-		theta_max=theta_max, earth_grv=True)
+		Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 	problem = pg.problem(udp)
 
 	population = pg.population(problem, size=1)
@@ -81,7 +76,7 @@ def initial_guess(year_, n_seg):
 
 	# Optimization
 	# * - * - * - * - * - * - * - * - * - 
-	print("Optimization on the position")
+	print("Optimization on the position", flush=True)
 	# * - * - * - * - * - * - * - * - * - 
 	population = algorithm.evolve(population)
 	x = population.get_x()[0]
@@ -90,8 +85,7 @@ def initial_guess(year_, n_seg):
 	# 7 - Optimization on velocity
 	# ----------------------------
 	udp = NEA2Earth_Vel(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
-		Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
-		theta_max=theta_max, earth_grv=True)
+		Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 	problem = pg.problem(udp)
 
 	population = pg.population(problem, size=1)
@@ -101,7 +95,7 @@ def initial_guess(year_, n_seg):
 
 	# Optimization
 	# * - * - * - * - * - * - * - * - * - 
-	print("Optimization on the velocity")
+	print("Optimization on the velocity", flush=True)
 	# * - * - * - * - * - * - * - * - * - 
 	population = algorithm.evolve(population)
 	x = population.get_x()[0]

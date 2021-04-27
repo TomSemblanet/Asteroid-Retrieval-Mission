@@ -17,10 +17,10 @@ from datetime import date
 
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
-from scipts.utils.pickle_results import save
+from scripts.utils.pickle_results import save
 
-from scripts.udp.Earth_NEA_UDP import Earth2NEA
-from scripts.missions.Earth_NEA_Initial_Guess import initial_guess
+from scripts.udp.Earth_NEA.Earth_NEA_UDP import Earth2NEA
+from scripts.missions.Earth_NEA.Earth_NEA_Initial_Guess import initial_guess
 
 from data import constants as cst
 
@@ -71,15 +71,18 @@ problem = pg.problem(udp)
 # --------------
 population = pg.population(problem, size=1)
 
-# 8 - Optimization
-# ----------------
+# 8 - Initial guess
+# -----------------
 xi = initial_guess(nea_dpt_date_=nea_dpt_date, n_seg=n_seg)
 
-Set the initial decision vector
+# Set the initial decision vector
 population.set_x(0, xi)
 
 # 9 - Optimization
 # ----------------
+# * - * - * - * - * - * - * - * - * - 
+print("Main optimization", flush=True)
+# * - * - * - * - * - * - * - * - * - 
 population = algorithm.evolve(population)
 x = population.get_x()[0]
 

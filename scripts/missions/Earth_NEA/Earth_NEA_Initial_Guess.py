@@ -74,7 +74,7 @@ def initial_guess(nea_dpt_date_, n_seg):
 
 	# Optimization
 	# * - * - * - * - * - * - * - * - * - 
-	print("Optimization on the position")
+	print("Optimization on the position", flush=True)
 	# * - * - * - * - * - * - * - * - * - 
 	population = algorithm.evolve(population)
 	x = population.get_x()[0]
@@ -94,7 +94,7 @@ def initial_guess(nea_dpt_date_, n_seg):
 
 	# Optimization
 	# * - * - * - * - * - * - * - * - * - 
-	print("Optimization on the velocity")
+	print("Optimization on the velocity", flush=True)
 	# * - * - * - * - * - * - * - * - * - 
 	population = algorithm.evolve(population)
 	x = population.get_x()[0]

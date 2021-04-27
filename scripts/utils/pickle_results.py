@@ -33,6 +33,17 @@ def save(host, mission, udp, population):
 		with open('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
 			pkl.dump({'udp': udp, 'population': population}, f)
 
-	# - * - * - * - * - * - * - * - * - * - * - * - *
-	print("Stored with the ID : <{}>".format(ID))
-	# - * - * - * - * - * - * - * - * - * - * - * - *
+	elif host == 'pando':
+		# If the folder of the day hasn't been created, we create it
+		if not os.path.exists('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y")):
+			os.mkdir('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y"))
+			os.mkdir('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y") + '/Earth_NEA/')
+			os.mkdir('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
+
+		# Storage of the results
+		with open('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
+			pkl.dump({'udp': udp, 'population': population}, f)
+
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * -
+	print("Stored with the ID <{}> on {}".format(ID, host))
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * -

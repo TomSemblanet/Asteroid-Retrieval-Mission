@@ -21,11 +21,13 @@ from mpi4py import MPI
 
 from data import constants as cst
 
-from scripts.udp.NEA_Earth_UDP import NEA2Earth
-from scripts.utils.post_process import post_process
 from scripts.missions.NEA_Earth.NEA_Earth_Initial_Guess import initial_guess
-from scripts.utils import load_sqp, load_kernels, load_bodies
+
+from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
+
 from scripts.utils.pickle_results import save
+from scripts.utils.post_process import post_process
+from scripts.utils import load_sqp, load_kernels, load_bodies
 
 """ 
 
@@ -83,11 +85,7 @@ Isp = 3000
 
 # 5 - Earth arrival 
 # -----------------
-phi_min = 175.0 * cst.DEG2RAD
-phi_max = 185.0 * cst.DEG2RAD
-
-theta_min = 89.0 * cst.DEG2RAD
-theta_max = 91.0 * cst.DEG2RAD
+vinf_max = 2.5e3
 
 # 6 - Optimization algorithm
 # --------------------------
@@ -98,8 +96,7 @@ algorithm = load_sqp.load('ipopt')
 n_seg = 30
 
 udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
-	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
-	theta_max=theta_max, earth_grv=True)
+	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 
 # 7 - Population
@@ -117,7 +114,7 @@ population.set_x(0, xi)
 population = algorithm.evolve(population)
 x = population.get_x()[0]
 
-	
 # 10 - Pickle the results
 # -----------------------
-save(host='rainman', mission='NEA_Earth', udp=udp, population=population)
+host = 'rainman' if 'semblanet' in getpass.getuser() else 'pando'
+save(host=host, mission='NEA_Earth', udp=udp, population=population)

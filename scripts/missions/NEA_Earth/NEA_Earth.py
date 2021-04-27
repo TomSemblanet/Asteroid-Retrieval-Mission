@@ -18,7 +18,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 
 
-from scripts.udp.NEA_Earth_UDP import NEA2Earth
+from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
 
 from scripts.missions.NEA_Earth.NEA_Earth_Initial_Guess import initial_guess
 
@@ -57,11 +57,7 @@ Isp = 3000
 
 # 5 - Earth arrival 
 # -----------------
-phi_min = 175.0 * cst.DEG2RAD
-phi_max = 185.0 * cst.DEG2RAD
-
-theta_min = 89.0 * cst.DEG2RAD
-theta_max = 91.0 * cst.DEG2RAD
+vinf_max = 2.5e3
 
 # 5 - Optimization algorithm
 # --------------------------
@@ -72,8 +68,7 @@ algorithm = load_sqp.load('ipopt')
 n_seg = 30
 
 udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
-	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
-	theta_max=theta_max, earth_grv=True)
+	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 
 # 7 - Population
@@ -89,7 +84,7 @@ population.set_x(0, xi)
 # 9 - Optimization
 # ----------------
 # * - * - * - * - * - * - * - * - * - 
-print("Main optimization")
+print("Main optimization", flush=True)
 # * - * - * - * - * - * - * - * - * - 
 population = algorithm.evolve(population)
 x = population.get_x()[0]
@@ -101,5 +96,4 @@ post_process(udp, x)
 # 12 - Pickle the results
 # -----------------------
 save(host='laptop', mission='NEA_Earth', udp=udp, population=population)
-
 

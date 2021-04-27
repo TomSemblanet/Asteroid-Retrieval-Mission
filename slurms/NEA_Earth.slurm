@@ -1,13 +1,13 @@
 #!/bin/bash
 #SBATCH --nodes=1                                       			#### number of computation nodes
-#SBATCH --ntasks-per-node=24                            			#### number of tasks per node
+#SBATCH --ntasks-per-node=                            				#### number of tasks per node
 #SBATCH --time=24:00:00                                 			#### max run time
 #SBATCH --mail-user=Tom.SEMBLANET@student.isae-supaero.fr      		#### user email
 #SBATCH --mail-type=FAIL,END                            			#### notifications sent via email
 #SBATCH --job-name=nea_earth                               			#### Job name
 #SBATCH -o    slurm.%j.out                              			#### standard output STDOUT
 #SBATCH -e    slurm.%j.err                              			#### error output STDERR
-#SBATCH --partition=p24                               				#### partition
+#SBATCH --partition=	                               				#### partition
 
 module purge
 
@@ -20,5 +20,6 @@ conda deactivate
 conda activate asteroids
 
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
+####cd /home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission
 
-mpiexec -n 24 python -m scripts.missions.NEA_Earth.NEA_Earth_SC 
+mpiexec -n  python -m scripts.missions.NEA_Earth.NEA_Earth_SC 

@@ -111,6 +111,9 @@ population.set_x(0, xi)
 
 # 9 - Optimization
 # ----------------
+# * - * - * - * - * - * - * - * - * - 
+print("Main optimization", flush=True)
+# * - * - * - * - * - * - * - * - * - 
 population = algorithm.evolve(population)
 x = population.get_x()[0]
 

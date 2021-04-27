@@ -24,6 +24,7 @@ from scripts.udp.Earth_NEA.Earth_NEA_UDP import Earth2NEA
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.missions.Earth_NEA.Earth_NEA_Initial_Guess import initial_guess
+from scripts.utils.pickle_results import save
 
 
 # NEA Departure day

@@ -22,4 +22,4 @@ source activate asteroids
 cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 ####cd /home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission
 
-mpiexec -n  python -m scripts.missions.Earth_NEA.Earth_NEA_SC 
+mpiexec -n  python -m scripts.missions.Earth_NEA.Earth_NEA_SC <date> <dV_max>

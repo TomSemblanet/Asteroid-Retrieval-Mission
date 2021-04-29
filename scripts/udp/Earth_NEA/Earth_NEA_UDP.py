@@ -100,17 +100,11 @@ class Earth2NEA:
 		ceq[3] /= pk.EARTH_VELOCITY
 		ceq[4] /= pk.EARTH_VELOCITY
 		ceq[5] /= pk.EARTH_VELOCITY
-		# ceq[6] /= self.sc.mass
 
 		# Objective function : maximization of the final mass
 		mass_err = (mfwd[-1] - mbwd[0])
 		mf_corr = mf + mass_err
 		obj = - mf_corr / self.sc.mass
-
-		# print("Mass initial : {}".format(self.sc.mass))
-		# print("Mass corrected : {}".format(mf_corr))
-		# print("Objective : {}".format(obj))
-		# print("Delta V : {} m/s".format(self.get_deltaV(x)))
 
 		# Assembly of the fitness vector
 		retval = [obj]

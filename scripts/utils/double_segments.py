@@ -97,5 +97,8 @@ if __name__ == '__main__':
 	post_process(udp, x)
 
 	# Storage
-	save(host='laptop', mission='NEA_Earth', udp=udp, population=population)
+	if 'NEA_Earth' in file_path:
+		save(host='laptop', mission='NEA_Earth', udp=udp, population=population)
+	elif 'Earth_NEA' in file_path:
+		save(host='laptop', mission='Earth_NEA', udp=udp, population=population)
 

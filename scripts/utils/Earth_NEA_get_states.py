@@ -6,7 +6,7 @@ import pickle as pkl
 
 import matplotlib.pyplot as plt
 
-from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
+from scripts.udp.Earth_NEA.Earth_NEA_UDP import Earth2NEA
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
 
@@ -65,7 +65,7 @@ def get_states(udp, population, N, plot):
 	n_bwd_seg = udp.n_bwd_seg
 
 	# Time of flight
-	t0 = x[0]
+	tf = x[0]
 	tof = x[1]
 
 	# Spacecraft characteristic
@@ -73,17 +73,17 @@ def get_states(udp, population, N, plot):
 	veff = isp * pk.G0
 
 	# Reconstruction of the forward and backward grid
-	fwd_grid = t0 + tof * udp.fwd_grid
-	bwd_grid = t0 + tof * udp.bwd_grid
+	fwd_grid = (tf - tof) + tof * udp.fwd_grid
+	bwd_grid = (tf - tof) + tof * udp.bwd_grid
 
 	# Thrust
-	throttles = [x[5 + 3 * i : 8 + 3 * i] for i in range(n_seg)]
+	throttles = [x[6 + 3 * i : 9 + 3 * i] for i in range(n_seg)]
 
 	# Time vector
 	times = np.concatenate((fwd_grid, bwd_grid[1:]))
 	dts = times[1:] - times[:-1]
 
-	# Propagation 
+	# Propagation
 	rfwd, rbwd, vfwd, vbwd, mfwd, mbwd, ufwd, ubwd, fwd_dt, bwd_dt, dfwd, dbwd = udp.propagate(x)
 
 	# ============     FORWARD     =================
@@ -158,7 +158,7 @@ def get_states(udp, population, N, plot):
 	buffer_mbwd = np.flip(buffer_mbwd, axis=0)
 	buffer_tbwd = np.flip(buffer_tbwd, axis=0)
 
-	# Mass error correction 
+	# Correct the mass error 
 	buffer_mbwd += mfwd[-1] - mbwd[0]
 
 	# Concatenation of the forward and backward arrays
@@ -232,7 +232,6 @@ def get_states(udp, population, N, plot):
 
 	return R, V, M, U, T
 
-
 if __name__ == '__main__':
 
 	# Pickle file to load
@@ -244,14 +243,11 @@ if __name__ == '__main__':
 	# Loads the Spice kernels
 	load_kernels.load()
 
-	# post_process(res['udp'], res['population'].get_x()[0])
-
 	R, V, M, U, T = get_states(udp=res['udp'], population=res['population'], N=50, plot=False)
 
-
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-	# Plot of the Spacecraft arrival in the Earth-Moon system
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
+	# Plot of the Spacecraft departure from the Earth-Moon system
+	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
 	earth = load_bodies.planet('EARTH')
 	moon = load_bodies.planet('MOON', observer='EARTH')
@@ -259,18 +255,36 @@ if __name__ == '__main__':
 	# Convert the spacecraft coordinates into the Geocentric frame
 	for i, T_ in enumerate(T):
 		earth_r = earth.eph(T_)[0]
+		earth_v = earth.eph(T_)[1]
+
 		R[0, i] -= earth_r[0]
 		R[1, i] -= earth_r[1]
 		R[2, i] -= earth_r[2]
 
+		V[0, i] -= earth_v[0]
+		V[1, i] -= earth_v[1]
+		V[2, i] -= earth_v[2]
+
+
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
 
-	pk.orbit_plots.plot_planet(plnt=moon, t0=pk.epoch(T[-2000]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', legend=(False, "Moon orbit"))
+	pk.orbit_plots.plot_planet(plnt=moon, t0=pk.epoch(T[0]), tf=pk.epoch(T[1000]), N=1000, axes=ax, s=0, color='green', legend=(False, "Moon orbit"))
 
-	ax.plot(R[0, -1000:-1], R[1, -1000:-1], R[2, -1000:-1], label='Spacecraft trajectory')
-	ax.plot(moon.eph(T[-1])[0][0], moon.eph(T[-1])[0][1], moon.eph(T[-1])[0][2], 'o', label='Moon at arrival')
+	ax.plot(R[0, :1000], R[1, :1000], R[2, :1000], label='Spacecraft trajectory')
+	ax.plot(moon.eph(T[0])[0][0], moon.eph(T[0])[0][1], moon.eph(T[0])[0][2], 'o', label='Moon at departure')
 	ax.plot([0], [0], [0], 'o', markersize=10, label='Earth')
+
+	alpha=5e5
+
+	moon_r, moon_v = moon.eph(T[0])
+	ax.plot([moon_r[0], moon_r[0]+V[0, 0]*alpha], [moon_r[1], moon_r[1]+V[1, 0]*alpha], \
+		[moon_r[2], moon_r[2]+V[2, 0]*alpha], label='Spacecraft velocity')
+
+	ax.plot([moon_r[0], moon_r[0]+moon_v[0]*alpha], [moon_r[1], moon_r[1]+moon_v[1]*alpha], \
+		[moon_r[2], moon_r[2]+moon_v[2]*alpha], label='Spacecraft velocity')
+	# ax_.plot([0, moon_helio.eph(T[0])[1][0]], [0, moon_helio.eph(T[0])[1][1]], [0, moon_helio.eph(T[0])[1][2]], label='Moon velocity')
+
 
 	ax.set_xlim(-1e9, 1e9)
 	ax.set_ylim(-1e9, 1e9)
@@ -278,6 +292,5 @@ if __name__ == '__main__':
 
 	plt.legend()
 	plt.show()
-
 
 	

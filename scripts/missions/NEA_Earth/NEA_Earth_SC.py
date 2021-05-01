@@ -111,7 +111,6 @@ population = pg.population(problem, size=1)
 
 # 8 - Initial guess generation
 # ----------------------------
-
 xi = initial_guess(year_=year, n_seg=n_seg)
 population.set_x(0, xi)
 

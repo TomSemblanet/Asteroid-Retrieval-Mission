@@ -17,6 +17,8 @@ from datetime import date
 
 import matplotlib.pyplot as plt
 
+from data.nea_mass_computation import get_mass
+
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.post_process import post_process
 
@@ -34,8 +36,10 @@ def initial_guess(year_, n_seg):
 
 	# 1 - Asteroid data
 	# -----------------
-	ast = load_bodies.asteroid('2020 CD3')
-	ast_mass = 4900 
+	# ast = load_bodies.asteroid('2020 CD3')
+	# ast_mass = 4900 
+	ast = load_bodies.asteroid('2018 WV1')
+	ast_mass = get_mass(H=30.145) 
 
 	# 2 - Launch window
 	# -----------------
@@ -45,7 +49,7 @@ def initial_guess(year_, n_seg):
 	# 3 - Time of flight
 	# ------------------
 	tof_low = cst.YEAR2DAY * 0.70
-	tof_upp = cst.YEAR2DAY * 3.00
+	tof_upp = cst.YEAR2DAY * 4.00
 
 	# 4 - Spacecraft
 	# --------------

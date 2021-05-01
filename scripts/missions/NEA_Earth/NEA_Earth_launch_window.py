@@ -77,11 +77,7 @@ Isp = 3000
 
 # 5 - Earth arrival 
 # -----------------
-phi_min = 175.0 * cst.DEG2RAD
-phi_max = 185.0 * cst.DEG2RAD
-
-theta_min = 89.0 * cst.DEG2RAD
-theta_max = 91.0 * cst.DEG2RAD
+vinf_max = 3.5e3
 
 # 6 - Optimization algorithm
 # --------------------------
@@ -89,9 +85,9 @@ algorithm = load_sqp.load('slsqp')
 
 # 7 - Problem
 # -----------
-udp = NEA2Earth(nea=ast, n_seg=20, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
-	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, phi_min=phi_min, phi_max=phi_max, theta_min=theta_min, \
-	theta_max=theta_max, earth_grv=True)
+n_seg = 20
+udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
+	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 
 # 7 - Population

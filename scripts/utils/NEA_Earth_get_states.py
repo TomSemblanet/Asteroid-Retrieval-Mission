@@ -168,8 +168,10 @@ def get_states(udp, population, N, plot):
 	U = np.concatenate((buffer_ufwd, buffer_ubwd), axis=1)
 	T = np.concatenate((buffer_tfwd, buffer_tbwd), axis=0)
 
-	if plot == True:
+	# Summary of the transfer
+	udp.brief(x)
 
+	if plot == True:
 		plt.plot(T, R[0], label='x')
 		plt.plot(T, R[1], label='y')
 		plt.plot(T, R[2], label='z')
@@ -207,28 +209,31 @@ def get_states(udp, population, N, plot):
 		plt.show()
 
 		# 3-D Plot
-		fig = plt.figure(figsize=(7, 7))
+		fig = plt.figure()
 		ax = fig.gca(projection='3d')
 
-		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=pk.epoch(T[0]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='orange', legend=(False, "Earth orbit"))
-		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=pk.epoch(T[0]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', legend=(False, "CD3-2020 orbit"))
-		ax.plot([0], [0], [0], marker='o', markersize=5, color='yellow')
-
+		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=T[-1], N=1000, axes=ax, s=0, color='orange', legend=(False, "Earth orbit"))
+		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=T[0], tf=T[-1], N=1000, axes=ax, s=0, color='green', legend=(False, "CD3-2020 orbit"))
 		ax.plot(R[0], R[1], R[2], label="Spacecraft trajectory")
-
+		
+		ax.plot([0], [0], [0], 'o', markersize=10, color='yellow', label="Sun")
 		ax.plot([R[0,0]], [R[1, 0]], [R[2, 0]], 'o', markersize=3, color='black', label="Departure position")
 		ax.plot([R[0, -1]], [R[1, -1]], [R[2, -1]], 'o', markersize=3, color='red', label="Arrival position")
 
 		ax.set_xlim(-2e11, 2e11)
 		ax.set_ylim(-2e11, 2e11)
-		ax.set_zlim(-2e11, 2e11)
+		ax.set_zlim(-7e9, 7e9)
 
 		ax.set_xlabel("x [m]")
 		ax.set_ylabel("y [m]")
 		ax.set_zlabel("z [m]")
 
+		plt.title("CD3-2020 to Earth trajectory")
+
 		plt.legend()
 		plt.show()
+
+	post_process(udp, x)
 
 	return R, V, M, U, T
 
@@ -246,38 +251,38 @@ if __name__ == '__main__':
 
 	# post_process(res['udp'], res['population'].get_x()[0])
 
-	R, V, M, U, T = get_states(udp=res['udp'], population=res['population'], N=50, plot=False)
+	R, V, M, U, T = get_states(udp=res['udp'], population=res['population'], N=50, plot=True)
 
 
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-	# Plot of the Spacecraft arrival in the Earth-Moon system
-	# - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
+	# # - * - * - * - * - * - * - * - * - * - * - * - * - * - *
+	# # Plot of the Spacecraft arrival in the Earth-Moon system
+	# # - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
 
-	earth = load_bodies.planet('EARTH')
-	moon = load_bodies.planet('MOON', observer='EARTH')
+	# earth = load_bodies.planet('EARTH')
+	# moon = load_bodies.planet('MOON', observer='EARTH')
 
-	# Convert the spacecraft coordinates into the Geocentric frame
-	for i, T_ in enumerate(T):
-		earth_r = earth.eph(T_)[0]
-		R[0, i] -= earth_r[0]
-		R[1, i] -= earth_r[1]
-		R[2, i] -= earth_r[2]
+	# # Convert the spacecraft coordinates into the Geocentric frame
+	# for i, T_ in enumerate(T):
+	# 	earth_r = earth.eph(T_)[0]
+	# 	R[0, i] -= earth_r[0]
+	# 	R[1, i] -= earth_r[1]
+	# 	R[2, i] -= earth_r[2]
 
-	fig = plt.figure()
-	ax = fig.gca(projection='3d')
+	# fig = plt.figure()
+	# ax = fig.gca(projection='3d')
 
-	pk.orbit_plots.plot_planet(plnt=moon, t0=pk.epoch(T[-2000]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', legend=(False, "Moon orbit"))
+	# pk.orbit_plots.plot_planet(plnt=moon, t0=pk.epoch(T[-2000]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', legend=(False, "Moon orbit"))
 
-	ax.plot(R[0, -1000:-1], R[1, -1000:-1], R[2, -1000:-1], label='Spacecraft trajectory')
-	ax.plot(moon.eph(T[-1])[0][0], moon.eph(T[-1])[0][1], moon.eph(T[-1])[0][2], 'o', label='Moon at arrival')
-	ax.plot([0], [0], [0], 'o', markersize=10, label='Earth')
+	# ax.plot(R[0, -1000:-1], R[1, -1000:-1], R[2, -1000:-1], label='Spacecraft trajectory')
+	# ax.plot(moon.eph(T[-1])[0][0], moon.eph(T[-1])[0][1], moon.eph(T[-1])[0][2], 'o', label='Moon at arrival')
+	# ax.plot([0], [0], [0], 'o', markersize=10, label='Earth')
 
-	ax.set_xlim(-1e9, 1e9)
-	ax.set_ylim(-1e9, 1e9)
-	ax.set_zlim(-1e9, 1e9)
+	# ax.set_xlim(-1e9, 1e9)
+	# ax.set_ylim(-1e9, 1e9)
+	# ax.set_zlim(-1e9, 1e9)
 
-	plt.legend()
-	plt.show()
+	# plt.legend()
+	# plt.show()
 
 
 	

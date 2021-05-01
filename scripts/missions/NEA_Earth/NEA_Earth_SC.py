@@ -20,6 +20,7 @@ from datetime import date
 from mpi4py import MPI
 
 from data import constants as cst
+from data.nea_mass_computation import get_mass
 
 from scripts.missions.NEA_Earth.NEA_Earth_Initial_Guess import initial_guess
 
@@ -27,7 +28,7 @@ from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
 
 from scripts.utils.pickle_results import save
 from scripts.utils.post_process import post_process
-from scripts.utils import load_sqp, load_kernels, load_bodies
+from scripts.utils import load_sqp, load_kernels, load_bodies, 
 
 """ 
 

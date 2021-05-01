@@ -53,7 +53,7 @@ lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
 # 3 - Time of flight
 # ------------------
 tof_low = cst.YEAR2DAY * 0.70
-tof_upp = cst.YEAR2DAY * 5.00
+tof_upp = cst.YEAR2DAY * 4.00
 
 # 4 - Spacecraft
 # --------------
@@ -63,7 +63,7 @@ Isp = 3000
 
 # 5 - Earth arrival 
 # -----------------
-vinf_max = 2.5e3
+vinf_max = 3.5e3
 
 # 6 - Problem
 # -----------

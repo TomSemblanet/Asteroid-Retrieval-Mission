@@ -2,8 +2,6 @@
 #SBATCH --nodes=1                                       			#### number of computation nodes
 #SBATCH --ntasks-per-node=                            				#### number of tasks per node
 #SBATCH --time=24:00:00                                 			#### max run time
-#SBATCH --mail-user=Tom.SEMBLANET@student.isae-supaero.fr      		#### user email
-#SBATCH --mail-type=FAIL,END                            			#### notifications sent via email
 #SBATCH --job-name=Earth-NEA                               			#### Job name
 #SBATCH -o    slurm.%j.out                              			#### standard output STDOUT
 #SBATCH -e    slurm.%j.err                              			#### error output STDERR

@@ -20,7 +20,10 @@ from datetime import date
 from mpi4py import MPI
 
 from data import constants as cst
+from data.nea_mass_computation import get_mass
+
 from scripts.udp.NEA_Earth_UDP import NEA2Earth
+
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 
@@ -51,8 +54,10 @@ load_kernels.load()
 
 # 1 - Asteroid data
 # -----------------
-ast = load_bodies.asteroid('2020 CD3')
-ast_mass = 4900 
+# ast = load_bodies.asteroid('2020 CD3')
+# ast_mass = 4900 
+ast = load_bodies.asteroid('2018 WV1')
+ast_mass = get_mass(H=30.145)
 
 # 2 - Launch window
 # -----------------

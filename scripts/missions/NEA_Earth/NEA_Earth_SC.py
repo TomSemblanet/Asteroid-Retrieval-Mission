@@ -68,8 +68,10 @@ load_kernels.load()
 
 # 1 - Asteroid data
 # -----------------
-ast = load_bodies.asteroid('2020 CD3')
-ast_mass = 4900 
+# ast = load_bodies.asteroid('2020 CD3')
+# ast_mass = 4900
+ast = load_bodies.asteroid('2018 WV1')
+ast_mass = get_mass(H=30.145) 
 
 # 2 - Launch window
 # -----------------

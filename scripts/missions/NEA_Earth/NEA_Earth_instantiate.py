@@ -18,6 +18,7 @@ from datetime import date
 import matplotlib.pyplot as plt
 
 from data import constants as cst
+from data.nea_mass_computation import get_mass
 
 from scripts.udp.NEA_Earth.NEA_Earth_UDP import NEA2Earth
 
@@ -42,13 +43,15 @@ load_kernels.load()
 
 # 1 - Asteroid data
 # -----------------
-ast = load_bodies.asteroid('2020 CD3')
-ast_mass = 4900 
+# ast = load_bodies.asteroid('2020 CD3')
+# ast_mass = 4900 
+ast = load_bodies.asteroid('2018 WV1')
+ast_mass = get_mass(H=30.145) 
 
 # 2 - Launch window
 # -----------------
-lw_low = pk.epoch_from_string('2044-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2034-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2034-12-31 23:59:59')
 
 # 3 - Time of flight
 # ------------------

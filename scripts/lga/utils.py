@@ -13,15 +13,18 @@ r_Earth = np.array([1-3.036e-6, 0, 0])
 # Earth - Moon distance scaled
 R_M  = 384402 / 1.496e8
 
-def terminaison_con(t, y):
+# Earth radius + safety radiusscaled
+R_E_safe = (6371 + 250) / 1.496e8
 
+def moon_orbit_intercept(t, y):
 	# Computation of the distance to the Earth
 	earth_dist = np.linalg.norm(y[0:3]-r_Earth)
+	return earth_dist - R_M
 
-	if t > 0.0001:
-		return earth_dist - R_M
-	else:
-		return 1
+def earth_collision(t, y):
+	# Computation of the distance to the Earth
+	earth_dist = np.linalg.norm(y[0:3]-r_Earth)
+	return earth_dist - R_E_safe
 
 def initial_states(cr3bp, v_inf, alpha, theta_s0):
 	""" Computation of the initial states of the S/C in the Sun-Earth synodic 
@@ -68,19 +71,19 @@ def moon_rot_matrix(rot_angle):
 				     [                0,                  0, 0, np.sin(rot_angle),  np.cos(rot_angle), 0],
 				     [                0,                  0, 0,                 0,                      0, 1]])
 
-def plot_env(ax, cr3bp, theta_s0):
+def plot_env(ax, cr3bp, theta_s0, title_=None):
 
 	# Construction of the Sun representation
 	sun_r = np.array([-cr3bp.mu, 0, 0, 0, 0, 0]) # In the Sun-Earth frame
 	sun_r_EM = SE2EM(cr3bp, sun_r, theta_s0) # In the Earth-Moon frame
 
 	# Construction of the Moon orbit
-	x = np.linspace(-384402/cr3bp.L, 384402/cr3bp.L, 1000)
+	x = np.linspace(-R_M, R_M, 1000)
 	y_p = np.zeros(1000)
 	y_m = np.zeros(1000)
 	for i, x_ in enumerate(x):
-		y_p[i] =  np.sqrt((384402/cr3bp.L)**2 - x_**2)
-		y_m[i] = -np.sqrt((384402/cr3bp.L)**2 - x_**2)
+		y_p[i] =  np.sqrt(R_M**2 - x_**2)
+		y_m[i] = -np.sqrt(R_M**2 - x_**2)
 
 	# Plot of the Moon orbit
 	ax.plot(x, y_p, '--', color='grey')
@@ -88,16 +91,20 @@ def plot_env(ax, cr3bp, theta_s0):
 
 	ax.plot([sun_r_EM[0]/100], [sun_r_EM[1]/100], 'o', color='yellow', markersize=9, label='Sun')
 	ax.plot([0], [0], 'o', color='black', markersize=9, label='Earth')
-	ax.plot([384402/cr3bp.L], [0], 'o', color='black', markersize=4, label='Moon at t0')
+	ax.plot([R_M], [0], 'o', color='black', markersize=4, label='Moon at t0')
 
 	ax.set_xlim(-0.011, 0.011)
 	ax.set_ylim(-0.011, 0.011)
 
+	ax.set_xlabel('X [-]')
+	ax.set_ylabel('Y [-]')
+
+	if title_ is not None:
+		plt.title(title_)
+
 	plt.grid()
 	plt.legend()
 	plt.show()
-
-
 
 
 def secant_mtd_f(cr3bp, v_inf, alpha, theta_s0, t_span):
@@ -106,7 +113,8 @@ def secant_mtd_f(cr3bp, v_inf, alpha, theta_s0, t_span):
 	r0 = initial_states(cr3bp, v_inf, alpha, theta_s0)
 
 	# Propagation of the CR3BP equations
-	sol = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, y0=r0, method='RK45', events=terminaison_con, rtol=1e-13, atol=1e-12)
+	sol = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, y0=r0, method='RK45', events=(moon_orbit_intercept, earth_collision), \
+		rtol=1e-13, atol=1e-12)
 
 	# Convertion of the final states in the Earth-Moon frame
 	r_f = SE2EM(cr3bp, sol.y[:, -1], theta_s0)

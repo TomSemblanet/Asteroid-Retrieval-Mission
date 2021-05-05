@@ -18,7 +18,7 @@ def EM2SE(cr3bp, r, theta_s0):
 	r = R.dot(r)
 
 	# 2 - Put the center on the Sun
-	r += np.array([1, 0, 0, 0, 0, 0])
+	r += np.array([1-cr3bp.mu, 0, 0, 0, 0, 0])
 
 	return r
 
@@ -27,7 +27,7 @@ def SE2EM(cr3bp, r, theta_s0):
 		and the Earth-Moon reference frame """
 
 	# 1 - Put the center on the Earth
-	r += np.array([-1, 0, 0, 0, 0, 0])
+	r += np.array([-(1-cr3bp.mu), 0, 0, 0, 0, 0])
 
 	# 2 - Rotation of - <theta_s0>°
 	R = np.array([[np.cos(theta_s0 - np.pi), -np.sin(theta_s0 - np.pi), 0,                        0,                         0, 0], 

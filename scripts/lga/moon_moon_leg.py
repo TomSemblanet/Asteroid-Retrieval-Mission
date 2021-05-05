@@ -6,7 +6,8 @@ from scipy.integrate import solve_ivp
 
 from scripts.lga.cr3bp import CR3BP
 from scripts.lga.coc import EM2SE, SE2EM
-from scripts.lga.utils import initial_states, plot_env, terminaison_con, moon_rot_matrix, secant_mtd_f
+from scripts.lga.utils import initial_states, plot_env, moon_orbit_intercept, earth_collision, moon_rot_matrix, secant_mtd_f
+from scripts.lga.escape import second_LGA
 
 # 1 - Construction of the figure object
 # -------------------------------------
@@ -20,9 +21,10 @@ cr3bp = CR3BP(mu=3.036e-6, L=1.496e8, V=29.784, T=3.147e7)
 
 # 3 - Definition of the free parameters
 # -------------------------------------
-v_inf = 0.4 # Velocity at infinity [km/s]
+v_inf = 0.5 # Velocity at infinity [km/s]
+# alpha = np.array([120, 121]) * np.pi / 180
 alpha = np.linspace(0, 180, 180) * np.pi / 180 # Angle between v_inf and v_M [rad]
-theta_s0 = 0 * np.pi / 180 # Angle between the earth-sun axis and the earth-moon axis [rad]
+theta_s0 = 1 * np.pi / 180 # Angle between the earth-sun axis and the earth-moon axis [rad]
 
 # 4 - Definition of other variables
 # ---------------------------------
@@ -45,11 +47,22 @@ for k, alpha_ in enumerate(alpha):
 	# ---------------------------------------------------------------------
 	t_span = [0, 2]
 	t_eval = np.linspace(t_span[0], t_span[1], 1000)
-	terminaison_con.terminal = True
-	sol = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, y0=r0, method='RK45', events=terminaison_con, rtol=1e-13, atol=1e-12)
+	moon_orbit_intercept.terminal = True
+	moon_orbit_intercept.direction = 1
+	earth_collision.terminal = True
+	sol = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, y0=r0, method='RK45', events=(moon_orbit_intercept, earth_collision), \
+		rtol=1e-13, atol=1e-12)
 
 	t = sol.t
 	r = sol.y
+
+
+	# for i in range(len(r[0])):
+	# 	r[:, i] = SE2EM(cr3bp, r[:, i], theta_s0)
+
+	# ax.plot(r[0], r[1], color='blue')
+	# plot_env(ax, cr3bp, theta_s0)
+
 
 	# 5.3 Check if a Lunar encounter has been found
 	# ---------------------------------------------
@@ -108,7 +121,15 @@ for k, alpha_ in enumerate(alpha):
 				count = 0
 
 				while abs(beta_nnn) > 1e-10 and count < 50:
-					alpha_nnn = alpha_nn - (alpha_nn - alpha_n) / (beta_nn - beta_n) * beta_nn
+					# To avoid division by 0 error
+					denominator = (beta_nn - beta_n)
+					if denominator == 0:
+						# - * - * - * - * - * - * - * - * - * - *
+						print("\tSecants method didn't converge.")
+						# - * - * - * - * - * - * - * - * - * - *
+						break
+
+					alpha_nnn = alpha_nn - (alpha_nn - alpha_n) / denominator * beta_nn
 
 					# Computation of the f(alpha_n) value
 					beta_nnn = secant_mtd_f(cr3bp, v_inf, alpha_nnn, theta_s0, t_span)
@@ -139,12 +160,11 @@ for k, alpha_ in enumerate(alpha):
 		# 5.3.5 - Plot of the computed trajectory in the Earth-Moon frame
 		# -------------------------------------------------------------
 		ax.plot(r[0], r[1], color='blue')
-		ax.plot([r[0, -1]], [r[1, -1]], 'o', color=[0.3, 0.8, 0.3], markersize=3)
-
+		ax.plot([r[0, -1]], [r[1, -1]], 'o', color='m', markersize=3)
 
 # 6 - Plot of the environment and all the trajectories
 # ----------------------------------------------------
-plot_env(ax, cr3bp, theta_s0)
+plot_env(ax, cr3bp, theta_s0, "Trajectories intercepting Moon's orbit")
 
 # 7 - Post processing of the double LGA trajectories
 # --------------------------------------------------
@@ -163,8 +183,8 @@ for k, alpha_ in enumerate(alpha_double_lga):
 	# Integration of the CR3BP equations in the Sun-Earth synodic frame
 	t_span = [0, 2]
 	t_eval = np.linspace(t_span[0], t_span[1], 1000)
-	terminaison_con.terminal = True
-	sol = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, y0=r0, method='RK45', events=terminaison_con, rtol=1e-13, atol=1e-12)
+	sol = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, y0=r0, method='RK45', events=(moon_orbit_intercept, earth_collision), \
+		rtol=1e-13, atol=1e-12)
 
 	t = sol.t
 	r = sol.y
@@ -174,7 +194,11 @@ for k, alpha_ in enumerate(alpha_double_lga):
 		r[:, i] = SE2EM(cr3bp, r[:, i], theta_s0)
 
 	ax_final.plot(r[0], r[1], color='blue')
-	ax_final.plot([r[0, -1]], [r[1, -1]], 'o', color=[0.3, 0.8, 0.3], markersize=3)
+	ax_final.plot([r[0, -1]], [r[1, -1]], 'o', color='m', markersize=3)
 
-plot_env(ax_final, cr3bp, theta_s0)
+plot_env(ax_final, cr3bp, theta_s0, "Feasible double LGA")
 
+
+# Call the escape study function
+for alpha_ in alpha_double_lga:
+	second_LGA(cr3bp, v_inf, alpha_, theta_s0)

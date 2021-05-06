@@ -71,7 +71,7 @@ def moon_rot_matrix(rot_angle):
 				     [                0,                  0, 0, np.sin(rot_angle),  np.cos(rot_angle), 0],
 				     [                0,                  0, 0,                 0,                      0, 1]])
 
-def plot_env(ax, cr3bp, theta_s0, title_=None):
+def plot_env_2d(ax, cr3bp, theta_s0, title_=None):
 
 	# Construction of the Sun representation
 	sun_r = np.array([-cr3bp.mu, 0, 0, 0, 0, 0]) # In the Sun-Earth frame
@@ -86,8 +86,8 @@ def plot_env(ax, cr3bp, theta_s0, title_=None):
 		y_m[i] = -np.sqrt(R_M**2 - x_**2)
 
 	# Plot of the Moon orbit
-	ax.plot(x, y_p, '--', color='grey')
-	ax.plot(x, y_m, '--', color='grey')
+	ax.plot(x, y_p, '--', linewidth=1, color='black')
+	ax.plot(x, y_m, '--', linewidth=1, color='black')
 
 	ax.plot([sun_r_EM[0]/100], [sun_r_EM[1]/100], 'o', color='yellow', markersize=9, label='Sun')
 	ax.plot([0], [0], 'o', color='black', markersize=9, label='Earth')
@@ -98,6 +98,43 @@ def plot_env(ax, cr3bp, theta_s0, title_=None):
 
 	ax.set_xlabel('X [-]')
 	ax.set_ylabel('Y [-]')
+
+	if title_ is not None:
+		plt.title(title_)
+
+	plt.grid()
+	plt.legend()
+	plt.show()
+
+def plot_env_3d(ax, cr3bp, theta_s0, title_=None):
+
+	# Construction of the Sun representation
+	sun_r = np.array([-cr3bp.mu, 0, 0, 0, 0, 0]) # In the Sun-Earth frame
+	sun_r_EM = SE2EM(cr3bp, sun_r, theta_s0) # In the Earth-Moon frame
+
+	# Construction of the Moon orbit
+	x = np.linspace(-R_M, R_M, 1000)
+	y_p = np.zeros(1000)
+	y_m = np.zeros(1000)
+	for i, x_ in enumerate(x):
+		y_p[i] =  np.sqrt(R_M**2 - x_**2)
+		y_m[i] = -np.sqrt(R_M**2 - x_**2)
+
+	# Plot of the Moon orbit
+	ax.plot(x, y_p, np.zeros(1000), '--', linewidth=1, color='black')
+	ax.plot(x, y_m, np.zeros(1000), '--', linewidth=1, color='black')
+
+	ax.plot([sun_r_EM[0]/100], [sun_r_EM[1]/100], [0], 'o', color='yellow', markersize=9, label='Sun')
+	ax.plot([0], [0], [0], 'o', color='black', markersize=9, label='Earth')
+	ax.plot([R_M], [0], [0], 'o', color='black', markersize=4, label='Moon at t0')
+
+	ax.set_xlim(-0.011, 0.011)
+	ax.set_ylim(-0.011, 0.011)
+	ax.set_ylim(-0.011, 0.011)
+
+	ax.set_xlabel('X [-]')
+	ax.set_ylabel('Y [-]')
+	ax.set_zlabel('Z [-]')
 
 	if title_ is not None:
 		plt.title(title_)

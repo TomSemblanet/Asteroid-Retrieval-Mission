@@ -20,7 +20,7 @@ class NEA2Earth:
 		self.nea = nea
 		self.earth = load_bodies.planet('earth')
 		self.moon = load_bodies.planet('moon')
-
+	
 		# Creation of the spacecraft object
 		self.sc = pk.sims_flanagan.spacecraft(m0, Tmax, Isp)
 

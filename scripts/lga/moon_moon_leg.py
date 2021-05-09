@@ -56,13 +56,11 @@ for k, alpha_ in enumerate(alpha):
 	t = sol.t
 	r = sol.y
 
-
 	# for i in range(len(r[0])):
 	# 	r[:, i] = SE2EM(cr3bp, r[:, i], theta_s0)
 
 	# ax.plot(r[0], r[1], color='blue')
 	# plot_env(ax, cr3bp, theta_s0)
-
 
 	# 5.3 Check if a Lunar encounter has been found
 	# ---------------------------------------------

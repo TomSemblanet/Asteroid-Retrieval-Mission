@@ -31,7 +31,7 @@ from scripts.lga.resonance.moon_moon_leg import moon_moon_leg, plot_env
 # ----------------------------------------
 
 # Velocity at infinity before and after the LGA [km/s]
-v_inf_mag = 1.0
+v_inf_mag = 0.9
 
 # Azimuthal and polar angles of the velocity at infinity vector before the LGA [rad]
 phi_m = 30 * np.pi / 180
@@ -41,7 +41,7 @@ theta_m = 40 * np.pi / 180
 r_m = 100
 
 # Number of revolution the S/C will accomplish before 2nd Moon encouter
-p = 3
+p = 1
 
 # Number of revolution the Moon will accomplish before 2nd S/C encouter
 q = 1

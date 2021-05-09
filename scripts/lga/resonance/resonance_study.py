@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np 
+import sys
 
+from scripts.lga.resonance.moon_moon_leg import moon_moon_leg, plot_env
 
 """
 	In this script, we deal with the case where 1 LGA isn't sufficient and where our aim is to enter in resonance
@@ -29,7 +31,7 @@ import numpy as np
 # ----------------------------------------
 
 # Velocity at infinity before and after the LGA [km/s]
-v_inf_mag = 1
+v_inf_mag = 1.0
 
 # Azimuthal and polar angles of the velocity at infinity vector before the LGA [rad]
 phi_m = 30 * np.pi / 180
@@ -39,7 +41,7 @@ theta_m = 40 * np.pi / 180
 r_m = 100
 
 # Number of revolution the S/C will accomplish before 2nd Moon encouter
-p = 1
+p = 3
 
 # Number of revolution the Moon will accomplish before 2nd S/C encouter
 q = 1
@@ -61,26 +63,13 @@ mu_M = 4902.7779
 R_M = 1737.4
 
 # Moon's orbital velocity [km/s]
-V_M = 1.022
+V_M = 1.01750961806616
 
 # Moon's orbit period [s]
-T_M = 2551392
+T_M = 2377399
 
 
-# 3 - Definition of the frame centered on the Moon
-# ------------------------------------------------
-
-# i : Angular momentum of the Moon (normalized) [-]
-i = np.array([1, 0, 0])
-
-# j : Position vector of the Moon relative to the Earth (normalized) [-]
-j = np.array([0, 1, 0])
-
-# k : Velocity vector of the Moon relative to the Earth (normalized) [-]
-k = np.array([0, 0, 1])
-
-
-# 4 - Definition of the velocity vector of the Moon and S/C velocity at infinity before/after the LGA in the Moon centered frame [km/s]
+# 3 - Definition of the velocity vector of the Moon and S/C velocity at infinity before/after the LGA in the Moon centered frame [km/s]
 # -------------------------------------------------------------------------------------------------------------------------------------
 
 # Moon's velocity vector [km/s]
@@ -92,24 +81,24 @@ v_inf_m = v_inf_mag * np.array([ np.cos(phi_m) * np.sin(theta_m),
 								 np.cos(theta_m)                ])
 
 
-# 5 - Computation of the polar angle of the S/C velocity at infinity after LGA to enter in p:q resonance with the Moon [rad]
+# 4 - Computation of the polar angle of the S/C velocity at infinity after LGA to enter in p:q resonance with the Moon [rad]
 # --------------------------------------------------------------------------------------------------------------------------
 
 # S/C velocity after LGA to enter in a p:q resonance with the Moon [km/s]
 v = np.sqrt( 2*mu_E/d_M - (2*np.pi * mu_E / (T_M * p/q))**(2/3) )
 
 # Polar angle of the S/C velocity at infinity after LGA [rad]
-theta_p = np.pi - np.arccos( (v**2 - V_M**2 - v_inf_mag**2) / (2 * (V_M**2) * (v_inf_mag**2)) )
+theta_p = np.arccos( (v**2 - V_M**2 - v_inf_mag**2) / (2 * V_M * v_inf_mag) )
 
 
-# 6 - Computation of the admissible longitude angles of the S/C velocity at infinity after LGA to enter in p:q resonance with the Moon [rad]
+# 5 - Computation of the admissible longitude angles of the S/C velocity at infinity after LGA to enter in p:q resonance with the Moon [rad]
 # ------------------------------------------------------------------------------------------------------------------------------------------
 
 # Computation of the maximum rotation [rad]
 delta_max = 2 * np.arcsin( mu_M/(R_M+r_m) / (v_inf_mag**2 + mu_M/(R_M+r_m)) )
 
 # Possible longitude angles [rad]
-phi_p_arr = np.linspace(-np.pi, np.pi, 100)
+phi_p_arr = np.linspace(-np.pi, np.pi, 50)
 
 # Admissible longitude angles [rad]
 phi_p_adm = np.array([])
@@ -123,8 +112,6 @@ for phi_p in phi_p_arr:
 	if admissible_longitude(phi_p) <= 0:
 		phi_p_adm = np.append(phi_p_adm, phi_p)
 
-print(phi_p_adm)
-
 fig = plt.figure()
 ax = fig.add_subplot(111)
 
@@ -132,10 +119,25 @@ ax.plot(phi_p_arr, np.array([ (np.cos(phi_m)*np.sin(theta_m)*np.sin(theta_p))*np
 					      	  (np.sin(phi_m)*np.sin(theta_m)*np.sin(theta_p))*np.sin(phi_p) + \
 					    	  np.cos(theta_m)*np.cos(theta_p) - np.cos(delta_max) for phi_p in phi_p_arr]))
 
+plt.title("Feasible longitudes")
 plt.grid()
 plt.show()
 
+if len(phi_p_adm) == 0:
+	print("No admissible solution.")
+	sys.exit()
 
 
+# 6 - Propagation of the Keplerian trajectory after the LGA
+# ---------------------------------------------------------
+fig = plt.figure()
+ax = fig.gca(projection='3d')
+
+for phi_p in phi_p_adm:
+	moon_moon_leg(v_inf_mag, phi_p, theta_p, p, q, ax)
+
+plot_env(ax, p, q)
+
+plt.show()
 
 	

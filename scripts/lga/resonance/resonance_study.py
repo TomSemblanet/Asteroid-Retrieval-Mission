@@ -87,6 +87,9 @@ v_inf_m = v_inf_mag * np.array([ np.cos(phi_m) * np.sin(theta_m),
 # S/C velocity after LGA to enter in a p:q resonance with the Moon [km/s]
 v = np.sqrt( 2*mu_E/d_M - (2*np.pi * mu_E / (T_M * p/q))**(2/3) )
 
+print("Velocity : {} km/s".format(v))
+input()
+
 # Polar angle of the S/C velocity at infinity after LGA [rad]
 theta_p = np.arccos( (v**2 - V_M**2 - v_inf_mag**2) / (2 * V_M * v_inf_mag) )
 

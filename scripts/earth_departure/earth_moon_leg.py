@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.interpolate import interp2d
 
-from scripts.lga.resonance.utils_2 import kep2cart, kepler, moon_reached, R2
-from scripts.lga.resonance import constants as cst
+from scripts.earth_departure.utils import kep2cart, kepler, moon_reached, R2
+from scripts.earth_departure import constants as cst
 
 """ 
 	In this script, we deal with the transfer from the Earth to the Moon with a highly elliptical trajectory

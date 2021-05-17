@@ -3,8 +3,8 @@ import numpy as np
 
 from scipy.integrate import solve_ivp
 
-from scripts.lga.resonance.utils_2 import kepler, P_GEO2HRV, P_GEO2RVH, sph2cart
-from scripts.lga.resonance import constants as cst
+from scripts.earth_departure.utils import kepler, P_GEO2HRV, P_GEO2RVH, sph2cart
+from scripts.earth_departure import constants as cst
 
 def moon_moon_leg(v_inf_mag, phi, theta, gamma, p, q, ax):
 	""" Propagate the Keplerian trajectory of a S/C after a LGA, targeting the Moon
@@ -24,7 +24,7 @@ def moon_moon_leg(v_inf_mag, phi, theta, gamma, p, q, ax):
 
 	# 3 - Basis changement from HRV to Earth inertial frame
 	# -----------------------------------------------------
-	v   = P_GEO2HRV(gamma).dot(v)
+	v = P_GEO2HRV(gamma).dot(v)
 
 
 	# 4 - Construction of the initial states of the S/C in the Earth inertial frame

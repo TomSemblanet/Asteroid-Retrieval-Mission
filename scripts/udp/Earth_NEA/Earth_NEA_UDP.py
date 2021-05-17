@@ -169,7 +169,7 @@ class Earth2NEA:
 
 		# Forward grid and segment length
 		fwd_grid = t0 + tof * self.fwd_grid
-		fwd_dt = tof * self.fwd_dt 
+		fwd_dt = tof * self.fwd_dt
 
 		# Initial conditions
 		rfwd[0] = ri

@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import sys
 
-from scripts.lga.resonance.moon_moon_leg import moon_moon_leg, plot_env
-from scripts.lga.resonance import constants as cst
-from scripts.lga.resonance.utils_2 import R2, cart2sph
+from scripts.earth_departure.moon_moon_leg import moon_moon_leg, plot_env
+from scripts.earth_departure import constants as cst
+from scripts.earth_departure.utils import R2, cart2sph, sph2cart
 
 """
 	In this script, we deal with the case where 1 LGA isn't sufficient and where our aim is to enter in resonance
@@ -48,7 +48,7 @@ def resonant_trajectories(v_inf_mag, phi_m, theta_m, phi_p, theta_p, r_m, gamma,
 	delta_max = 2 * np.arcsin( cst.mu_M/(cst.R_M+r_m) / (v_inf_mag**2 + cst.mu_M/(cst.R_M+r_m)) )
 
 	# Possible longitude angles [rad]
-	phi_p_arr = np.linspace(-np.pi, np.pi, 50)
+	phi_p_arr = np.linspace(-np.pi, np.pi, 100)
 
 	# Admissible longitude angles [rad]
 	phi_p_adm = np.array([])
@@ -59,19 +59,19 @@ def resonant_trajectories(v_inf_mag, phi_m, theta_m, phi_p, theta_p, r_m, gamma,
 				np.cos(theta_m)*np.cos(theta_p) - np.cos(delta_max)
 
 	for phi_p in phi_p_arr:
-		if admissible_longitude(phi_p) <= 0:
+		if admissible_longitude(phi_p) >= 0:
 			phi_p_adm = np.append(phi_p_adm, phi_p)
 
-	# fig = plt.figure()
-	# ax = fig.add_subplot(111)
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
 
-	# ax.plot(phi_p_arr, np.array([ (np.cos(phi_m)*np.sin(theta_m)*np.sin(theta_p))*np.cos(phi_p) + \
-	# 					      	  (np.sin(phi_m)*np.sin(theta_m)*np.sin(theta_p))*np.sin(phi_p) + \
-	# 					    	  np.cos(theta_m)*np.cos(theta_p) - np.cos(delta_max) for phi_p in phi_p_arr]))
+	ax.plot(phi_p_arr, np.array([ (np.cos(phi_m)*np.sin(theta_m)*np.sin(theta_p))*np.cos(phi_p) + \
+						      	  (np.sin(phi_m)*np.sin(theta_m)*np.sin(theta_p))*np.sin(phi_p) + \
+						    	  np.cos(theta_m)*np.cos(theta_p) - np.cos(delta_max) for phi_p in phi_p_arr]))
 
-	# plt.title("Feasible longitudes")
-	# plt.grid()
-	# plt.show()
+	plt.title("Feasible longitudes")
+	plt.grid()
+	plt.show()
 
 	if len(phi_p_adm) == 0:
 		print("No admissible solution with ({}:{}) resonance.".format(p, q))

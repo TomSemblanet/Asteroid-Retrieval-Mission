@@ -97,6 +97,4 @@ def ECLJ2000_trajectory(tau, trajectories, times):
 
 	plt.show()
 
-	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/1', 'wb') as f:
-		pickle.dump({'r': r_ar, 't': t_ar}, f)
 

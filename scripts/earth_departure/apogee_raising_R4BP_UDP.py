@@ -84,7 +84,7 @@ class ApogeeRaising:
 		return self.n_seg
 
 	def get_nec(self):
-		return 6
+		return 0
 
 	def final_states(self):
 
@@ -125,12 +125,12 @@ class ApogeeRaising:
 		throttles = np.array([x[2 + 3 * i: 5 + 3 * i] for i in range(self.n_seg)])
 
 		# Equality and inequality constraints vectors
-		ceq = list()
+		# ceq = list()
 		cineq = list()
 
 		# Mismatch and throttles constraints 
 		throttle_con = list()
-		mismatch_con = list()
+		# mismatch_con = list()
 
 		# Throttle constraints
 		for t in throttles:
@@ -139,24 +139,31 @@ class ApogeeRaising:
 
 		# Mismatch constraints
 		r_f, v_f = self.propagate(x)
-		mismatch_con.extend([a - b for a, b in zip(self.r_tgt, r_f)])
-		mismatch_con.extend([a - b for a, b in zip(self.v_tgt, v_f)])
-		ceq.extend(mismatch_con)
+		# mismatch_con.extend([a - b for a, b in zip(self.r_tgt, r_f)])
+		# mismatch_con.extend([a - b for a, b in zip(self.v_tgt, v_f)])
+		# ceq.extend(mismatch_con)
 
+		# ceq[0] /= cst.d_M
+		# ceq[1] /= cst.d_M
+		# ceq[2] /= cst.d_M
+
+		# ceq[3] /= 3
+		# ceq[4] /= 3
+		# ceq[5] /= 3
 
 		# Objective function : minimize the fuel consumption
-		obj = sum([np.linalg.norm(throttles[i]) for i in range(len(throttles))], 0) / self.n_seg
+		obj = np.linalg.norm(self.r_tgt - r_f) / cst.d_M
 
 		# Assembly of the fitness vector
 		retval = [obj]
-		retval.extend(ceq)
+		# retval.extend(ceq)
 		retval.extend(cineq)
 
 		global N
 		N += 1
 
 		print("({}) Objective : {}".format(N, obj))
-		print("     Mismatch constraints : {} km | {} km/s".format(np.linalg.norm(ceq[:3]), np.linalg.norm(ceq[3:])))
+		# print("     Mismatch constraints : {} | {} ".format(np.linalg.norm(ceq[:3]), np.linalg.norm(ceq[3:])))
 		print("     Last arc : {}°".format(eps_l*180/np.pi))
 		print("\n")
 
@@ -243,11 +250,11 @@ class ApogeeRaising:
 		y_dot = vy
 		z_dot = vz
 
-		vx_dot = - cst.mu_S / d_S**3 * (x - sun_r[0]) - cst.mu_M / d_M**3 * (x - moon_r[0]) - cst.mu_E / d_E**3 * x + \
+		vx_dot = - cst.mu_S / d_S**3 * (x - sun_r[0]) - cst.mu_E / d_E**3 * x + \
 					cst.mu_S / d_ES**3 * (-sun_r[0])
-		vy_dot = - cst.mu_S / d_S**3 * (y - sun_r[1]) - cst.mu_M / d_M**3 * (y - moon_r[1]) - cst.mu_E / d_E**3 * y + \
+		vy_dot = - cst.mu_S / d_S**3 * (y - sun_r[1]) - cst.mu_E / d_E**3 * y + \
 					cst.mu_S / d_ES**3 * (-sun_r[1])
-		vz_dot = - cst.mu_S / d_S**3 * (z - sun_r[2]) - cst.mu_M / d_M**3 * (z - moon_r[2]) - cst.mu_E / d_E**3 * z + \
+		vz_dot = - cst.mu_S / d_S**3 * (z - sun_r[2]) - cst.mu_E / d_E**3 * z + \
 					cst.mu_S / d_ES**3 * (-sun_r[2])
 
 		# Thrust arc around perigee

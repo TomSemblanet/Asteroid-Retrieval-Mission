@@ -1,3 +1,5 @@
+import numpy as np
+
 # Sun's gravitational parameters [km^3/s^2]
 mu_S = 132712440018	
 
@@ -14,10 +16,13 @@ R_E = 6384.415
 R_M = 1737.4
 
 # Earth-Moon mean distance [km]
-d_M = 385000
-
-# Moon's orbital velocity [km/s]
-V_M = 1.01750961806616
+d_M = 384400
 
 # Moon's orbit period [s]
-T_M = 2377399
+T_M = 2360591.424
+
+# Moon's orbital velocity [km/s]
+V_M = d_M / (T_M / (2 * np.pi))
+
+# Moon's SOI [km]
+SOI_M = 0.0661e6

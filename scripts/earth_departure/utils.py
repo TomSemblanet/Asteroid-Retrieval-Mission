@@ -25,7 +25,7 @@ def kepler(t, r):
 
 	return np.array([x_dot, y_dot, z_dot, vx_dot, vy_dot, vz_dot])
 
-def kepler_thrust(t, r, T, eps):
+def kepler_thrust(t, r, mass, T, eps):
 	""" Computation of the states derivatives following Keplerian mechanics.
 		The S/C thruster are On when it's on an arc defined by the angles [-eps, eps] """
 
@@ -49,9 +49,9 @@ def kepler_thrust(t, r, T, eps):
 	z_dot = vz
 
 	# Velocity derivatives [km/s^2]
-	vx_dot = - cst.mu_E / d**3 * x + thrust_on * T * vx / v
-	vy_dot = - cst.mu_E / d**3 * y + thrust_on * T * vy / v
-	vz_dot = - cst.mu_E / d**3 * z + thrust_on * T * vz / v
+	vx_dot = - cst.mu_E / d**3 * x + thrust_on * T * vx / v / mass
+	vy_dot = - cst.mu_E / d**3 * y + thrust_on * T * vy / v / mass
+	vz_dot = - cst.mu_E / d**3 * z + thrust_on * T * vz / v / mass
 
 	return np.array([x_dot, y_dot, z_dot, vx_dot, vy_dot, vz_dot])
 
@@ -220,16 +220,30 @@ def cart2kep (r, v, mu) :
 
 	return (a, e_mag, i, W, w, ta)
 
-def moon_reached(t, r, T=None, eps=None):
+def moon_reached(t, r, mass=None, T=None, eps=None):
 
 	return np.linalg.norm(r[:3]) - cst.d_M
 
-def apside_pass(t, r, T=None, eps=None):
+def apside_pass(t, r, mass=None, T=None, eps=None):
 	""" Determines if the S/C passes either at the perigee and/or apogee. Detected by the x-velocity component change of 
 		sign ((+) -> (-) for apogee, (-) -> (+) for perigee)"""
 	v_x = r[3]
 
 	return v_x
+
+def thrust_ignition(t, y, mass=None, T=None, eps=None):
+	""" Raises an event each time the S/C pass a thrusters ignition or shut-down point """
+	phi = np.arccos( np.dot( np.array([-1, 0, 0]), y[:3]) / np.linalg.norm(y[:3]) )
+
+	return phi - eps
+
+def cr3bp_moon_approach(t, r, cr3bp, mass, Tmax, thrusts_intervals=None):
+	""" Raises an event when the S/C is at less than 20,000km of the Moon """
+	# Moon's position in the synodic frame
+	r_m = np.array([1 - cr3bp.mu, 0 , 0])
+	d = np.linalg.norm(r[:3] - r_m)
+
+	return d - 2e4 / cr3bp.L
 
 def angle_w_Ox(r):
 	""" Return the (oriented) angle between the (Ox) axis and the `r` vector """

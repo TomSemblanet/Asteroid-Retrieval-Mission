@@ -196,7 +196,7 @@ class IPOPT:
         """ Setting of the IPOPT options """
 
         # Maximum number of iterations
-        self.nlp.set(max_iter=2000)
+        self.nlp.set(max_iter=500)
 
         # Uses the linear solver defined by the the user (available solvers are : mumps,
         # ma27, ma57, ma77, ma86)

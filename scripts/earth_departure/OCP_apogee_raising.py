@@ -8,7 +8,7 @@ import cppad_py
 from collocation.GL_V.src.problem import Problem
 from collocation.GL_V.src.optimization import Optimization
 
-class MoonMoonLeg(Problem):
+class ApogeeRaising(Problem):
 	""" CR3BP : Moon-Moon Leg optimal control problem """
 
 	def __init__(self, cr3bp, mass0, Tmax, trajectory, time):

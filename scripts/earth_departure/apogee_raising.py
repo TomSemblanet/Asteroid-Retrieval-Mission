@@ -301,5 +301,5 @@ def apogee_raising(mass, T, eps, r_p, v_inf):
 	print("Minimal distance to the Moon : {} km".format(r_p+cst.R_M))
 	print("\n")
 	
-	return r, t, thrust_intervals
+	return r, t, thrust_intervals, last_ap_pass_time
 

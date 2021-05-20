@@ -15,10 +15,8 @@ from scripts.earth_departure import constants as cst
 from scripts.utils import load_bodies, load_kernels
 
 from scripts.earth_departure.OCP_moon_moon_leg import MoonMoonLeg
+from scripts.earth_departure.OCP_apogee_raising import ApogeeRaising
 from collocation.GL_V.src.optimization import Optimization
-
-# from scripts.earth_departure.OCP_moon_moon_leg_Hermite_Simpson import MoonMoonLeg
-# from collocation.optimization import Optimization
 
 def cr3bp_dynamics_augmtd(t, r, cr3bp, mass, Tmax, thrusts_intervals=None):
 
@@ -65,7 +63,8 @@ def states_rotation(theta):
 
 	return Rot
 
-def CR3BP_orbit_raising(trajectory, time, thrusts_intervals, mass, Tmax):
+
+def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mass, Tmax):
 
 	# 1 - Instantiation of the Earth - Moon CR3BP
 	# -------------------------------------------
@@ -83,6 +82,7 @@ def CR3BP_orbit_raising(trajectory, time, thrusts_intervals, mass, Tmax):
 
 	# ... time
 	time /= cr3bp.T 
+	t_last_ap_pass /= cr3bp.T
 	thrusts_intervals /= cr3bp.T
 
 	# ... thrust
@@ -94,7 +94,7 @@ def CR3BP_orbit_raising(trajectory, time, thrusts_intervals, mass, Tmax):
 		trajectory[:, k] = cr3bp.eci2syn(t, trajectory[:, k])
 
 
-	# 3 - Find the point of the Keplerian trajectory at 20,000km of the Moon
+	# 3 - Find the point of the Keplerian trajectory at 60,000km of the Moon
 	# ----------------------------------------------------------------------
 	index = 0
 
@@ -112,21 +112,7 @@ def CR3BP_orbit_raising(trajectory, time, thrusts_intervals, mass, Tmax):
 	ax.plot(trajectory[0, :index], trajectory[1, :index], '-', color='blue', linewidth=1)
 
 
-	# 4 - Computation of the thrust profil
-	# ------------------------------------
-	T = np.zeros(shape=(3, len(time)))
-
-	if thrusts_intervals is not None:
-		for k, t in enumerate(time):
-
-			i = np.searchsorted(a=thrusts_intervals[:, 0], v=t, side='right') - 1
-
-			if thrusts_intervals[i, 1] >= t:
-				T[:, k] = trajectory[3:, k] / np.linalg.norm(trajectory[3:, k])
-
-
-
-	# 5 - Rotation of the initial states to approach the Moon correctly
+	# 4 - Rotation of the initial states to approach the Moon correctly
 	# -----------------------------------------------------------------
 	t_span = np.array([time[0], time[-1]])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
@@ -146,12 +132,39 @@ def CR3BP_orbit_raising(trajectory, time, thrusts_intervals, mass, Tmax):
 	r0 = states_rotation(theta_opt).dot(r0)
 	r0 = cr3bp.eci2syn(t=0, r=r0)
 
-	# 6 - Final propagation with CR3BP dynamics
-	# -----------------------------------------
+
+	# 5 - Propagation with the CR3BP equations
+	# ----------------------------------------
+
 	solution = solve_ivp(fun=cr3bp_dynamics_augmtd, t_span=t_span, t_eval=t_eval, y0=r0, args=(cr3bp, mass, Tmax, thrusts_intervals), \
 		events=(cr3bp_moon_approach), method='LSODA', rtol=1e-13, atol=1e-13)
+	cr3bp_trajectory = solution.y
+	cr3bp_time = solution.t
 
-	ax.plot(solution.y[0], solution.y[1], '-', color='orange', linewidth=1)
+	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='orange', linewidth=1)
+
+
+	# 6 - Keep the part of the trajectory that is more than 20,000km from the Moon
+	# ----------------------------------------------------------------------------
+	trajectory_ut = np.empty((0, 6))
+	time_ut = np.empty(0)
+
+	r_m = np.array([1 - cr3bp.mu, 0, 0])
+	dist_min = 20000 / cr3bp.L
+
+	# Find the index of the last apogee pass
+	index_l_pass = np.searchsorted(cr3bp_time, t_last_ap_pass, side='right') - 1
+
+	for k in range(len((cr3bp_time[index_l_pass:]))):
+		d = np.linalg.norm(cr3bp_trajectory[:3, k] - r_m)
+		if d >= dist_min:
+			trajectory_ut = np.vstack((trajectory_ut, cr3bp_trajectory[:, index_l_pass+k]))
+			time_ut = np.append(time_ut, cr3bp_time[index_l_pass+k])
+
+	trajectory_ut = np.transpose(trajectory_ut)
+
+	ax.plot(trajectory_ut[0], trajectory_ut[1], ':', color='green', linewidth=1)
+
 
 	ax.plot([ -cr3bp.mu], [0], 'o', color='black', markersize=5)
 	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
@@ -161,6 +174,13 @@ def CR3BP_orbit_raising(trajectory, time, thrusts_intervals, mass, Tmax):
 
 	plt.grid()
 	plt.show()
+
+	return cr3bp, trajectory_ut, time_ut 
+
+
+
+# - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
+
 
 
 def CR3BP_moon_moon(trajectory, time):
@@ -188,7 +208,7 @@ def CR3BP_moon_moon(trajectory, time):
 	for k, t in enumerate(time):
 		trajectory[:, k] = cr3bp.eci2syn(t, trajectory[:, k])
 
-	# 3 - Keep the part of the trajectory that is more than 20,000km from the Moon
+	# 3 - Keep the part of the trajectory that is more than 60,000km from the Moon
 	# ----------------------------------------------------------------------------
 	trajectory_ut = np.empty((0, 6))
 	time_ut = np.empty(0)
@@ -215,8 +235,34 @@ if __name__ == '__main__':
 		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r', 'rb') as f:
 			res = pickle.load(f)
 
-		CR3BP_orbit_raising(trajectory=res['trajectory'], time=res['time'], thrusts_intervals=res['thrusts_intervals'], \
-			mass=res['mass'], Tmax=res['Tmax'])
+		# Optimization of the Apogee Raising last branch
+		cr3bp, trajectory, time = CR3BP_orbit_raising(trajectory=res['trajectory'], time=res['time'], thrusts_intervals=res['thrusts_intervals'], \
+			mass=res['mass'], Tmax=res['Tmax'], t_last_ap_pass=res['last_apogee_pass_time'])
+		mass0 = res['mass']
+		Tmax  = res['Tmax']
+
+		options = {'linear_solver': 'mumps'}
+
+		problem = ApogeeRaising(cr3bp, mass0, Tmax, trajectory, time)
+
+		# Instantiation of the optimization
+		optimization = Optimization(problem=problem, **options)
+
+		# Launch of the optimization
+		optimization.run()
+
+		opt_trajectory = optimization.results['opt_st']
+
+		fig = plt.figure()
+		ax = fig.gca(projection='3d')
+
+		ax.plot(trajectory[0], trajectory[1], trajectory[2], ':', color='blue', linewidth=1)
+		ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='orange', linewidth=1)
+		ax.plot([ -cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+		ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
+
+		plt.show()
+
 
 	elif arc == 'mm':
 		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon', 'rb') as f:
@@ -247,6 +293,7 @@ if __name__ == '__main__':
 		ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
 		plt.show()
+
 
 	else:
 		print("Error")

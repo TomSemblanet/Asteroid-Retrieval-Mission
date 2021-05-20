@@ -41,7 +41,7 @@ def scale_time(x, out_range=(-1, 1)):
 
     # Round error can occur, making that x isn't exactly in the
     # `out_range` range. A rescaling is then called.
-    if ((scl_x[-1] == out_range[1]) == False or (scl_x[0] == out_range[0]) == False):
+    if (abs(scl_x[-1] - out_range[1]) > 1e-12 or abs(scl_x[0] - out_range[0]) > 1e-12):
         scl_x = scale_time(scl_x, out_range)
 
     return scl_x

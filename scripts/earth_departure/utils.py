@@ -224,6 +224,10 @@ def moon_reached(t, r, mass=None, T=None, eps=None):
 
 	return np.linalg.norm(r[:3]) - cst.d_M
 
+def moon_SOI_reached(t, r, mass=None, T=None, eps=None):
+
+	return abs(np.linalg.norm(r[:3]) - cst.d_M) - cst.SOI_M
+
 def apside_pass(t, r, mass=None, T=None, eps=None):
 	""" Determines if the S/C passes either at the perigee and/or apogee. Detected by the x-velocity component change of 
 		sign ((+) -> (-) for apogee, (-) -> (+) for perigee)"""

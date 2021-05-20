@@ -1,0 +1,234 @@
+import sys
+import pickle 
+import numpy as np 
+import matplotlib.pyplot as plt
+
+import cppad_py
+
+from collocation.GL_V.src.problem import Problem
+from collocation.GL_V.src.optimization import Optimization
+
+class MoonMoonLeg(Problem):
+	""" CR3BP : Moon-Moon Leg optimal control problem """
+
+	def __init__(self, cr3bp, mass0, Tmax, trajectory, time):
+		""" Initialization of the `GoddardRocket` class """
+		n_states = 7
+		n_controls = 3
+		n_st_path_con = 0
+		n_ct_path_con = 1
+		n_event_con = 13
+		n_f_par = 0
+		n_nodes = 100
+
+		Problem.__init__(self, n_states, n_controls, n_st_path_con, n_ct_path_con, 
+						 n_event_con, n_f_par, n_nodes)
+
+		# Set some attributs
+		self.cr3bp = cr3bp 
+
+		self.mass0 = mass0
+		self.Tmax = Tmax
+
+		self.trajectory = trajectory
+		self.time = time
+
+	def set_constants(self):
+		""" Setting of the problem constants """
+		self.Tmax *= self.cr3bp.T**2 / self.cr3bp.L
+
+		self.g0 = 9.80665e-3 * self.cr3bp.T**2 / self.cr3bp.L
+		self.Isp = 3000 / self.cr3bp.T
+
+	def set_boundaries(self):
+		""" Setting of the states, controls, free-parameters, initial and final times
+						boundaries """
+
+		# States boundaries
+		# X [-]
+		self.low_bnd.states[0] = -2
+		self.upp_bnd.states[0] =  2
+
+		# Y [-]
+		self.low_bnd.states[1] = -2
+		self.upp_bnd.states[1] =  2
+
+		# Z [-]
+		self.low_bnd.states[2] = -2
+		self.upp_bnd.states[2] =  2
+
+		# Vx [-]
+		self.low_bnd.states[3] = -5
+		self.upp_bnd.states[3] =  5
+
+		# Vy [-]
+		self.low_bnd.states[4] = -5
+		self.upp_bnd.states[4] =  5
+
+		# Vz [-]
+		self.low_bnd.states[5] = -5
+		self.upp_bnd.states[5] =  5
+
+		# m [kg]
+		self.low_bnd.states[6] = 0
+		self.upp_bnd.states[6] = self.mass0
+
+
+  		# Tx [-]
+		self.low_bnd.states[0] = - self.Tmax
+		self.upp_bnd.states[0] =   self.Tmax
+
+		# Ty [-]
+		self.low_bnd.states[1] = - self.Tmax
+		self.upp_bnd.states[1] =   self.Tmax
+
+		# Tz [-]
+		self.low_bnd.states[2] = - self.Tmax
+		self.upp_bnd.states[2] =   self.Tmax
+
+
+		# Initial and final times boundaries
+		self.low_bnd.ti = self.upp_bnd.ti = self.time[0]
+		self.low_bnd.tf = self.upp_bnd.tf = self.time[-1]
+
+
+	def event_constraints(self, xi, ui, xf, uf, ti, tf, f_prm):
+		""" Computation of the events constraints """
+		events = np.ndarray((self.prm['n_event_con'], 1),
+							dtype=cppad_py.a_double)
+
+		x_i, y_i, z_i, vx_i, vy_i, vz_i, m_i = xi
+		x_f, y_f, z_f, vx_f, vy_f, vz_f, _   = xf
+
+		events[0] = x_i  - self.trajectory[0, 0]
+		events[1] = y_i  - self.trajectory[1, 0]
+		events[2] = z_i  - self.trajectory[2, 0]
+		events[3] = vx_i - self.trajectory[3, 0]
+		events[4] = vy_i - self.trajectory[4, 0]
+		events[5] = vz_i - self.trajectory[5, 0]
+
+		events[6]  = x_f  - self.trajectory[0, -1]
+		events[7]  = y_f  - self.trajectory[1, -1]
+		events[8]  = z_f  - self.trajectory[2, -1]
+		events[9]  = vx_f - self.trajectory[3, -1]
+		events[10] = vy_f - self.trajectory[4, -1]
+		events[11] = vz_f - self.trajectory[5, -1]
+
+		events[12] = m_i - self.mass0
+
+		return events
+
+
+	def set_events_constraints_boundaries(self):
+		""" Setting of the events constraints boundaries """
+		self.low_bnd.event[0] = self.upp_bnd.event[0] = 0
+		self.low_bnd.event[1] = self.upp_bnd.event[1] = 0
+		self.low_bnd.event[2] = self.upp_bnd.event[2] = 0
+		self.low_bnd.event[3] = self.upp_bnd.event[3] = 0
+		self.low_bnd.event[4] = self.upp_bnd.event[4] = 0
+		self.low_bnd.event[5] = self.upp_bnd.event[5] = 0
+
+		self.low_bnd.event[6] = self.upp_bnd.event[6] = 0
+		self.low_bnd.event[7] = self.upp_bnd.event[7] = 0
+		self.low_bnd.event[8] = self.upp_bnd.event[8] = 0
+		self.low_bnd.event[9] = self.upp_bnd.event[9] = 0
+		self.low_bnd.event[10] = self.upp_bnd.event[10] = 0
+		self.low_bnd.event[11] = self.upp_bnd.event[11] = 0
+
+		self.low_bnd.event[12] = self.upp_bnd.event[12] = 0
+
+	def path_constraints(self, states, controls, states_add, controls_add, controls_col, f_par):
+
+		st_path = np.ndarray((self.prm['n_st_path_con'],
+							2*self.prm['n_nodes']-1), dtype=cppad_py.a_double)
+		ct_path = np.ndarray((self.prm['n_ct_path_con'],
+							4*self.prm['n_nodes']-3), dtype=cppad_py.a_double)
+
+		# Thrust magnitude in x, y and z directions in the synodic frame [-]
+		Tx = np.concatenate((controls[0], controls_add[0], controls_col[0]))
+		Ty = np.concatenate((controls[1], controls_add[1], controls_col[1]))
+		Tz = np.concatenate((controls[2], controls_add[2], controls_col[2]))
+
+		u2 = Tx*Tx + Ty*Ty + Tz*Tz
+
+		ct_path[0] = u2
+
+		return st_path, ct_path
+
+	def set_path_constraints_boundaries(self):
+		""" Setting of the path constraints boundaries """
+		self.low_bnd.ct_path[0] = 0
+		self.upp_bnd.ct_path[0] = self.Tmax**2
+
+
+	def dynamics(self, states, controls, f_prm, expl_int=False):
+		""" Computation of the states derivatives """
+		if expl_int == False:
+			dynamics = np.ndarray(
+				(states.shape[0], states.shape[1]), dtype=cppad_py.a_double)
+		else:
+			dynamics = np.zeros(len(states))
+
+		# Extraction of states
+		x, y, z, vx, vy, vz, m = states
+
+		# Extraction of controls
+		Tx, Ty, Tz = controls
+		T = np.linalg.norm(controls, axis=1)
+
+		x_dot, y_dot, z_dot, vx_dot, vy_dot, vz_dot = self.cr3bp.states_derivatives(0, states[:-1])
+
+		dynamics[0] = x_dot
+		dynamics[1] = y_dot
+		dynamics[2] = z_dot
+
+		dynamics[3] = vx_dot + Tx / m
+		dynamics[4] = vy_dot + Ty / m
+		dynamics[5] = vz_dot + Tz / m
+
+		dynamics[6] = - T / self.Isp / self.g0
+
+		return dynamics
+
+	def end_point_cost(self, ti, xi, tf, xf, f_prm):
+		""" Computation of the end point cost (Mayer term) """
+		mf = xf[-1]
+		return - mf / self.mass0
+
+
+	def set_initial_guess(self):
+		""" Setting of the initial guess for the states, controls, free-parameters
+						and time grid """
+
+		# Sampling of the states and time
+		time_smpld = np.zeros((6, self.prm['n_nodes']))
+		trajectory_smpld = np.zeros((1, self.prm['n_nodes']))
+
+		step = int(len(self.time) / self.prm['n_nodes']) + 1
+
+		time_smpld = self.time[0::step]
+		trajectory_smpld = self.trajectory[:, 0::step]
+
+		# Time
+		self.initial_guess.time = np.linspace(time_smpld[0], time_smpld[-1], self.prm['n_nodes'])
+
+		# States
+		self.initial_guess.states = np.ndarray(
+			shape=(self.prm['n_states'], self.prm['n_nodes']))
+
+		self.initial_guess.states[0] = trajectory_smpld[0]
+		self.initial_guess.states[1] = trajectory_smpld[1]
+		self.initial_guess.states[2] = trajectory_smpld[2]
+
+		self.initial_guess.states[3] = trajectory_smpld[3]
+		self.initial_guess.states[4] = trajectory_smpld[4]
+		self.initial_guess.states[5] = trajectory_smpld[5]
+
+		self.initial_guess.states[6] = self.mass0 * np.ones(self.prm['n_nodes'])
+
+		# Controls
+		self.initial_guess.controls = np.ndarray(
+			shape=(self.prm['n_controls'], self.prm['n_nodes']))
+
+		self.initial_guess.controls = np.zeros((3, self.prm['n_nodes']))
+

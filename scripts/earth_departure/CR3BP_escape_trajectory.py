@@ -14,6 +14,9 @@ from scripts.earth_departure.cr3bp import CR3BP
 from scripts.earth_departure import constants as cst
 from scripts.utils import load_bodies, load_kernels
 
+from scripts.earth_departure.OCP_moon_moon_leg import MoonMoonLeg
+from collocation.GL_V.src.optimization import Optimization
+
 def cr3bp_dynamics_augmtd(t, r, cr3bp, mass, Tmax, thrusts_intervals=None):
 
 	# States extraction
@@ -189,7 +192,7 @@ def CR3BP_moon_moon(trajectory, time):
 	time_ut = np.empty(0)
 
 	r_m = np.array([1 - cr3bp.mu, 0, 0])
-	dist_min = 20000 / cr3bp.L
+	dist_min = 60000 / cr3bp.L
 
 	for k in range(len((time))):
 		d = np.linalg.norm(trajectory[:3, k] - r_m)
@@ -202,27 +205,29 @@ def CR3BP_moon_moon(trajectory, time):
 
 	# # 6 - Final propagation with CR3BP dynamics
 	# # -----------------------------------------
-	t_span = [time_ut[0], time_ut[-1]]
-	t_eval = np.linspace(t_span[0], t_span[-1], 50000)
-	r0 = trajectory_ut[:, 0]
+	# t_span = [time_ut[0], time_ut[-1]]
+	# t_eval = np.linspace(t_span[0], t_span[-1], 100000)
+	# r0 = trajectory_ut[:, 0]
 
-	solution = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, t_eval=t_eval, y0=r0, method='LSODA', rtol=1e-13, atol=1e-13)
+	# solution = solve_ivp(fun=cr3bp.states_derivatives, t_span=t_span, t_eval=t_eval, y0=r0, method='LSODA', rtol=1e-13, atol=1e-13)
 
-	fig = plt.figure()
-	ax = fig.gca(projection='3d')
+	# fig = plt.figure()
+	# ax = fig.gca(projection='3d')
 
-	ax.plot(solution.y[0], solution.y[1], solution.y[2], '-', color='orange', linewidth=1)
-	ax.plot(trajectory[0], trajectory[1], trajectory[2], '-', color='blue', linewidth=1)
+	# ax.plot(solution.y[0], solution.y[1], solution.y[2], '-', color='orange', linewidth=1)
+	# ax.plot(trajectory[0], trajectory[1], trajectory[2], '-', color='blue', linewidth=1)
 
-	ax.plot([ -cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-	ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
+	# ax.plot([ -cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+	# ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
-	ax.set_xlabel('X [-]')
-	ax.set_ylabel('Y [-]')
-	ax.set_zlabel('Z [-]')
+	# ax.set_xlabel('X [-]')
+	# ax.set_ylabel('Y [-]')
+	# ax.set_zlabel('Z [-]')
 
-	plt.grid()
-	plt.show()
+	# plt.grid()
+	# plt.show()
+
+	return cr3bp, trajectory_ut, time_ut
 
 
 if __name__ == '__main__':
@@ -240,7 +245,19 @@ if __name__ == '__main__':
 		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon', 'rb') as f:
 			res = pickle.load(f)
 
-		CR3BP_moon_moon(trajectory=res['trajectory'], time=res['time'])
+		cr3bp, trajectory, time = CR3BP_moon_moon(trajectory=res['trajectory'], time=res['time'])
+		mass0 = res['mass']
+		Tmax  = res['Tmax']
+
+		options = {'linear_solver': 'mumps'}
+
+		problem = MoonMoonLeg(cr3bp, mass0, Tmax, trajectory, time)
+
+		# Instantiation of the optimization
+		optimization = Optimization(problem=problem, **options)
+
+		# Launch of the optimization
+		optimization.run()
 
 	else:
 		print("Error")

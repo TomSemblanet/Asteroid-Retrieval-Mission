@@ -10,7 +10,7 @@ Created on Mon Oct  12 10:30:53 2020
 import cppad_py
 import numpy as np
 
-from src.optimal_control import utils
+from collocation import utils
 
 
 class Constraints:

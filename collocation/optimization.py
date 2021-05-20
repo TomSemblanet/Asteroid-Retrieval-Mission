@@ -11,9 +11,9 @@ import os
 from datetime import datetime
 from configparser import ConfigParser
 
-from src.optimal_control import utils
-from src.optimal_control.transcription import Transcription
-from src.optimal_control.solver import IPOPT
+from collocation import utils
+from collocation.transcription import Transcription
+from collocation.solver import IPOPT
 
 
 class Optimization:
@@ -164,7 +164,7 @@ class Optimization:
         config = ConfigParser()
 
         dirname = os.path.dirname(__file__)
-        filename = os.path.join(dirname, "../init", 'default.ini')
+        filename = os.path.join(dirname, ".", 'default.ini')
 
         config.read(filename)
 

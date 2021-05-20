@@ -11,7 +11,7 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
 
-from src.optimal_control import constraints as cs, cost as ct, collocation as col, pseudospectrals as ps, utils
+from collocation import constraints as cs, cost as ct, collocation as col, pseudospectrals as ps, utils
 
 
 class IPOPT:

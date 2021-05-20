@@ -15,7 +15,7 @@ from scipy import interpolate
 from numpy.polynomial.legendre import Legendre as Legendre_poly
 from numpy.polynomial.chebyshev import Chebyshev as Chebyshev_poly
 
-from src.optimal_control import utils
+from collocation import utils
 
 
 class Pseudospectral:

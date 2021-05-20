@@ -11,7 +11,7 @@ from scipy import interpolate
 import numpy as np
 import cppad_py
 
-from src.optimal_control import utils
+from collocation import utils
 
 # pylint: disable=invalid-name
 

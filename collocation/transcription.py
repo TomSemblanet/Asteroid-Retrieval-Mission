@@ -10,7 +10,7 @@ Created on Mon Oct  12 09:50:23 2020
 import cppad_py
 import numpy as np
 
-from src.optimal_control import constraints as cs, cost as ct, \
+from collocation import constraints as cs, cost as ct, \
     collocation as col, pseudospectrals as ps, scaling as sc, utils
 
 

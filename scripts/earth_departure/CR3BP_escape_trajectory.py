@@ -51,6 +51,8 @@ def moon_point_approach(theta, r0, r_tgt, t_span, t_eval, cr3bp, mass, Tmax, thr
 	solution = solve_ivp(fun=cr3bp_dynamics_augmtd, t_span=t_span, t_eval=t_eval, y0=r0, args=(cr3bp, mass, Tmax, thrusts_intervals), \
 		events=(cr3bp_moon_approach), method='LSODA', rtol=1e-13, atol=1e-13)
 
+	print("Theta : {}°".format(180 / np.pi * theta))
+
 	return np.linalg.norm(solution.y[:3, -1] - r_tgt)
 
 def states_rotation(theta):
@@ -272,6 +274,12 @@ if __name__ == '__main__':
 		cr3bp, trajectory, time = CR3BP_moon_moon(trajectory=res['trajectory'], time=res['time'])
 		mass0 = res['mass']
 		Tmax  = res['Tmax']
+
+		print(trajectory)
+		print(time)
+		print(mass0)
+		print(Tmax)
+		input()
 
 		options = {'linear_solver': 'mumps'}
 

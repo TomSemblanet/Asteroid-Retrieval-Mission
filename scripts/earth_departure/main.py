@@ -15,29 +15,29 @@ from scripts.earth_departure.CR3BP_escape_trajectory import CR3BP_orbit_raising,
 
 from scripts.earth_departure.OCP_moon_moon_leg import MoonMoonLeg
 from scripts.earth_departure.OCP_apogee_raising import ApogeeRaising
+from scripts.earth_departure.OCP_moon_flyby import MoonFlyBy
 from collocation.GL_V.src.optimization import Optimization
-
 
 
 # Spacecraft characteristics
 # --------------------------
-Tmax = 10     # Maximum thrust [N]
-mass = 1000   # Mass           [kg]
+Tmax = 10 	 # Maximum thrust [N]
+mass = 1000   # Mass		   [kg]
 
 # Trajectory parameters
 # ---------------------
-eps = 90      # Thrust arc semi-angle [°]
+eps = 90	  # Thrust arc semi-angle [°]
 r_p = 20000   # Earth orbit perigee [km]
-r_m = 200     # S/C - Moon surface minimal distance [km]
+r_m = 5000	# S/C - Moon surface minimal distance [km]
 
-p = 1         # Resonance parameters (Moon) [-]
-q = 1         # Resonance parameters (S/C)  [-]
+p = 1		 # Resonance parameters (Moon) [-]
+q = 1		 # Resonance parameters (S/C)  [-]
 
 # Outter trajectory characteristics
 # ---------------------------------
 tau = 15128.755128883051 										   # Moon departure date (MJD2000)	
 v_out = np.array([-0.67827715326,  0.63981981778, -0.23054482431]) # Velocity at Moon departure in the ECLIPJ2000 frame [km/s]
-v_inf = np.linalg.norm(v_out)                                      # Excess velocity at Moon departure [km/s]
+v_inf = np.linalg.norm(v_out)									  # Excess velocity at Moon departure [km/s]
 
 
 # 1 - Computation of the Earth - Moon trajectory
@@ -47,7 +47,7 @@ r_ar, t_ar, thrusts_intervals, last_apogee_pass_time = apogee_raising(mass=mass,
 
 # 2 - Extraction of informations about the S/C position at Moon encounter
 # -----------------------------------------------------------------------
-r_in = r_ar[:, -1]           # Spacecraft state [km] | [km/s]
+r_in = r_ar[:, -1]		   # Spacecraft state [km] | [km/s]
 gamma = angle_w_Ox(r_in[:3]) # Angle between the (Ox) axis and the Spacecraft position w.r.t the Earth [rad]
 
 
@@ -73,7 +73,7 @@ if one_lga_ == True:
 
 	# Optimization of the CR3BP trajectory to make it feasible
 	# --------------------------------------------------------
-	problem = ApogeeRaising(cr3bp, mass, Tmax, trajectory, time)
+	problem = ApogeeRaising(cr3bp, mass, Tmax/1000, trajectory, time)
 
 	# Instantiation of the optimization
 	optimization = Optimization(problem=problem)
@@ -131,17 +131,18 @@ else:
 							'Tmax': Tmax/1000}, f)
 
 		# Computation of the trajectory in the CR3BP frame
-		apogee_raising_cr3bp, apogee_raising_trajectory, apogee_raising_time = cr3bp, trajectory, time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
+		apogee_raising_cr3bp, apogee_raising_trajectory, apogee_raising_time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
 		mass=mass, Tmax=Tmax/1000, t_last_ap_pass=last_apogee_pass_time)
+
 		moon_moon_cr3bp, moon_moon_trajectory, moon_moon_time = CR3BP_moon_moon(trajectories[1], times[1])
 
 
 		# Optimization of the CR3BP Apogee Raising trajectory to make it feasible
 		# -----------------------------------------------------------------------
-		problem = ApogeeRaising(cr3bp, mass, Tmax, trajectory, time)
+		apogee_raising_problem = ApogeeRaising(apogee_raising_cr3bp, mass, Tmax/1000, apogee_raising_trajectory, apogee_raising_time)
 
 		# Instantiation of the optimization
-		optimization = Optimization(problem=problem)
+		optimization = Optimization(problem=apogee_raising_problem)
 
 		# Launch of the optimization
 		optimization.run()
@@ -152,17 +153,21 @@ else:
 		ax = fig.gca(projection='3d')
 
 		ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-		ax.plot([-cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-		ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
+		ax.plot([-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+		ax.plot([1-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
 		plt.show()
+
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r_opt', 'wb') as f:
+			pickle.dump({'cr3bp': apogee_raising_cr3bp, 'trajectory': optimization.results['opt_st'], 'time': optimization.results['opt_tm'], 'mass': mass, \
+							'Tmax': Tmax/1000}, f)
 
 		# Optimization of the CR3BP Moon-Moon trajectory to make it feasible
 		# ------------------------------------------------------------------
-		problem = MoonMoonLeg(cr3bp, mass, Tmax, trajectory, time)
+		moon_moon_problem = MoonMoonLeg(moon_moon_cr3bp, mass, Tmax/1000, moon_moon_trajectory, moon_moon_time)
 
 		# Instantiation of the optimization
-		optimization = Optimization(problem=problem)
+		optimization = Optimization(problem=moon_moon_problem)
 
 		# Launch of the optimization
 		optimization.run()
@@ -173,13 +178,99 @@ else:
 		ax = fig.gca(projection='3d')
 
 		ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-		ax.plot([ -cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-		ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
+		ax.plot([ -moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+		ax.plot([1-moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
 		plt.show()
+
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon_opt', 'wb') as f:
+			pickle.dump({'cr3bp': moon_moon_cr3bp, 'trajectory': optimization.results['opt_st'], 'time': optimization.results['opt_tm'], 'mass': mass, \
+							'Tmax': Tmax/1000}, f)
 
 
 	else:
 		print("No second LGA found with this resonance")
 
+
+
+# if __name__ == '__main__':
+
+
+# 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r_opt', 'rb') as f:
+# 			res_apogee_raising = pickle.load(f)
+
+# 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon_opt', 'rb') as f:
+# 			res_moon_moon = pickle.load(f)
+
+# 	def moon_surface_reached(t, r):
+# 		r_m = np.array([1 - 0.012151, 0, 0])
+# 		d = np.linalg.norm(r[:3] - r_m) * 384400
+
+# 		min_dist = 100
+
+# 		return d - min_dist
+
+# 	moon_surface_reached.terminal = True
+
+# 	# Extraction of the cr3bp, trajectories and time grids
+# 	# ----------------------------------------------------
+# 	apogee_raising_cr3bp = res_apogee_raising['cr3bp']
+# 	apogee_raising_trajectory = res_apogee_raising['trajectory']
+# 	apogee_raising_time = res_apogee_raising['time']
+
+# 	moon_moon_cr3bp = res_moon_moon['cr3bp']
+# 	moon_moon_trajectory = res_moon_moon['trajectory']
+# 	moon_moon_time = res_moon_moon['time']
+
+
+# 	# Time span and initial condition for forward propagation
+# 	# -------------------------------------------------------
+# 	t_span_fwd = [0, 30 * 86400 / res_apogee_raising['cr3bp'].T]
+# 	t_eval_fwd = np.linspace(t_span_fwd[0], t_span_fwd[-1], 100000)
+
+# 	r0_fwd = apogee_raising_trajectory[:-1, -1]
+
+# 	fwd_solution = solve_ivp(fun=apogee_raising_cr3bp.states_derivatives, y0=r0_fwd, t_span=t_span_fwd, t_eval=t_eval_fwd, \
+# 		events=(moon_surface_reached), rtol=1e-12, atol=1e-12)
+# 	fwd_trajectory = fwd_solution.y
+# 	fwd_time = fwd_solution.t
+
+
+# 	# Time span and initial condition for backward propagation
+# 	# --------------------------------------------------------
+# 	t_span_bwd = [30 * 86400 / res_moon_moon['cr3bp'].T, 0]
+# 	t_eval_bwd = np.linspace(t_span_bwd[0], t_span_bwd[-1], 100000)
+
+# 	r0_bwd = moon_moon_trajectory[:-1, 0]
+
+# 	bwd_solution = solve_ivp(fun=moon_moon_cr3bp.states_derivatives, y0=r0_bwd, t_span=t_span_bwd, t_eval=t_eval_bwd, \
+# 		events=(moon_surface_reached), rtol=1e-12, atol=1e-12)
+# 	bwd_trajectory = np.flip(bwd_solution.y, axis=1)
+# 	bwd_time = np.flip(bwd_solution.t - bwd_solution.t[-1])
+
+# 	time = np.concatenate((fwd_time, bwd_time+fwd_time[-1]))
+# 	trajectory = np.hstack((fwd_trajectory, bwd_trajectory))
+
+# 	moon_flyby_problem = MoonFlyBy(moon_moon_cr3bp, 1000, 10/1000, trajectory, time, r_m=5000)
+
+# 	# Instantiation of the optimization
+# 	optimization = Optimization(problem=moon_flyby_problem)
+
+# 	# Launch of the optimization
+# 	optimization.run()
+
+# 	opt_trajectory = optimization.results['opt_st']
+
+# 	fig = plt.figure()
+# 	ax = fig.gca(projection='3d')
+
+# 	ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], \
+# 		'-', color='blue', linewidth=1)
+
+# 	ax.plot([1-res_apogee_raising['cr3bp'].mu], [0], [0], 'o', color='black', markersize=2)
+
+# 	plt.show()
+
+	
+	
 

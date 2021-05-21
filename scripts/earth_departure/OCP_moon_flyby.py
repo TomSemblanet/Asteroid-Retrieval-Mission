@@ -5,22 +5,25 @@ import matplotlib.pyplot as plt
 
 import cppad_py
 
-from collocation.problem import Problem
-from collocation.optimization import Optimization
+from collocation.GL_V.src.problem import Problem
+from collocation.GL_V.src.optimization import Optimization
 
-class MoonMoonLeg(Problem):
+from scripts.earth_departure import constants as cst
+
+class MoonFlyBy(Problem):
 	""" CR3BP : Moon-Moon Leg optimal control problem """
 
-	def __init__(self, cr3bp, mass0, Tmax, trajectory, time):
+	def __init__(self, cr3bp, mass0, Tmax, trajectory, time, r_m):
 		""" Initialization of the `GoddardRocket` class """
 		n_states = 7
 		n_controls = 4
-		n_path_con = 1
+		n_st_path_con = 1
+		n_ct_path_con = 1
 		n_event_con = 13
 		n_f_par = 0
-		n_nodes = 100
+		n_nodes = 200
 
-		Problem.__init__(self, n_states, n_controls, n_path_con, 
+		Problem.__init__(self, n_states, n_controls, n_st_path_con, n_ct_path_con, 
 						 n_event_con, n_f_par, n_nodes)
 
 		# Set some attributs
@@ -32,10 +35,13 @@ class MoonMoonLeg(Problem):
 		self.trajectory = trajectory # [L] | [L/T]
 		self.time = time # [T]
 
+		self.r_m = r_m
+
 	def set_constants(self):
 		""" Setting of the problem constants """
-		
 		self.Tmax /= self.cr3bp.L / self.cr3bp.T**2   # Thrusts dimensioning
+
+		self.r_m = (self.r_m + cst.R_M) / self.cr3bp.L
 
 		self.g0 = 9.80665e-3 / (self.cr3bp.L / self.cr3bp.T**2)
 		self.Isp = 2000 / self.cr3bp.T
@@ -70,7 +76,7 @@ class MoonMoonLeg(Problem):
 		self.upp_bnd.states[5] =  10
 
 		# m [kg]
-		self.low_bnd.states[6] = 1e-3
+		self.low_bnd.states[6] = 1e-6
 		self.upp_bnd.states[6] = self.mass0
 
 
@@ -78,15 +84,15 @@ class MoonMoonLeg(Problem):
 		self.low_bnd.controls[0] = 1e-6
 		self.upp_bnd.controls[0] = self.Tmax
 
-  		# ux [-]
+  		# Tx [-]
 		self.low_bnd.controls[1] = - 1
 		self.upp_bnd.controls[1] =   1
 
-		# uy [-]
+		# Ty [-]
 		self.low_bnd.controls[2] = - 1
 		self.upp_bnd.controls[2] =   1
 
-		# uz [-]
+		# Tz [-]
 		self.low_bnd.controls[3] = - 1
 		self.upp_bnd.controls[3] =   1
 
@@ -125,38 +131,56 @@ class MoonMoonLeg(Problem):
 
 	def set_events_constraints_boundaries(self):
 		""" Setting of the events constraints boundaries """
-		self.low_bnd.event[0]  = self.upp_bnd.event[0]  = 0
-		self.low_bnd.event[1]  = self.upp_bnd.event[1]  = 0
-		self.low_bnd.event[2]  = self.upp_bnd.event[2]  = 0
-		self.low_bnd.event[3]  = self.upp_bnd.event[3]  = 0
-		self.low_bnd.event[4]  = self.upp_bnd.event[4]  = 0
-		self.low_bnd.event[5]  = self.upp_bnd.event[5]  = 0
+		self.low_bnd.event[0] = self.upp_bnd.event[0] = 0
+		self.low_bnd.event[1] = self.upp_bnd.event[1] = 0
+		self.low_bnd.event[2] = self.upp_bnd.event[2] = 0
+		self.low_bnd.event[3] = self.upp_bnd.event[3] = 0
+		self.low_bnd.event[4] = self.upp_bnd.event[4] = 0
+		self.low_bnd.event[5] = self.upp_bnd.event[5] = 0
 
-		self.low_bnd.event[6]  = self.upp_bnd.event[6]  = 0
-		self.low_bnd.event[7]  = self.upp_bnd.event[7]  = 0
-		self.low_bnd.event[8]  = self.upp_bnd.event[8]  = 0
-		self.low_bnd.event[9]  = self.upp_bnd.event[9]  = 0
+		self.low_bnd.event[6] = self.upp_bnd.event[6] = 0
+		self.low_bnd.event[7] = self.upp_bnd.event[7] = 0
+		self.low_bnd.event[8] = self.upp_bnd.event[8] = 0
+		self.low_bnd.event[9] = self.upp_bnd.event[9] = 0
 		self.low_bnd.event[10] = self.upp_bnd.event[10] = 0
 		self.low_bnd.event[11] = self.upp_bnd.event[11] = 0
 
 		self.low_bnd.event[12] = self.upp_bnd.event[12] = 0
 
-	def path_constraints(self, states, controls, f_prm):
+	def path_constraints(self, states, controls, states_add, controls_add, controls_col, f_par):
 
-		constraints = np.ndarray(
-			(self.prm['n_path_con'], self.prm['n_nodes']), dtype=cppad_py.a_double)
+		st_path = np.ndarray((self.prm['n_st_path_con'],
+							2*self.prm['n_nodes']-1), dtype=cppad_py.a_double)
+		ct_path = np.ndarray((self.prm['n_ct_path_con'],
+							4*self.prm['n_nodes']-3), dtype=cppad_py.a_double)
 
-		ux, uy, uz = controls[1:]
+		# Thrust magnitude in x, y and z directions in the synodic frame [-]
+		ux = np.concatenate((controls[1], controls_add[1], controls_col[1]))
+		uy = np.concatenate((controls[2], controls_add[2], controls_col[2]))
+		uz = np.concatenate((controls[3], controls_add[3], controls_col[3]))
+
+		# S/C position in the synodic frame [-]
+		x = np.concatenate((states[1], states_add[1]))
+		y = np.concatenate((states[2], states_add[2]))
+		z = np.concatenate((states[3], states_add[3]))
+
+		# S/C - Moon distance
+		d2 = (x-(1-self.cr3bp.mu))*(x-(1-self.cr3bp.mu)) + y*y + z*z
+		st_path[0] = d2
 
 		u2 = ux*ux + uy*uy + uz*uz
 
-		constraints[0] = u2 - 1
+		ct_path[0] = u2 - 1
 
-		return constraints
+		return st_path, ct_path
 
 	def set_path_constraints_boundaries(self):
 		""" Setting of the path constraints boundaries """
-		self.low_bnd.path[0] = self.upp_bnd.path[0] = 0
+		self.low_bnd.st_path[0] = self.r_m**2
+		self.upp_bnd.st_path[0] = 2
+
+		self.low_bnd.ct_path[0] = self.upp_bnd.ct_path[0] = 0
+
 
 
 	def dynamics(self, states, controls, f_prm, expl_int=False):
@@ -206,6 +230,22 @@ class MoonMoonLeg(Problem):
 
 		time_smpld = self.time[0::step]
 		trajectory_smpld = self.trajectory[:, 0::step]
+
+		delta = self.prm['n_nodes'] - time_smpld.shape[0] 
+		time_smpld = np.hstack((time_smpld, self.time[:-delta]))
+		trajectory_smpld = np.hstack((trajectory_smpld, self.trajectory[:, -delta:]))
+
+		fig = plt.figure()
+		ax = fig.gca(projection='3d')
+
+		ax.plot(trajectory_smpld[0], trajectory_smpld[1], trajectory_smpld[2], 'o', color='blue', markersize=1)
+		ax.plot([1-self.cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+
+		ax.plot([self.trajectory[0, 0]], [self.trajectory[1, 0]], [self.trajectory[2, 0]], 'o', color='green', markersize=2)
+		ax.plot([self.trajectory[0, -1]], [self.trajectory[1, -1]], [self.trajectory[2, -1]], 'o', color='red', markersize=2)
+
+		plt.show()
+
 
 		# Time
 		self.initial_guess.time = np.linspace(time_smpld[0], time_smpld[-1], self.prm['n_nodes'])

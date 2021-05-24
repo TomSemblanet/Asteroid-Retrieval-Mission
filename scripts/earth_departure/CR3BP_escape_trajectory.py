@@ -114,6 +114,7 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 
 	# 4 - Rotation of the initial states to approach the Moon correctly
 	# -----------------------------------------------------------------
+
 	t_span = np.array([time[0], time[-1]])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 	r0 = trajectory[:, 0]
@@ -128,7 +129,7 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 			tol=1e-2)
 	theta_opt = opt_results.x[0]
 
-	# Rotatation of the initial state w/ the good angle and conversion in the synodic frame
+	# Rotation of the initial state w/ the good angle and conversion in the synodic frame
 	r0 = states_rotation(theta_opt).dot(r0)
 	r0 = cr3bp.eci2syn(t=0, r=r0)
 
@@ -140,8 +141,6 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 		events=(cr3bp_moon_approach), method='LSODA', rtol=1e-13, atol=1e-13)
 	cr3bp_trajectory = solution.y
 	cr3bp_time = solution.t
-
-	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='orange', linewidth=1)
 
 
 	# 6 - Keep the part of the trajectory between the last apogee pass and the Moon
@@ -209,7 +208,7 @@ def CR3BP_moon_moon(trajectory, time):
 	for k, t in enumerate(time):
 		trajectory[:, k] = cr3bp.eci2syn(t, trajectory[:, k])
 
-	# 3 - Keep the part of the trajectory that is more than 60,000km from the Moon
+	# 3 - Keep the part of the trajectory that is more than 30,000km from the Moon
 	# ----------------------------------------------------------------------------
 	trajectory_ut = np.empty((0, 6))
 	time_ut = np.empty(0)

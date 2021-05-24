@@ -67,8 +67,8 @@ def cart2sph(r):
 def sph2cart(r):
 	""" Converts spherical coordinates to cartesian coordinates """
 	return np.array([r[0]*np.cos(r[1])*np.sin(r[2]),
-				     r[0]*np.sin(r[1])*np.sin(r[2]),
-				     r[0]*np.cos(r[2])])
+					 r[0]*np.sin(r[1])*np.sin(r[2]),
+					 r[0]*np.cos(r[2])])
 
 
 def R1():
@@ -103,33 +103,33 @@ def R2(theta):
 
 	return np.array([ [np.cos(theta), -np.sin(theta), 0],
 					  [np.sin(theta),  np.cos(theta), 0],
-					  [            0,              0, 1] ])
+					  [			0,			  0, 1] ])
 
 
 def P_GEO2RVH(gamma):
 	""" Passage matrix from Earth inertial frame to RVH frame """
 	return np.array([[np.cos(gamma), -np.sin(gamma), 0],
 		 			 [np.sin(gamma),  np.cos(gamma), 0],
-		 			 [            0,              0, 1]])	
+		 			 [			0,			  0, 1]])	
 
 def P_RVH2GEO(gamma):
 	""" Passage matrix from RVH frame to Earth inertial frame """
 	return np.array([[ np.cos(gamma),  np.sin(gamma), 0],
 		 			 [-np.sin(gamma),  np.cos(gamma), 0],
-		 			 [            0,              0, 1]])
+		 			 [			0,			  0, 1]])
 
 
 def P_RVH2HRV():
 	""" Passage matrix from RVH frame to HRV frame """
 	return np.array([[0, 1, 0],
-		             [0, 0, 1],
-		             [1, 0, 0]])
+					 [0, 0, 1],
+					 [1, 0, 0]])
 
 def P_HRV2RVH():
 	""" Passage matrix from HRV frame to RVH frame """
 	return np.array([[0, 0, 1],
-		             [1, 0, 0],
-		             [0, 1, 0]])
+					 [1, 0, 0],
+					 [0, 1, 0]])
 
 def P_GEO2HRV(gamma):
 	""" Passage matrix from Earth inertial frame to HRV frame """
@@ -148,16 +148,16 @@ def kep2cart(a, e, i, W, w, ta, mu) :
 
 
 	R1 = np.array([ [np.cos(w), -np.sin(w), 0.],
-			        [np.sin(w),  np.cos(w), 0.],
-			        [             0.,               0., 1.] ])
+					[np.sin(w),  np.cos(w), 0.],
+					[			 0.,			   0., 1.] ])
 
-	R2 = np.array([ [1.,               0.,               0.],
-		            [0.,      np.cos(i),     -np.sin(i)],
-		            [0.,      np.sin(i),      np.cos(i)] ])
+	R2 = np.array([ [1.,			   0.,			   0.],
+					[0.,	  np.cos(i),	 -np.sin(i)],
+					[0.,	  np.sin(i),	  np.cos(i)] ])
 
-	R3 = np.array([ [np.cos(W), -np.sin(W),     0.],
-		            [np.sin(W),  np.cos(W),     0.],
-		            [             0.,               0.,     1.] ])
+	R3 = np.array([ [np.cos(W), -np.sin(W),	 0.],
+					[np.sin(W),  np.cos(W),	 0.],
+					[			 0.,			   0.,	 1.] ])
 
 	r = R3.dot(R2.dot(R1.dot(r_orbital_plan)))
 	v = R3.dot(R2.dot(R1.dot(v_orbital_plan)))

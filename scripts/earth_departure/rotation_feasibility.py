@@ -71,7 +71,7 @@ def rotation_feasibility(v_in, v_out, tau, r_m, gamma, print_=True):
 	# Moon's velocity in the HRV basis
 	v_M = np.array([0, 0, cst.V_M])
 
-	# S/C velocity in the HRV frame
+	# S/C velocity in the HRV basis
 	v_in = P_HRV2GEO(gamma).dot(v_in)
 
 	# Excess velocity
@@ -100,10 +100,8 @@ def rotation_feasibility(v_in, v_out, tau, r_m, gamma, print_=True):
 		print("Delta     : {}°".format(delta   * 180 / np.pi))
 		print("Delta max : {}°".format(delta_m * 180 / np.pi))
 
-	if abs(delta) > abs(delta_m):
-		return False, phi_m, theta_m, phi_p, theta_p
+	feasibility = True if abs(delta) <= abs(delta_m) else False
 	
-	else:
-		return True, phi_m, theta_m, phi_p, theta_p
+	return feasibility, phi_m, theta_m, phi_p, theta_p
 
 

@@ -1,14 +1,57 @@
 import sys
 import pickle 
+import pykep as pk
 import numpy as np 
 import matplotlib.pyplot as plt
 
 import cppad_py
 
+from scipy.integrate import solve_ivp
+from scipy.optimize import minimize
+
 from collocation.GL_V.src.problem import Problem
 from collocation.GL_V.src.optimization import Optimization
 
 from scripts.earth_departure import constants as cst
+from scripts.earth_departure.utils import cart2sph, sph2cart, cr3bp_moon_approach
+
+def moon_reached(t, y, cr3bp, dmax):
+	return np.linalg.norm(y[:3] - np.array([1-cr3bp.mu, 0, 0])) 
+
+def limit_reached(t, y, cr3bp, dmax):
+	return np.linalg.norm(y[:3] - np.array([1-cr3bp.mu,0 ,0])) - dmax
+
+def cr3bp_dynamics(t, y, cr3bp, dmax):
+	return cr3bp.states_derivatives(t, y)
+
+def initial_guess_generator(x, cr3bp, r_i, r_tgt, P, dmax):
+	""" Generation of an initial guess for the MoonFlyBy optimal control problem 
+
+		Parameters
+		----------
+			ri : array
+				S/C initial states [-]
+			rf : array
+				S/C final states [-]
+
+	"""
+
+	phi, theta = x
+	
+	# Definition of the new velocity vector in spherical coordinates
+	v_mag = np.linalg.norm(r_i[3:])
+	v_sph = np.array([v_mag, phi, theta])
+
+	# Conversion of the initial velocity in the synodic frame
+	v_syn = P.dot(sph2cart(v_sph))
+	r0 = np.concatenate((r_i[:3], v_syn))
+
+	propagation = solve_ivp(fun=cr3bp_dynamics, y0=r0, t_span=[0, 50], args=(cr3bp, dmax), \
+		events=(moon_reached, limit_reached), rtol=1e-12, atol=1e-12)
+
+	return np.linalg.norm(propagation.y[:, -1] - r_tgt[:])
+
+
 
 class MoonFlyBy(Problem):
 	""" CR3BP : Moon-Moon Leg optimal control problem """
@@ -226,32 +269,90 @@ class MoonFlyBy(Problem):
 		""" Setting of the initial guess for the states, controls, free-parameters
 						and time grid """
 
+		# # Sampling of the states and time
+		# time_smpld = np.zeros(self.prm['n_nodes'])
+		# trajectory_smpld = np.zeros((6, self.prm['n_nodes']))
+
+		# n_fwd_points = int(0.25 * self.prm['n_nodes'])  # 25% of the initial guess is from the LGA (-) leg
+		# n_bwd_points = int(0.25 * self.prm['n_nodes'])  # 25% of the initial guess is from the LGA (+) leg
+
+		# fwd_step = int(self.fwd_trajectory.shape[1] / n_fwd_points)
+		# bwd_step = int(self.bwd_trajectory.shape[1] / n_bwd_points)
+
+		# for i in range(n_fwd_points):
+		# 	trajectory_smpld[:, i] = self.fwd_trajectory[:, i * fwd_step]
+		# 	time_smpld[i] = self.fwd_time[i * fwd_step]
+
+		# for i in range(n_bwd_points):
+		# 	trajectory_smpld[:, -i-1] = self.bwd_trajectory[:, -i*bwd_step-1]
+		# 	time_smpld[-i-1] = self.bwd_time[-i * bwd_step-1]
+
+
+
+		# Definition of a new frame
+		r_i = self.fwd_trajectory[:,  0]
+		r_f = self.bwd_trajectory[:, -1]
+
+		i = r_i[3:] / np.linalg.norm(r_i[3:])
+		j = - np.cross(r_i[:3], r_i[3:]) / np.linalg.norm(np.cross(r_i[:3], r_i[3:]))							              
+		k = np.cross(i, j)																		                  
+
+		# Passage matrix from the synodic frame to the jki one
+		P = np.array([[j[0], k[0], i[0]], [j[1], k[1], i[1]], [j[2], k[2], i[2]]])
+
+		# Parameters
+		theta = 0 * np.pi / 180
+		phi = 0 * np.pi / 180
+		dmax = np.linalg.norm(r_f[:3] - np.array([1-self.cr3bp.mu, 0, 0]))
+
+		moon_reached.terminal = True
+		limit_reached.terminal = True
+		limit_reached.direction = 1
+
+		minimization = minimize(fun=initial_guess_generator, x0=(phi, theta), args=(self.cr3bp, r_i, r_f, P, dmax))
+
+		phi_opt, theta_opt = minimization.x
+		phi_opt, theta_opt = 160*np.pi/180, 22*np.pi/180
+
+		# Definition of the new velocity vector in spherical coordinates
+		v_mag = np.linalg.norm(r_i[3:])
+		v_sph = np.array([v_mag, phi_opt, theta_opt])
+
+		# Conversion of the initial velocity in the synodic frame
+		v_syn = P.dot(sph2cart(v_sph))
+		r0 = np.concatenate((r_i[:3], v_syn))
+
+		t_eval = np.linspace(0, 10, 100000)
+
+		propagation = solve_ivp(fun=cr3bp_dynamics, y0=r0, t_span=[0, 50], t_eval=t_eval, args=(self.cr3bp, dmax), \
+			events=(moon_reached, limit_reached), rtol=1e-12, atol=1e-12)
+
+		print(np.linalg.norm(propagation.y[:3, -1] - r_f[:3]))
+		print(np.linalg.norm(propagation.y[3:, -1] - r_f[3:]))
+
+		fig = plt.figure()
+		ax = fig.gca(projection='3d')
+
+		ax.plot([r_i[0]], [r_i[1]], [r_i[2]], 'o', color='green', markersize=3)
+		ax.plot([r_f[0]], [r_f[1]], [r_f[2]], 'o', color='red', markersize=3)
+
+		ax.plot(propagation.y[0], propagation.y[1], propagation.y[2], '-', color='blue', linewidth=1)
+		ax.plot([1-self.cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+
+		plt.show()
+
+		sys.exit()
+
+
 		# Sampling of the states and time
-		time_smpld = np.zeros((6, self.prm['n_nodes']))
-		trajectory_smpld = np.zeros((1, self.prm['n_nodes']))
+		time_smpld = np.zeros(self.prm['n_nodes'])
+		trajectory_smpld = np.zeros((6, self.prm['n_nodes']))
 
-		step = int((len(self.fwd_time) + len(self.bwd_time)) / self.prm['n_nodes']) + 3
+		step = int(propagation.y.shape[1] / self.prm['n_nodes'])
 
-		fwd_time_smpld = self.fwd_time[0::step]
-		bwd_time_smpld = self.bwd_time[0::step]
-
-		fwd_trajectory_smpld = self.fwd_trajectory[:, 0::step]
-		bwd_trajectory_smpld = self.bwd_trajectory[:, 0::step]
-
-		n_add_nodes = self.prm['n_nodes'] - np.hstack((fwd_time_smpld, bwd_time_smpld)).shape[0]
-		add_time = np.linspace(fwd_time_smpld[-1], bwd_time_smpld[0], n_add_nodes)
-		time_smpld = np.hstack((fwd_time_smpld, add_time, bwd_time_smpld))
-
-		if n_add_nodes % 2 == 1:
-			n_fwd = int(n_add_nodes / 2) + 1
-			n_bwd = int(n_add_nodes / 2) 
-
-		else:
-			n_fwd = n_bwd = int(n_add_nodes / 2)
-
-		trajectory_smpld = np.hstack((fwd_trajectory_smpld, np.tile(np.reshape(fwd_trajectory_smpld[:, -1], (6, 1)), n_fwd), \
-			np.tile(np.reshape(bwd_trajectory_smpld[:,  0], (6, 1)), n_bwd), bwd_trajectory_smpld))
-		
+		for i in range(self.prm['n_nodes']):
+			trajectory_smpld[:, i] = propagation.y[:, i*step]
+			time_smpld[i] = propagation.t[i] + self.fwd_time[0]
 
 		# Time
 		self.initial_guess.time = np.linspace(time_smpld[0], time_smpld[-1], self.prm['n_nodes'])

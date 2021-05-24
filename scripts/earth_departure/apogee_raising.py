@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 from scipy.integrate import solve_ivp
 
-from scripts.earth_departure.utils import kepler_thrust, kep2cart, cart2kep, moon_reached, R2, apside_pass, plot_env_2D, thrust_ignition
+from scripts.earth_departure.utils import kepler_thrust, kep2cart, cart2kep, moon_reached, R2, apside_pass, plot_env_2D, thrust_ignition, angle_w_Ox
 from scripts.earth_departure import constants as cst
 
 """
@@ -14,11 +14,13 @@ from scripts.earth_departure import constants as cst
 
 	Parameters:
 	-----------
-		T : [N]
+		mass : [kg]
+			S/C initial mass
+		T : [kN]
 			S/C maximum thrust
 		eps : [°]
 			Thrust arc semi-angle
-		per : [km]
+		r_p : [km]
 			Earth orbit perigee (relative to the Earth surface)
 		v_inf : [km/s]
 			Excess velocity required at the Moon encounter
@@ -29,6 +31,10 @@ from scripts.earth_departure import constants as cst
 			S/C position and velocity in the Geocentric frame
 		t : [s]
 			Time grid
+		thrust_intervals : [-]
+			Array of the thrusts intervals
+		last_ap_pass_time : [s]
+			Date of last apogee pass
 
 """
 
@@ -41,7 +47,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 			r0 : array
 				S/C initial states on its orbit around the Earth [km] | [km/s]
 			mass : float
-				S/C mass [kg]
+				S/C initial mass [kg]
 			T : float
 				S/C maximum thrust [kN]
 			eps : float
@@ -50,7 +56,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 		Returns
 		-------
 			tau : float
-				Time of the last apogee pass
+				Time of the last apogee pass [s]
 
 	""" 
 
@@ -95,7 +101,7 @@ def propagate_to_last_apogee_pass(r0, tau, mass, T, eps):
 			t : array
 				Time grid during the trajectory to the last apogee pass [s]
 			t_ign : array
-				Dates of thrusters ignition / shut-down
+				Dates of thrusters ignition / shut-down [s]
 
 	"""
 
@@ -118,7 +124,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 			v_inf : float
 				S/C excess velocity at Moon encounter [km/s]
 			mass : float
-				S/C mass [kg]
+				S/C initial mass [kg]
 			T : float
 				S/C maximum thrust [kN]
 			eps : float
@@ -131,7 +137,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 
 	"""
 
-	t_span = np.array([0, 200 * 86400])
+	t_span = np.array([0, 365 * 86400])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 
 	# The propagation begins at the last apogee pass
@@ -160,6 +166,24 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 		print("\t\t\t\t\t\t{}\t\t\t{}".format(round(abs(f2), 5), round(abs(eps2*180/np.pi), 5)))
 
 	return eps2
+
+
+def f(r0, t_span, t_eval, mass, T, eps, v_inf):
+
+	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached), rtol=1e-12, atol=1e-12)
+	r = sol.y
+
+	# Final velocity 
+	v_f = sol.y[3:, -1]
+
+	# Angle between (Ox) and the S/C position at t=tf
+	theta = angle_w_Ox(sol.y[:3, -1])
+
+	# Computation of the velocities difference [km/s]
+	v_M = R2(theta).dot(np.array([0, cst.V_M, 0]))
+	delta_V = v_f - v_M
+
+	return np.linalg.norm(delta_V) - v_inf
 
 
 def propagate_last_branch(r_ap, mass, T, eps_l):
@@ -194,25 +218,6 @@ def propagate_last_branch(r_ap, mass, T, eps_l):
 	sol = solve_ivp(fun=kepler_thrust, y0=r_ap[:, -1], t_span=t_span, t_eval=t_eval, args=(mass, T, eps_l), events=(moon_reached, thrust_ignition), rtol=1e-12, atol=1e-12)
 
 	return sol.y, sol.t, sol.t_events[1]
-
-
-
-def f(r0, t_span, t_eval, mass, T, eps, v_inf):
-
-	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached), rtol=1e-12, atol=1e-12)
-	r = sol.y
-
-	# Final velocity 
-	v_f = sol.y[3:, -1]
-
-	# Angle between (Ox) and the S/C position at t=tf
-	theta = np.sign(np.cross(np.array([1, 0, 0]), r[:3, -1])[2]) * np.arccos(np.dot(np.array([1, 0, 0]), r[:3, -1]) / np.linalg.norm(r[:3, -1]))
-
-	# Computation of the velocities difference [km/s]
-	v_M = R2(theta).dot(np.array([0, cst.V_M, 0]))
-	delta_V = v_f - v_M
-
-	return np.linalg.norm(delta_V) - v_inf
 
 
 def apogee_raising(mass, T, eps, r_p, v_inf):

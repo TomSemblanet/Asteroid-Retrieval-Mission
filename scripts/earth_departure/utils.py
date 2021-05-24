@@ -242,12 +242,13 @@ def thrust_ignition(t, y, mass=None, T=None, eps=None):
 	return phi - eps
 
 def cr3bp_moon_approach(t, r, cr3bp, mass, Tmax, thrusts_intervals=None):
-	""" Raises an event when the S/C is at less than 20,000km of the Moon """
+	""" Raises an event when the S/C is at less than 30,000km of the Moon """
+
 	# Moon's position in the synodic frame
 	r_m = np.array([1 - cr3bp.mu, 0 , 0])
 	d = np.linalg.norm(r[:3] - r_m)
 
-	return d - 2e4 / cr3bp.L
+	return d - 30000 / cr3bp.L
 
 def angle_w_Ox(r):
 	""" Return the (oriented) angle between the (Ox) axis and the `r` vector """

@@ -22,7 +22,7 @@ from scripts.utils import load_bodies, load_kernels
 			S/C velocity at Moon arrival in the Earth centered frame
 		v_out : [km/s]
 			S/C velocity relative to the Moon at departure in the ECLJ2000 frame
-		tau : [mj2000]
+		tau : [MJD2000]
 			Moon departure date
 		r_m : [km]
 			S/C - Moon minimal distance (relative to the Moon surface)

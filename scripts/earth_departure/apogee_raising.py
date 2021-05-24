@@ -238,8 +238,8 @@ def apogee_raising(mass, T, eps, r_p, v_inf):
 
 	# 1 - Definition of the initial circular orbit and S/C initial state in the Earth inertial frame
 	# ----------------------------------------------------------------------------------------------
-	e  = 0				 # Eccentricity [-]
 	a  = cst.R_E + r_p	 # SMA [km]
+	e  = 0				 # Eccentricity [-]
 	i  = 0				 # Inclinaison [rad]
 	W  = 0				 # RAAN [rad]
 	w  = np.pi			 # Perigee anomaly [rad]

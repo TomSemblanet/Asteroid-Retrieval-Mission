@@ -51,8 +51,6 @@ def moon_point_approach(theta, r0, r_tgt, t_span, t_eval, cr3bp, mass, Tmax, thr
 	solution = solve_ivp(fun=cr3bp_dynamics_augmtd, t_span=t_span, t_eval=t_eval, y0=r0, args=(cr3bp, mass, Tmax, thrusts_intervals), \
 		events=(cr3bp_moon_approach), method='LSODA', rtol=1e-13, atol=1e-13)
 
-	print("Theta : {}°".format(180 / np.pi * theta))
-
 	return np.linalg.norm(solution.y[:3, -1] - r_tgt)
 
 def states_rotation(theta):
@@ -96,12 +94,12 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 		trajectory[:, k] = cr3bp.eci2syn(t, trajectory[:, k])
 
 
-	# 3 - Find the point of the Keplerian trajectory at 60,000km of the Moon
+	# 3 - Find the point of the Keplerian trajectory at 30,000km of the Moon
 	# ----------------------------------------------------------------------
 	index = 0
 
 	r_m = np.array([1 - cr3bp.mu, 0, 0])
-	dist_min = 20000 / cr3bp.L
+	dist_min = 30000 / cr3bp.L
 
 	for k in range(len(time)):
 		if np.linalg.norm(trajectory[:3, -(k+1)] - r_m) >= dist_min:
@@ -146,13 +144,14 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='orange', linewidth=1)
 
 
-	# 6 - Keep the part of the trajectory that is more than 20,000km from the Moon
-	# ----------------------------------------------------------------------------
+	# 6 - Keep the part of the trajectory between the last apogee pass and the Moon
+	# -----------------------------------------------------------------------------
+
 	trajectory_ut = np.empty((0, 6))
 	time_ut = np.empty(0)
 
 	r_m = np.array([1 - cr3bp.mu, 0, 0])
-	dist_min = 20000 / cr3bp.L
+	dist_min = 30000 / cr3bp.L
 
 	# Find the index of the last apogee pass
 	index_l_pass = np.searchsorted(cr3bp_time, t_last_ap_pass, side='right') - 1
@@ -216,7 +215,7 @@ def CR3BP_moon_moon(trajectory, time):
 	time_ut = np.empty(0)
 
 	r_m = np.array([1 - cr3bp.mu, 0, 0])
-	dist_min = 60000 / cr3bp.L
+	dist_min = 30000 / cr3bp.L
 
 	for k in range(len((time))):
 		d = np.linalg.norm(trajectory[:3, k] - r_m)
@@ -274,12 +273,6 @@ if __name__ == '__main__':
 		cr3bp, trajectory, time = CR3BP_moon_moon(trajectory=res['trajectory'], time=res['time'])
 		mass0 = res['mass']
 		Tmax  = res['Tmax']
-
-		print(trajectory)
-		print(time)
-		print(mass0)
-		print(Tmax)
-		input()
 
 		options = {'linear_solver': 'mumps'}
 

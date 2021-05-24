@@ -13,11 +13,11 @@ from scripts.earth_departure import constants as cst
 class MoonFlyBy(Problem):
 	""" CR3BP : Moon-Moon Leg optimal control problem """
 
-	def __init__(self, cr3bp, mass0, Tmax, trajectory, time, r_m):
+	def __init__(self, cr3bp, mass0, Tmax, fwd_trajectory, fwd_time, bwd_trajectory, bwd_time, r_m):
 		""" Initialization of the `GoddardRocket` class """
 		n_states = 7
 		n_controls = 4
-		n_st_path_con = 1
+		n_st_path_con = 0
 		n_ct_path_con = 1
 		n_event_con = 13
 		n_f_par = 0
@@ -32,10 +32,13 @@ class MoonFlyBy(Problem):
 		self.mass0 = mass0 # [kg]
 		self.Tmax = Tmax   # [kN]
 
-		self.trajectory = trajectory # [L] | [L/T]
-		self.time = time # [T]
+		self.fwd_trajectory = fwd_trajectory # [L] | [L/T]
+		self.fwd_time = fwd_time # [T]
 
-		self.r_m = r_m
+		self.bwd_trajectory = bwd_trajectory # [L] | [L/T]
+		self.bwd_time = bwd_time # [T]
+
+		self.r_m = r_m # [km]
 
 	def set_constants(self):
 		""" Setting of the problem constants """
@@ -64,16 +67,16 @@ class MoonFlyBy(Problem):
 		self.upp_bnd.states[2] =  2
 
 		# Vx [-]
-		self.low_bnd.states[3] = -10
-		self.upp_bnd.states[3] =  10
+		self.low_bnd.states[3] = -20
+		self.upp_bnd.states[3] =  20
 
 		# Vy [-]
-		self.low_bnd.states[4] = -10
-		self.upp_bnd.states[4] =  10
+		self.low_bnd.states[4] = -20
+		self.upp_bnd.states[4] =  20
 
 		# Vz [-]
-		self.low_bnd.states[5] = -10
-		self.upp_bnd.states[5] =  10
+		self.low_bnd.states[5] = -20
+		self.upp_bnd.states[5] =  20
 
 		# m [kg]
 		self.low_bnd.states[6] = 1e-6
@@ -98,8 +101,9 @@ class MoonFlyBy(Problem):
 
 
 		# Initial and final times boundaries
-		self.low_bnd.ti = self.upp_bnd.ti = self.time[0]
-		self.low_bnd.tf = self.upp_bnd.tf = self.time[-1]
+		self.low_bnd.ti = self.upp_bnd.ti = self.fwd_time[0]
+		self.low_bnd.tf = 0.2 * self.bwd_time[-1]
+		self.upp_bnd.tf = 2.0 * self.bwd_time[-1]
 
 
 	def event_constraints(self, xi, ui, xf, uf, ti, tf, f_prm):
@@ -110,19 +114,19 @@ class MoonFlyBy(Problem):
 		x_i, y_i, z_i, vx_i, vy_i, vz_i, m_i = xi
 		x_f, y_f, z_f, vx_f, vy_f, vz_f, _   = xf
 
-		events[0] = x_i  - self.trajectory[0, 0]
-		events[1] = y_i  - self.trajectory[1, 0]
-		events[2] = z_i  - self.trajectory[2, 0]
-		events[3] = vx_i - self.trajectory[3, 0]
-		events[4] = vy_i - self.trajectory[4, 0]
-		events[5] = vz_i - self.trajectory[5, 0]
+		events[0] = x_i  - self.fwd_trajectory[0, 0]
+		events[1] = y_i  - self.fwd_trajectory[1, 0]
+		events[2] = z_i  - self.fwd_trajectory[2, 0]
+		events[3] = vx_i - self.fwd_trajectory[3, 0]
+		events[4] = vy_i - self.fwd_trajectory[4, 0]
+		events[5] = vz_i - self.fwd_trajectory[5, 0]
 
-		events[6]  = x_f  - self.trajectory[0, -1]
-		events[7]  = y_f  - self.trajectory[1, -1]
-		events[8]  = z_f  - self.trajectory[2, -1]
-		events[9]  = vx_f - self.trajectory[3, -1]
-		events[10] = vy_f - self.trajectory[4, -1]
-		events[11] = vz_f - self.trajectory[5, -1]
+		events[6]  = x_f  - self.bwd_trajectory[0, -1]
+		events[7]  = y_f  - self.bwd_trajectory[1, -1]
+		events[8]  = z_f  - self.bwd_trajectory[2, -1]
+		events[9]  = vx_f - self.bwd_trajectory[3, -1]
+		events[10] = vy_f - self.bwd_trajectory[4, -1]
+		events[11] = vz_f - self.bwd_trajectory[5, -1]
 
 		events[12] = m_i - self.mass0
 
@@ -159,14 +163,14 @@ class MoonFlyBy(Problem):
 		uy = np.concatenate((controls[2], controls_add[2], controls_col[2]))
 		uz = np.concatenate((controls[3], controls_add[3], controls_col[3]))
 
-		# S/C position in the synodic frame [-]
-		x = np.concatenate((states[1], states_add[1]))
-		y = np.concatenate((states[2], states_add[2]))
-		z = np.concatenate((states[3], states_add[3]))
+		# # S/C position in the synodic frame [-]
+		# x = np.concatenate((states[1], states_add[1]))
+		# y = np.concatenate((states[2], states_add[2]))
+		# z = np.concatenate((states[3], states_add[3]))
 
-		# S/C - Moon distance
-		d2 = (x-(1-self.cr3bp.mu))*(x-(1-self.cr3bp.mu)) + y*y + z*z
-		st_path[0] = d2
+		# # S/C - Moon distance
+		# d2 = (x - (1-self.cr3bp.mu))*(x - (1-self.cr3bp.mu)) + y*y + z*z
+		# st_path[0] = d2
 
 		u2 = ux*ux + uy*uy + uz*uz
 
@@ -176,8 +180,8 @@ class MoonFlyBy(Problem):
 
 	def set_path_constraints_boundaries(self):
 		""" Setting of the path constraints boundaries """
-		self.low_bnd.st_path[0] = self.r_m**2
-		self.upp_bnd.st_path[0] = 2
+		# self.low_bnd.st_path[0] = self.r_m**2
+		# self.upp_bnd.st_path[0] = 2
 
 		self.low_bnd.ct_path[0] = self.upp_bnd.ct_path[0] = 0
 
@@ -226,26 +230,28 @@ class MoonFlyBy(Problem):
 		time_smpld = np.zeros((6, self.prm['n_nodes']))
 		trajectory_smpld = np.zeros((1, self.prm['n_nodes']))
 
-		step = int(len(self.time) / self.prm['n_nodes']) + 1
+		step = int((len(self.fwd_time) + len(self.bwd_time)) / self.prm['n_nodes']) + 3
 
-		time_smpld = self.time[0::step]
-		trajectory_smpld = self.trajectory[:, 0::step]
+		fwd_time_smpld = self.fwd_time[0::step]
+		bwd_time_smpld = self.bwd_time[0::step]
 
-		delta = self.prm['n_nodes'] - time_smpld.shape[0] 
-		time_smpld = np.hstack((time_smpld, self.time[:-delta]))
-		trajectory_smpld = np.hstack((trajectory_smpld, self.trajectory[:, -delta:]))
+		fwd_trajectory_smpld = self.fwd_trajectory[:, 0::step]
+		bwd_trajectory_smpld = self.bwd_trajectory[:, 0::step]
 
-		fig = plt.figure()
-		ax = fig.gca(projection='3d')
+		n_add_nodes = self.prm['n_nodes'] - np.hstack((fwd_time_smpld, bwd_time_smpld)).shape[0]
+		add_time = np.linspace(fwd_time_smpld[-1], bwd_time_smpld[0], n_add_nodes)
+		time_smpld = np.hstack((fwd_time_smpld, add_time, bwd_time_smpld))
 
-		ax.plot(trajectory_smpld[0], trajectory_smpld[1], trajectory_smpld[2], 'o', color='blue', markersize=1)
-		ax.plot([1-self.cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+		if n_add_nodes % 2 == 1:
+			n_fwd = int(n_add_nodes / 2) + 1
+			n_bwd = int(n_add_nodes / 2) 
 
-		ax.plot([self.trajectory[0, 0]], [self.trajectory[1, 0]], [self.trajectory[2, 0]], 'o', color='green', markersize=2)
-		ax.plot([self.trajectory[0, -1]], [self.trajectory[1, -1]], [self.trajectory[2, -1]], 'o', color='red', markersize=2)
+		else:
+			n_fwd = n_bwd = int(n_add_nodes / 2)
 
-		plt.show()
-
+		trajectory_smpld = np.hstack((fwd_trajectory_smpld, np.tile(np.reshape(fwd_trajectory_smpld[:, -1], (6, 1)), n_fwd), \
+			np.tile(np.reshape(bwd_trajectory_smpld[:,  0], (6, 1)), n_bwd), bwd_trajectory_smpld))
+		
 
 		# Time
 		self.initial_guess.time = np.linspace(time_smpld[0], time_smpld[-1], self.prm['n_nodes'])

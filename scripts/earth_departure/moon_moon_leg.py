@@ -66,4 +66,3 @@ def plot_env(ax, gamma, p, q):
 	ax.plot(r_M[0], r_M[1], r_M[2], '-', linewidth=1, color='black')
 
 	ax.plot([r_M[0, -1]], [r_M[1, -1]], [r_M[2, -1]], 'o', markersize=2, color='red')
-

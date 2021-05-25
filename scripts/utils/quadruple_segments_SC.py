@@ -38,7 +38,7 @@ rank = comm.rank
 folder_path = sys.argv[1]
 
 # Maximal delta-V
-dV_max = int(sys.argv[2])
+dV_max = float(sys.argv[2])
 
 # List of files in the folder
 files = os.listdir(folder_path)

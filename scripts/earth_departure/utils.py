@@ -268,3 +268,31 @@ def plot_env_3D(ax):
 	ax.plot([cst.d_M * np.cos(t_) for t_ in np.linspace(0, 2*np.pi, 1000)], [cst.d_M * np.sin(t_) for t_ in np.linspace(0, 2*np.pi, 1000)], \
 		np.zeros(1000), '-', linewidth=1, color='black', label='Moon trajectory')
 
+
+def thrust_profil_construction(time, trajectory, thrusts_intervals, Tmax):
+	""" Converts a thrust interval matrix into a thrust profil assuming the thrust direction is following
+		the S/C velocity """
+
+	thrusts = np.empty((0, 4))
+
+	for k, t in enumerate(time):
+		ind = np.searchsorted(a=thrusts_intervals[:, 0], v=t, side='right') - 1
+
+		if thrusts_intervals[ind, 1] >= t:
+			velocity = trajectory[3:, k]
+			ux, uy, uz = Tmax * velocity / np.linalg.norm(velocity)
+			T = Tmax
+
+			thrusts = np.vstack((thrusts, np.array([T, ux, uy, uz])))
+
+		else:
+			thrusts = np.vstack((thrusts, np.array([0, 0, 0, 0])))
+
+	return thrusts
+
+
+
+
+
+
+

@@ -210,17 +210,6 @@ else:
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 # if __name__ == '__main__':
 
 # 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r_opt', 'rb') as f:

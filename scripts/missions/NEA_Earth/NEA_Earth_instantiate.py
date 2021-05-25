@@ -43,15 +43,13 @@ load_kernels.load()
 
 # 1 - Asteroid data
 # -----------------
-# ast = load_bodies.asteroid('2020 CD3')
-# ast_mass = 4900 
-ast = load_bodies.asteroid('2018 WV1')
-ast_mass = get_mass(H=30.145) 
+ast = load_bodies.asteroid('2020 CD3')
+ast_mass = 4900 
 
 # 2 - Launch window
 # -----------------
-lw_low = pk.epoch_from_string('2034-01-01 00:00:00')
-lw_upp = pk.epoch_from_string('2034-12-31 23:59:59')
+lw_low = pk.epoch_from_string('2043-01-01 00:00:00')
+lw_upp = pk.epoch_from_string('2044-12-31 23:59:59')
 
 # 3 - Time of flight
 # ------------------
@@ -70,7 +68,7 @@ vinf_max = 3.5e3
 
 # 6 - Problem
 # -----------
-udp = NEA2Earth(nea=ast, n_seg=30, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
+udp = NEA2Earth(nea=ast, n_seg=120, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 

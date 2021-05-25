@@ -20,4 +20,4 @@ source activate asteroids
 # cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
 cd /home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission
 
-mpiexec -n  python -m scripts.utils.quadruple_segments_SC /scratch/dcas/yv.gary/SEMBLANET/results/25-05-2021/NEA_Earth
+mpiexec -n 24 python -m scripts.utils.quadruple_segments_SC /scratch/dcas/yv.gary/SEMBLANET/results/25-05-2021/NEA_Earth

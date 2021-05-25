@@ -163,7 +163,7 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 
 	trajectory_ut = np.transpose(trajectory_ut)
 
-	ax.plot(trajectory_ut[0], trajectory_ut[1], ':', color='green', linewidth=1)
+	ax.plot(trajectory_ut[0], trajectory_ut[1], '-', color='green', linewidth=1)
 
 
 	ax.plot([ -cr3bp.mu], [0], 'o', color='black', markersize=5)

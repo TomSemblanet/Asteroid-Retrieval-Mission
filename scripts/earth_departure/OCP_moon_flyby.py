@@ -16,7 +16,7 @@ from scripts.earth_departure import constants as cst
 from scripts.earth_departure.utils import cart2sph, sph2cart, cr3bp_moon_approach
 
 def moon_reached(t, y, cr3bp, dmax):
-	return np.linalg.norm(y[:3] - np.array([1-cr3bp.mu, 0, 0])) 
+	return np.linalg.norm(y[:3] - np.array([1-cr3bp.mu, 0, 0])) - cst.R_M / cr3bp.L
 
 def limit_reached(t, y, cr3bp, dmax):
 	return np.linalg.norm(y[:3] - np.array([1-cr3bp.mu,0 ,0])) - dmax
@@ -48,8 +48,10 @@ def initial_guess_generator(x, cr3bp, r_i, r_tgt, P, dmax):
 
 	propagation = solve_ivp(fun=cr3bp_dynamics, y0=r0, t_span=[0, 50], args=(cr3bp, dmax), \
 		events=(moon_reached, limit_reached), rtol=1e-12, atol=1e-12)
+	diff = np.linalg.norm(propagation.y[:, -1] - r_tgt[:])
+	print(diff)
 
-	return np.linalg.norm(propagation.y[:, -1] - r_tgt[:])
+	return diff
 
 
 

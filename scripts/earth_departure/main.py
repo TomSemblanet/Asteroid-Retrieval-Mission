@@ -27,7 +27,7 @@ mass = 1000  # Mass		      [kg]
 # Trajectory parameters
 # ---------------------
 eps = 90	  # Thrust arc semi-angle [°]
-r_p = 20000   # Earth orbit perigee [km]
+r_p = 200   # Earth orbit perigee [km]
 r_m = 5000	  # S/C - Moon surface minimal distance [km]
 
 p = 1		 # Resonance parameters (Moon) [-]
@@ -220,6 +220,10 @@ else:
 # 	moon_moon_cr3bp = res_moon_moon['cr3bp']
 # 	moon_moon_trajectory = res_moon_moon['trajectory']
 # 	moon_moon_time = res_moon_moon['time']
+
+# 	print(np.linalg.norm(apogee_raising_trajectory[3:, -1]))
+# 	print(np.linalg.norm(moon_moon_trajectory[3:, 0]))
+# 	input()
 
 
 # 	# Time span and initial condition for forward propagation

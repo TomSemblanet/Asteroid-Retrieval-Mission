@@ -58,10 +58,12 @@ algorithm = load_sqp.load('ipopt')
 # First double
 if 'NEA_Earth' in folder_path:
 	udp, population = double_segments_NEA_Earth(udp_=data['udp'], population_=data['population'])
+	print("NEA -> Earth trajectory", flush=True)
 elif 'Earth_NEA' in folder_path:
 	udp, population = double_segments_Earth_NEA(udp_=data['udp'], population_=data['population'])
+	print("Earth -> NEA trajectory", flush=True)
 else:
-	print("Error.")
+	print("Error.", flush=True)
 
 # - * - * - * - * - * - * - * - * - 
 print("<{}> 1st phase".format(rank), flush=True)

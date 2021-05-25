@@ -32,7 +32,7 @@ print("Rank <{}> : Run".format(rank), flush=True)
 # - * - * - * - * - * - * - * - * - * - * - * - * 
 
 # Extraction of the Pickle file
-with open('/'.join([folder_path, files[max(rank, len(files)-1)]]), 'rb') as file:
+with open('/'.join([folder_path, files[min(rank, len(files)-1)]]), 'rb') as file:
 	data = pkl.load(file)
 
 # Algorithm used to correct the dynamic changes

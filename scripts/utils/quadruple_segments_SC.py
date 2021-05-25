@@ -74,7 +74,6 @@ if udp.get_deltaV(x) > 300:
 	# - * - * - * - * - * - * 
 	print("Delta V too high.", flush=True)
 	# - * - * - * - * - * - * 
-	sys.exit()
 
 else:
 	# - * - * - * - * - * - * - * - * - 

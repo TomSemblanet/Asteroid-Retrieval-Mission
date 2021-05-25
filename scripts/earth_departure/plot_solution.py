@@ -53,7 +53,21 @@ def synodic_plot(file_path):
 	moon_moon_c_traj = moon_moon_traj[:, moon_moon_c_index]
 	moon_moon_t_traj = moon_moon_traj[:, moon_moon_t_index]
 
-	
+	fig = plt.figure()
+	ax = fig.gca(projetion='3d')
+
+	ax.plot(apogee_raising_c_traj[0], apogee_raising_c_traj[1], apogee_raising_c_traj[2], '-', color='blue', linewidth=1)
+	ax.plot(apogee_raising_t_traj[0], apogee_raising_t_traj[1], apogee_raising_t_traj[2], '-', color='red' , linewidth=1)
+
+	ax.plot(moon_moon_c_traj[0], moon_moon_c_traj[1], moon_moon_c_traj[2], '-', color='blue', linewidth=1)
+	ax.plot(moon_moon_t_traj[0], moon_moon_t_traj[1], moon_moon_t_traj[2], '-', color='red' , linewidth=1)
+
+	plot_env_3D(ax)
+
+	plt.legend()
+	plt.show()
+
+
 
 
 

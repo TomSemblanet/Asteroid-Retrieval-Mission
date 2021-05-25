@@ -137,46 +137,46 @@ else:
 			phi_2_p=phi_2_p, theta_2_p=theta_2_p, p=p, q=q, gamma=gamma, r_ar=r_ar, t_ar=t_ar)
 
 
-		# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r', 'wb') as f:
-		# 	pickle.dump({'trajectory': trajectories[0], 'time': times[0], 'thrusts_intervals': thrusts_intervals, 'mass': mass, \
-		# 					'Tmax': Tmax/1000, 'last_apogee_pass_time': last_apogee_pass_time}, f)
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r', 'wb') as f:
+			pickle.dump({'trajectory': trajectories[0], 'time': times[0], 'thrusts_intervals': thrusts_intervals, 'mass': mass, \
+							'Tmax': Tmax/1000, 'last_apogee_pass_time': last_apogee_pass_time}, f)
 
-		# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon', 'wb') as f:
-		# 	pickle.dump({'trajectory': trajectories[1], 'time': times[1], 'thrusts_intervals': thrusts_intervals, 'mass': mass, \
-		# 					'Tmax': Tmax/1000}, f)
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon', 'wb') as f:
+			pickle.dump({'trajectory': trajectories[1], 'time': times[1], 'thrusts_intervals': thrusts_intervals, 'mass': mass, \
+							'Tmax': Tmax/1000}, f)
 
-		# # Computation of the trajectory in the CR3BP frame
-		# apogee_raising_cr3bp, apogee_raising_trajectory, apogee_raising_time, \
-		# fixed_trajectory, fixed_time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
-		# mass=mass, Tmax=Tmax/1000, t_last_ap_pass=last_apogee_pass_time)
+		# Computation of the trajectory in the CR3BP frame
+		apogee_raising_cr3bp, apogee_raising_trajectory, apogee_raising_time, \
+		fixed_trajectory, fixed_time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
+		mass=mass, Tmax=Tmax/1000, t_last_ap_pass=last_apogee_pass_time)
 
 		moon_moon_cr3bp, moon_moon_trajectory, moon_moon_time = CR3BP_moon_moon(trajectories[1], times[1])
 
-		# # Optimization of the CR3BP Apogee Raising trajectory to make it feasible
-		# # -----------------------------------------------------------------------
-		# apogee_raising_problem = ApogeeRaising(apogee_raising_cr3bp, mass, Tmax/1000, apogee_raising_trajectory, apogee_raising_time)
+		# Optimization of the CR3BP Apogee Raising trajectory to make it feasible
+		# -----------------------------------------------------------------------
+		apogee_raising_problem = ApogeeRaising(apogee_raising_cr3bp, mass, Tmax/1000, apogee_raising_trajectory, apogee_raising_time)
 
-		# # Instantiation of the optimization
-		# optimization = Optimization(problem=apogee_raising_problem)
+		# Instantiation of the optimization
+		optimization = Optimization(problem=apogee_raising_problem)
 
-		# # Launch of the optimization
-		# optimization.run()
+		# Launch of the optimization
+		optimization.run()
 
-		# opt_trajectory = optimization.results['opt_st']
+		opt_trajectory = optimization.results['opt_st']
 
-		# fig = plt.figure()
-		# ax = fig.gca(projection='3d')
+		fig = plt.figure()
+		ax = fig.gca(projection='3d')
 
-		# ax.plot(fixed_trajectory[0], fixed_trajectory[1], fixed_trajectory[2], '-', color='blue', linewidth=1)
-		# ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-		# ax.plot([-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-		# ax.plot([1-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
+		ax.plot(fixed_trajectory[0], fixed_trajectory[1], fixed_trajectory[2], '-', color='blue', linewidth=1)
+		ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
+		ax.plot([-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+		ax.plot([1-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
-		# plt.show()
+		plt.show()
 
-		# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r_opt', 'wb') as f:
-		# 	pickle.dump({'cr3bp': apogee_raising_cr3bp, 'trajectory': optimization.results['opt_st'], 'time': optimization.results['opt_tm'], \
-		# 		'fixed_trajectory': fixed_trajectory, 'fixed_time': fixed_time, 'mass': mass, 'Tmax': Tmax/1000}, f)
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r_opt', 'wb') as f:
+			pickle.dump({'cr3bp': apogee_raising_cr3bp, 'trajectory': optimization.results['opt_st'], 'time': optimization.results['opt_tm'], \
+				'fixed_trajectory': fixed_trajectory, 'fixed_time': fixed_time, 'mass': mass, 'Tmax': Tmax/1000}, f)
 
 		# Optimization of the CR3BP Moon-Moon trajectory to make it feasible
 		# ------------------------------------------------------------------
@@ -206,6 +206,18 @@ else:
 
 	else:
 		print("No second LGA found with this resonance")
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

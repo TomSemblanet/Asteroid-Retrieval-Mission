@@ -37,6 +37,9 @@ rank = comm.rank
 # Path to the Pickle file
 folder_path = sys.argv[1]
 
+# Maximal delta-V
+dV_max = int(sys.argv[2])
+
 # List of files in the folder
 files = os.listdir(folder_path)
 
@@ -69,7 +72,7 @@ population = algorithm.evolve(population)
 # Recovery of the results
 x = population.get_x()[0]
 
-if udp.get_deltaV(x) > 300:
+if udp.get_deltaV(x) > dV_max:
 	# - * - * - * - * - * - * 
 	print("Delta V too high.", flush=True)
 	# - * - * - * - * - * - * 
@@ -85,7 +88,7 @@ else:
 	# Recovery of the results
 	x = population.get_x()[0]
 
-	if udp.get_deltaV(x) < 300:
+	if udp.get_deltaV(x) < dV_max:
 		# Storage
 		if 'NEA_Earth' in folder_path:
 			save(host='pando', mission='NEA_Earth', udp=udp, population=population, additional_sign='_doubled')

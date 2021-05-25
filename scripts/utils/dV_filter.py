@@ -18,6 +18,6 @@ for file in files_list:
 	udp = results['udp']
 	decision_vector = results['population'].get_x()[0]
 
-	if udp.get_deltaV(x) > 300:
+	if udp.get_deltaV(decision_vector) > 300:
 		os.remove(file_path)
 		print("File {} removed".format(file_path))

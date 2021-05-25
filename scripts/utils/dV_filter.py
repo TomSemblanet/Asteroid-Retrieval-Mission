@@ -1,9 +1,13 @@
 import os 
 import sys
+import pickle
 import numpy as np 
 import pykep as pk 
 import pygmo as pg 
-import pickle
+
+from scripts.utils import load_sqp, load_kernels, load_bodies
+
+load_kernels.load()
 
 folder_path = sys.argv[1]
 

@@ -72,7 +72,7 @@ population = algorithm.evolve(population)
 # Recovery of the results
 x = population.get_x()[0]
 
-if udp.get_deltaV(x) > dV_max:
+if udp.get_deltaV(x) >= dV_max:
 	# - * - * - * - * - * - * 
 	print("Delta V too high.", flush=True)
 	# - * - * - * - * - * - * 
@@ -81,7 +81,10 @@ else:
 	# - * - * - * - * - * - * - * - * - 
 	print("<{}> 2nd phase".format(rank), flush=True)
 	# - * - * - * - * - * - * - * - * - 
-	udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
+	if 'NEA_Earth' in folder_path:
+		udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
+	elif 'Earth_NEA' in folder_path:
+		udp, population = double_segments_Earth_NEA(udp_=udp, population_=population)
 
 	population = algorithm.evolve(population)
 

@@ -34,6 +34,7 @@ print("Rank <{}> : Run".format(rank), flush=True)
 # Extraction of the Pickle file
 with open('/'.join([folder_path, files[min(rank, len(files)-1)]]), 'rb') as file:
 	data = pkl.load(file)
+	print("<{}> Opened file : {}".format(rank, '/'.join([folder_path, files[min(rank, len(files)-1)]])), flush=True)
 
 # Algorithm used to correct the dynamic changes
 algorithm = load_sqp.load('ipopt')

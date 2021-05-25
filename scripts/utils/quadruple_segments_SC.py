@@ -17,6 +17,19 @@ from scripts.utils.double_segments import double_segments_NEA_Earth, double_segm
 
 from data import constants as cst
 
+""" 
+
+This script runs the optimization of a transfer between a NEA and the Earth using low-thrust propulsion 
+using ISAE-SUPAERO super-computers Rainman or Pando. 
+It allows to double the number of segments of a solution to enhance its physical accuracy.
+
+Three arguments must be provided to the script when it's runned : 
+-----------------------------------------------------------------
+
+	1) The path of the folder where the file(s) is/are stored on the supercomputer
+
+"""
+
 # Creation of the communicator 
 comm = MPI.COMM_WORLD
 rank = comm.rank
@@ -48,6 +61,10 @@ else:
 	print("Error.")
 	sys.exit()
 
+# - * - * - * - * - * - * - * - * - 
+print("<{}> 1st phase".format(rank), flush=True)
+# - * - * - * - * - * - * - * - * - 
+
 population = algorithm.evolve(population)
 
 # Recovery of the results
@@ -60,6 +77,9 @@ if udp.get_deltaV(x) > 300:
 	sys.exit()
 
 else:
+	# - * - * - * - * - * - * - * - * - 
+	print("<{}> 2nd phase".format(rank), flush=True)
+	# - * - * - * - * - * - * - * - * - 
 	udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
 
 	population = algorithm.evolve(population)
@@ -67,7 +87,7 @@ else:
 	# Recovery of the results
 	x = population.get_x()[0]
 
-	if udp.get_deltaV < 300:
+	if udp.get_deltaV(x) < 300:
 		# Storage
 		if 'NEA_Earth' in folder_path:
 			save(host='pando', mission='NEA_Earth', udp=udp, population=population, additional_sign='_doubled')

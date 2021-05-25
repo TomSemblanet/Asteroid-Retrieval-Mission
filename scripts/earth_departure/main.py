@@ -32,7 +32,7 @@ r_a = 30000   # Earth orbit apogee  [km]
 
 r_m = 3000	  # S/C - Moon surface minimal distance [km]
 
-p = 1		# Resonance parameters (Moon) [-]
+p = 2		# Resonance parameters (Moon) [-]
 q = 1		# Resonance parameters (S/C)  [-]
 
 # Outter trajectory characteristics
@@ -126,7 +126,7 @@ else:
 
 	if scd_lga_fnd == True:
 
-		index = int(feasible_index[0])
+		index = int(feasible_index[-1])
 
 		_, phi_2_m, theta_2_m, phi_2_p, theta_2_p = rotation_feasibility(v_in=resonant_traj[index, 5:], v_out=v_out, \
 			tau=tau, r_m=r_m, gamma=gamma, print_=False)

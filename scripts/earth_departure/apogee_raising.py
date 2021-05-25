@@ -306,7 +306,7 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	print("S/C Thrust ................. : {} mN".format(T*1e6))
 	print("Arc angle .................. : {}°".format(2 * eps * 180 / np.pi))
 	print("Last arc angle ............. : {}°".format(2 * eps_l * 180 / np.pi))
-	print("Minimal distance to the Moon : {} km".format(r_p+cst.R_M))
+	print("Minimal distance to the Earth : {} km".format(r_p+cst.R_M))
 	print("\n")
 	
 	return r, t, thrust_intervals, last_ap_pass_time

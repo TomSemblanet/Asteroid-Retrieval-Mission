@@ -6,7 +6,7 @@ import numpy as np
 import pickle as pkl
 from datetime import date
 
-def save(host, mission, udp, population):
+def save(host, mission, udp, population, additional_sign=''):
 
 	# Define a random ID for the results storage
 	ID = np.random.randint(0, 1e9)
@@ -19,7 +19,7 @@ def save(host, mission, udp, population):
 			os.mkdir('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
 
 		# Storage of the results
-		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID) + additional_sign, 'wb') as f:
 			pkl.dump({'udp': udp, 'population': population}, f)
 
 	elif host == 'rainman':
@@ -30,7 +30,7 @@ def save(host, mission, udp, population):
 			os.mkdir('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
 
 		# Storage of the results
-		with open('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
+		with open('/scratch/students/t.semblanet/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID) + additional_sign, 'wb') as f:
 			pkl.dump({'udp': udp, 'population': population}, f)
 
 	elif host == 'pando':
@@ -41,7 +41,7 @@ def save(host, mission, udp, population):
 			os.mkdir('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y") + '/NEA_Earth/')
 
 		# Storage of the results
-		with open('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID), 'wb') as f:
+		with open('/scratch/dcas/yv.gary/SEMBLANET/results/'+ date.today().strftime("%d-%m-%Y") + '/' + str(mission) + '/' + str(ID) + additional_sign, 'wb') as f:
 			pkl.dump({'udp': udp, 'population': population}, f)
 
 	# - * - * - * - * - * - * - * - * - * - * - * - * - * -

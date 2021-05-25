@@ -69,9 +69,9 @@ else:
 	if udp.get_deltaV < 300:
 		# Storage
 		if 'NEA_Earth' in folder_path:
-			save(host='pando', mission='NEA_Earth', udp=udp, population=population)
+			save(host='pando', mission='NEA_Earth', udp=udp, population=population, additional_sign='_doubled')
 		elif 'Earth_NEA' in folder_path:
-			save(host='pando', mission='Earth_NEA', udp=udp, population=population)
+			save(host='pando', mission='Earth_NEA', udp=udp, population=population, additional_sign='_doubled')
 	
 	else:
 		# - * - * - * - * - * - * 

@@ -114,7 +114,6 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 
 	# 4 - Rotation of the initial states to approach the Moon correctly
 	# -----------------------------------------------------------------
-
 	t_span = np.array([time[0], time[-1]])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 	r0 = trajectory[:, 0]
@@ -136,12 +135,25 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 
 	# 5 - Propagation with the CR3BP equations
 	# ----------------------------------------
-
 	solution = solve_ivp(fun=cr3bp_dynamics_augmtd, t_span=t_span, t_eval=t_eval, y0=r0, args=(cr3bp, mass, Tmax, thrusts_intervals), \
 		events=(cr3bp_moon_approach), method='LSODA', rtol=1e-13, atol=1e-13)
 	cr3bp_trajectory = solution.y
 	cr3bp_time = solution.t
 
+	# 6 - Storage of the trajectory part before the last apogee pass
+	# --------------------------------------------------------------
+
+	# Find the index of the last apogee pass
+	index_l_pass = np.searchsorted(cr3bp_time, t_last_ap_pass, side='right') - 1
+
+	trajectory_fixed = np.empty((0, 6))
+	time_fixed = np.empty(0)
+
+	for k in range(len(cr3bp_time[:index_l_pass])):
+		trajectory_fixed = np.vstack((trajectory_fixed, cr3bp_trajectory[:, k]))
+		time_fixed = np.append(time_fixed, cr3bp_time[k])
+
+	trajectory_fixed = np.transpose(trajectory_fixed)
 
 	# 6 - Keep the part of the trajectory between the last apogee pass and the Moon
 	# -----------------------------------------------------------------------------
@@ -152,19 +164,16 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 	r_m = np.array([1 - cr3bp.mu, 0, 0])
 	dist_min = 30000 / cr3bp.L
 
-	# Find the index of the last apogee pass
-	index_l_pass = np.searchsorted(cr3bp_time, t_last_ap_pass, side='right') - 1
-
-	for k in range(len((cr3bp_time[index_l_pass:]))):
-		d = np.linalg.norm(cr3bp_trajectory[:3, k] - r_m)
+	for k in range(len(cr3bp_time[index_l_pass:])):
+		d = np.linalg.norm(cr3bp_trajectory[:3, index_l_pass+k] - r_m)
 		if d >= dist_min:
 			trajectory_ut = np.vstack((trajectory_ut, cr3bp_trajectory[:, index_l_pass+k]))
 			time_ut = np.append(time_ut, cr3bp_time[index_l_pass+k])
 
 	trajectory_ut = np.transpose(trajectory_ut)
 
-	ax.plot(trajectory_ut[0], trajectory_ut[1], '-', color='green', linewidth=1)
 
+	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='green', linewidth=1)
 
 	ax.plot([ -cr3bp.mu], [0], 'o', color='black', markersize=5)
 	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
@@ -175,7 +184,7 @@ def CR3BP_orbit_raising(trajectory, time, t_last_ap_pass, thrusts_intervals, mas
 	plt.grid()
 	plt.show()
 
-	return cr3bp, trajectory_ut, time_ut 
+	return cr3bp, trajectory_ut, time_ut, trajectory_fixed, time_fixed
 
 
 

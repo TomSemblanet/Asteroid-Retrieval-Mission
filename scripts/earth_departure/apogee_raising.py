@@ -4,7 +4,8 @@ import matplotlib.pyplot as plt
 
 from scipy.integrate import solve_ivp
 
-from scripts.earth_departure.utils import kepler_thrust, kep2cart, cart2kep, moon_reached, R2, apside_pass, plot_env_2D, thrust_ignition, angle_w_Ox
+from scripts.earth_departure.utils import kepler, kepler_thrust, kep2cart, cart2kep, moon_reached, R2, apside_pass, plot_env_2D, \
+												thrust_ignition, angle_w_Ox
 from scripts.earth_departure import constants as cst
 
 """
@@ -152,7 +153,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 	f2 = 1
 
 	print("Searching for the last Thrust arc angle :\tabsolute error (km/s)\tangle (°)")
-	while abs(f2) > 1e-6:
+	while abs(f2) > 1e-4:
 		eps2 = eps1 - (eps1 - eps0) / (f1 - f0) * f1
 
 		f2 = f(r0, t_span, t_eval, mass, T, eps2, v_inf)	
@@ -220,7 +221,7 @@ def propagate_last_branch(r_ap, mass, T, eps_l):
 	return sol.y, sol.t, sol.t_events[1]
 
 
-def apogee_raising(mass, T, eps, r_p, v_inf):
+def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	""" 
 		Find a trajectory departing from a circular orbit around the Earth, intercepting the Moon
 		with a given velocity at infinity.
@@ -235,6 +236,8 @@ def apogee_raising(mass, T, eps, r_p, v_inf):
 				Angle allowing the thrusters ignition or shutdown
 			r_p : [km]
 				Perigee of the orbit
+			r_a : [km]
+				Apogee of the orbit
 			v_inf : [km/s]
 				Desired velocity at infinity 
 
@@ -243,12 +246,12 @@ def apogee_raising(mass, T, eps, r_p, v_inf):
 
 	# 1 - Definition of the initial circular orbit and S/C initial state in the Earth inertial frame
 	# ----------------------------------------------------------------------------------------------
-	a  = cst.R_E + r_p	 # SMA [km]
-	e  = 0				 # Eccentricity [-]
-	i  = 0				 # Inclinaison [rad]
-	W  = 0				 # RAAN [rad]
-	w  = np.pi			 # Perigee anomaly [rad]
-	ta = 0				 # True anomaly [rad]
+	a  = (2*cst.R_E + r_p + r_a) / 2		 # SMA [km]
+	e  = 1 - (cst.R_E + r_p) / a			 # Eccentricity [-]
+	i  = 0							 	 	 # Inclinaison [rad]
+	W  = 0				 				 	 # RAAN [rad]
+	w  = np.pi			 				 	 # Perigee anomaly [rad]
+	ta = - eps				  				 # True anomaly [rad]
 
 	# S/C initial states on its circular orbit around the Earth [km] | [km/s]
 	r0 = kep2cart(a, e, i, W, w, ta, cst.mu_E)
@@ -278,7 +281,7 @@ def apogee_raising(mass, T, eps, r_p, v_inf):
 	r = np.concatenate((r_ap, r_lb), axis=1)
 	t = np.concatenate((t_ap, t_lb + last_ap_pass_time))
 
-	t_thrusters = np.concatenate(([0], t_thrusters_ap, t_thrusters_lb + last_ap_pass_time))
+	t_thrusters = np.concatenate((t_thrusters_ap, t_thrusters_lb + last_ap_pass_time))
 	thrust_intervals = np.reshape(a=t_thrusters, newshape=(int(len(t_thrusters) / 2), 2))
 
 	# 8 - Plot

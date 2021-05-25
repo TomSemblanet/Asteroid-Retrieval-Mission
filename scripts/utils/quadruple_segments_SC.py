@@ -59,7 +59,6 @@ elif 'Earth_NEA' in folder_path:
 	udp, population = double_segments_Earth_NEA(udp_=data['udp'], population_=data['population'])
 else:
 	print("Error.")
-	sys.exit()
 
 # - * - * - * - * - * - * - * - * - 
 print("<{}> 1st phase".format(rank), flush=True)

@@ -42,9 +42,9 @@ with open(file_path, 'rb') as file:
 algorithm = load_sqp.load('ipopt')
 
 # First double
-if 'NEA_Earth' in folder_path:
+if 'NEA_Earth' in file_path:
 	udp, population = double_segments_NEA_Earth(udp_=data['udp'], population_=data['population'])
-elif 'Earth_NEA' in folder_path:
+elif 'Earth_NEA' in file_path:
 	udp, population = double_segments_Earth_NEA(udp_=data['udp'], population_=data['population'])
 else:
 	print("Error.", flush=True)
@@ -58,9 +58,9 @@ if udp.get_deltaV(x) >= dV_max:
 	print("Delta V too high.", flush=True)
 
 else:
-	if 'NEA_Earth' in folder_path:
+	if 'NEA_Earth' in file_path:
 		udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
-	elif 'Earth_NEA' in folder_path:
+	elif 'Earth_NEA' in file_path:
 		udp, population = double_segments_Earth_NEA(udp_=udp, population_=population)
 
 	population = algorithm.evolve(population)
@@ -70,9 +70,9 @@ else:
 
 	if udp.get_deltaV(x) < dV_max:
 		# Storage
-		if 'NEA_Earth' in folder_path:
+		if 'NEA_Earth' in file_path:
 			save(host='pando', mission='NEA_Earth', udp=udp, population=population, additional_sign='_doubled')
-		elif 'Earth_NEA' in folder_path:
+		elif 'Earth_NEA' in file_path:
 			save(host='pando', mission='Earth_NEA', udp=udp, population=population, additional_sign='_doubled')
 	
 	else:

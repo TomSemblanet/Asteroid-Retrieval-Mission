@@ -288,6 +288,8 @@ def thrust_profil_construction(time, trajectory, thrusts_intervals, Tmax):
 		else:
 			thrusts = np.vstack((thrusts, np.array([0, 0, 0, 0])))
 
+	thrusts = np.transpose(thrusts)
+
 	return thrusts
 
 

@@ -73,7 +73,7 @@ vinf_max = 2e3
 
 # 6 - Problem
 # -----------
-n_seg = 30
+n_seg = 120
 udp = Earth2NEA(nea=ast, n_seg=n_seg, tf=(arr_low, arr_upp), \
 	tof=(tof_low, tof_upp), m0=m0, Tmax=Tmax, Isp=Isp, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)

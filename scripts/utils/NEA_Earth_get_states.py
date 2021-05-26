@@ -254,35 +254,4 @@ if __name__ == '__main__':
 	R, V, M, U, T = get_states(udp=res['udp'], population=res['population'], N=50, plot=True)
 
 
-	# # - * - * - * - * - * - * - * - * - * - * - * - * - * - *
-	# # Plot of the Spacecraft arrival in the Earth-Moon system
-	# # - * - * - * - * - * - * - * - * - * - * - * - * - * - * 
-
-	# earth = load_bodies.planet('EARTH')
-	# moon = load_bodies.planet('MOON', observer='EARTH')
-
-	# # Convert the spacecraft coordinates into the Geocentric frame
-	# for i, T_ in enumerate(T):
-	# 	earth_r = earth.eph(T_)[0]
-	# 	R[0, i] -= earth_r[0]
-	# 	R[1, i] -= earth_r[1]
-	# 	R[2, i] -= earth_r[2]
-
-	# fig = plt.figure()
-	# ax = fig.gca(projection='3d')
-
-	# pk.orbit_plots.plot_planet(plnt=moon, t0=pk.epoch(T[-2000]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', legend=(False, "Moon orbit"))
-
-	# ax.plot(R[0, -1000:-1], R[1, -1000:-1], R[2, -1000:-1], label='Spacecraft trajectory')
-	# ax.plot(moon.eph(T[-1])[0][0], moon.eph(T[-1])[0][1], moon.eph(T[-1])[0][2], 'o', label='Moon at arrival')
-	# ax.plot([0], [0], [0], 'o', markersize=10, label='Earth')
-
-	# ax.set_xlim(-1e9, 1e9)
-	# ax.set_ylim(-1e9, 1e9)
-	# ax.set_zlim(-1e9, 1e9)
-
-	# plt.legend()
-	# plt.show()
-
-
 	

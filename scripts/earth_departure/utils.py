@@ -116,7 +116,7 @@ def P_RVH2GEO(gamma):
 	""" Passage matrix from RVH frame to Earth inertial frame """
 	return np.array([[ np.cos(gamma),  np.sin(gamma), 0],
 		 			 [-np.sin(gamma),  np.cos(gamma), 0],
-		 			 [			0,			  0, 1]])
+		 			 [			   0,			   0, 1]])
 
 
 def P_RVH2HRV():

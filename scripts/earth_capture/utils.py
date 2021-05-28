@@ -131,3 +131,9 @@ def plot_env_3D(ax):
 	ax.plot([0], [0], [0], 'o', markersize=8, color='black', label='Earth')
 	ax.plot([cst.d_M * np.cos(t_) for t_ in np.linspace(0, 2*np.pi, 1000)], [cst.d_M * np.sin(t_) for t_ in np.linspace(0, 2*np.pi, 1000)], \
 		np.zeros(1000), '-', linewidth=1, color='black', label='Moon trajectory')
+
+
+def angle_w_Ox(r):
+	""" Returns the (oriented) angle between the Ox axis and the ``r`` vector """
+	return np.sign(np.cross(np.array([1, 0, 0]), r)[2]) * np.arccos( np.dot(np.array([1, 0, 0]), r) / np.linalg.norm(r) )
+	

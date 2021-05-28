@@ -7,7 +7,7 @@ from scipy.integrate import solve_ivp
 
 from scripts.earth_departure import constants as cst
 from scripts.earth_capture.coc import P_ECLJ2000_ECI, P_ECI_HRV, cart2sph, sph2cart
-from scripts.earth_capture.utils import kepler, cart2kep, plot_env_2D, plot_env_3D
+from scripts.earth_capture.utils import kepler, cart2kep, plot_env_2D, plot_env_3D, C3
 from scripts.utils import load_bodies, load_kernels
 
 
@@ -25,6 +25,11 @@ def first_lga(r, r_m, p, q):
 			Number of revolution the S/C will accomplish before 2nd Moon encouter [-]
 		q : float
 			Number of revolution the Moon will accomplish before 2nd S/C encouter [-]
+
+		Returns
+		-------
+		r_fs: ndarray
+			Matrix containing the final S/C position in the ECI frame and the post-LGA spherical angles
 
 	"""
 
@@ -75,16 +80,27 @@ def first_lga(r, r_m, p, q):
 	t_span = [0, p/q * cst.T_M]
 	t_eval = np.linspace(t_span[0], t_span[-1], 10000)
 
-	for k, phi_p in enumerate(phi_p_adm):
-		v = sph2cart([v_inf, phi_p, theta_p]) + v_M_HRV
-		r = np.concatenate((r[:3], v))
+	fig = plt.figure()
+	ax = fig.gca(projection='3d')
 
-		solution = solve_ivp(fun=kepler, t_span=t_span, t_eval=t_eval, y0=r, rtol=1e-12, atol=1e-12)
+	for k, phi_p in enumerate(phi_p_adm):
+
+		# Computation of the post-LGA S/C velocity in the ECI frame
+		v_HRV_p = sph2cart([v_inf, phi_p, theta_p]) + v_M_HRV
+		v_ECI_p = P_ECI_HRV().dot(v_HRV_p)
+		r0 = np.concatenate((r[:3], v_ECI_p))
+
+		solution = solve_ivp(fun=kepler, t_span=t_span, t_eval=t_eval, y0=r0, rtol=1e-12, atol=1e-12)
 		r_f = solution.y[:, -1]
 
 		r_fs = np.append(r_fs, np.concatenate(([phi_p], [theta_p], r_f)))
 
+		ax.plot(solution.y[0], solution.y[1], solution.y[2], '-', color='blue', linewidth=1)
+
+	plot_env_3D(ax)
+	plt.show()
+
 	r_fs = r_fs.reshape(int(len(r_fs)/8), 8)
 
-	return r_fs
+	return r_fs, solution.t
 

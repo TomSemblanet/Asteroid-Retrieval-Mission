@@ -63,9 +63,10 @@ def moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval):
 
 	r_M_f = R2(2*np.pi*propagation.t[-1]/cst.T_M).dot([cst.d_M, 0, 0])
 
-	error = np.linalg.norm(propagation.y[:3, -1] - r_M_f)
+	p_o_m = np.sign( np.cross( propagation.y[:3, -1], r_M_f )[2] )
+	error = p_o_m * np.linalg.norm(propagation.y[:3, -1] - r_M_f)
 
-	print("Theta: {}°\tError: {}km".format(theta*180/np.pi, error), flush=True)
+	print("Theta: {}°\tError (oriented): {}km".format(theta*180/np.pi, error), flush=True)
 
 	return error
 

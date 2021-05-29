@@ -91,52 +91,54 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 	t_eval = np.linspace(t_span[0], t_span[-1], 1000000)
 	moon_altitude_reached.terminal = True
 
-	minimization = minimize(fun=moon_first_shot, x0=[theta], args=(r0, Tmax, mass, eps, t_span, t_eval), tol=1000)
-	theta = minimization.x
+	print(moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval))
 
-	r0 = R2_6d(theta).dot(r0)
+	# minimization = minimize(fun=moon_first_shot, x0=[theta], args=(r0, Tmax, mass, eps, t_span, t_eval), tol=1000)
+	# theta = minimization.x
 
-	propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
-		events=(moon_altitude_reached), rtol=1e-10, atol=1e-13)
+	# r0 = R2_6d(theta).dot(r0)
 
-	r_M_f = R2_6d(2*np.pi*propagation.t[-1] / cst.T_M).dot([cst.d_M, 0, 0, 0, cst.V_M, 0])
+	# propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
+	# 	events=(moon_altitude_reached), rtol=1e-10, atol=1e-13)
 
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
+	# r_M_f = R2_6d(2*np.pi*propagation.t[-1] / cst.T_M).dot([cst.d_M, 0, 0, 0, cst.V_M, 0])
 
-	ax.plot(propagation.y[0], propagation.y[1], '-', color='blue', linewidth=1)
-	ax.plot([r_M_f[0]], [r_M_f[1]], 'o', color='black', markersize=3)
-	plot_env_2D(ax)
+	# fig = plt.figure()
+	# ax = fig.add_subplot(111)
 
-	plt.grid()
-	plt.show()
+	# ax.plot(propagation.y[0], propagation.y[1], '-', color='blue', linewidth=1)
+	# ax.plot([r_M_f[0]], [r_M_f[1]], 'o', color='black', markersize=3)
+	# plot_env_2D(ax)
+
+	# plt.grid()
+	# plt.show()
 
 
-	mu = 0.012151
-	L = 384400
-	T = 2360591.424
-	V = L/(T/(2*np.pi))
-	cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
+	# mu = 0.012151
+	# L = 384400
+	# T = 2360591.424
+	# V = L/(T/(2*np.pi))
+	# cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
 
-	cr3bp_time = np.zeros(shape=propagation.t.shape)
-	cr3bp_trajectory = np.zeros(shape=propagation.y.shape)
+	# cr3bp_time = np.zeros(shape=propagation.t.shape)
+	# cr3bp_trajectory = np.zeros(shape=propagation.y.shape)
 
-	for k, t in enumerate(propagation.t):
-		propagation.y[:3, k] /= cr3bp.L 
-		propagation.y[3:, k] /= cr3bp.V
+	# for k, t in enumerate(propagation.t):
+	# 	propagation.y[:3, k] /= cr3bp.L 
+	# 	propagation.y[3:, k] /= cr3bp.V
 
-		cr3bp_trajectory[:, k] = cr3bp.eci2syn(t / cr3bp.T , propagation.y[:, k])
-		cr3bp_time[k] = t / cr3bp.T
+	# 	cr3bp_trajectory[:, k] = cr3bp.eci2syn(t / cr3bp.T , propagation.y[:, k])
+	# 	cr3bp_time[k] = t / cr3bp.T
 
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
+	# fig = plt.figure()
+	# ax = fig.add_subplot(111)
 
-	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='blue', linewidth=1)
-	ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
-	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
+	# ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='blue', linewidth=1)
+	# ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
+	# ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
 
-	plt.grid()
-	plt.show()
+	# plt.grid()
+	# plt.show()
 
 	# np.loadtxt('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/cr3bp_apogee_raising.txt')
 

@@ -54,7 +54,7 @@ def TBP_thrusted_dynamics(t, r, Tmax, mass, eps, theta):
 
 
 def moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval):
-	theta=theta[0]
+
 	# Rotation of the initial position
 	r0 = R2_6d(theta).dot(r0)
 

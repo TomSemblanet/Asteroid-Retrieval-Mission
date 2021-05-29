@@ -5,6 +5,8 @@ import pickle
 
 import matplotlib.pyplot as plt
 
+from mpi4py import MPI
+
 from scipy.integrate import solve_ivp
 from scipy.optimize import minimize
 
@@ -148,6 +150,13 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 if __name__ == '__main__':
 
 	theta = float(sys.argv[1])
+	step = float(sys.argv[2])
+
+	# Creation of the communicator 
+	comm = MPI.COMM_WORLD
+	rank = comm.rank
+
+	theta += rank * step
 
 	# Spacecraft characteristics
 	# --------------------------

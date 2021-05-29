@@ -85,9 +85,20 @@ ECI_propagation = solve_ivp(fun=kepler, t_span=(time[0], time[-1]), t_eval=time,
 # Conversion into the synodic frame
 cr3bp, trajectory_ut, time_ut = CR3BP_moon_moon(ECI_propagation.y, ECI_propagation.t)
 
+
 # Plot of the trajectory in the Synodic frame
 fig = plt.figure()
 ax = fig.gca(projection='3d')
+
+
+# LOADING OF THE DROs ORBITS
+with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/data/DROs', 'rb') as file:
+	DROs = pickle.load(file)
+
+for k, Cjac in enumerate(DROs.keys()):
+	if 	k % 10 == 0:
+		ax.plot(DROs[Cjac][:, 0], DROs[Cjac][:, 1], '-', color='orange', linewidth=1)
+
 
 ax.plot(trajectory_ut[0], trajectory_ut[1], trajectory_ut[2], '-', color='blue', linewidth=1)
 ax.plot([-cr3bp.mu], [0], [0], 'o', color='black', markersize=5)

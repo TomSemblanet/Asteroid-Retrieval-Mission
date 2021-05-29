@@ -8,15 +8,10 @@ import matplotlib.pyplot as plt
 from scipy.integrate import solve_ivp
 from scipy.optimize import minimize
 
-from scripts.earth_departure.apogee_raising import apogee_raising
 from scripts.earth_departure.utils import cart2sph, sph2cart, cr3bp_moon_approach
 from scripts.earth_departure.cr3bp import CR3BP
 from scripts.earth_departure import constants as cst
 from scripts.utils import load_bodies, load_kernels
-
-from scripts.earth_departure.OCP_moon_moon_leg import MoonMoonLeg
-from scripts.earth_departure.OCP_apogee_raising import ApogeeRaising
-from collocation.GL_V.src.optimization import Optimization
 
 
 def moon_point_approach(theta, r0, r_tgt, t_span, t_eval, cr3bp, mass, Tmax, thrusts_intervals):

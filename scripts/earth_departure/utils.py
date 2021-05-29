@@ -105,6 +105,26 @@ def R2(theta):
 					  [np.sin(theta),  np.cos(theta), 0],
 					  [			0,			  0, 1] ])
 
+def R2_6d(theta):
+	""" Rotation from the basis with axis following:
+			i : Moon's position r/ Earth
+			j : Moon's velocity r/ Earth
+			k : Moon's angular momentum
+
+				to the basis with axis following :
+
+			i : Moon's position at t0
+			j : completing the right-hand rule
+			k : Moon's angular momentum
+	"""
+
+	return np.array([ [np.cos(theta), -np.sin(theta), 0,             0,              0, 0],
+					  [np.sin(theta),  np.cos(theta), 0,             0,              0, 0],
+					  [			   0, 	           0, 1,             0,              0, 0],
+					  [            0,              0, 0, np.cos(theta), -np.sin(theta), 0],
+					  [            0,              0, 0, np.sin(theta),  np.cos(theta), 0],
+					  [			   0, 	           0, 0,             0,              0, 1]])
+
 
 def P_GEO2RVH(gamma):
 	""" Passage matrix from Earth inertial frame to RVH frame """

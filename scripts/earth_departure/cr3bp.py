@@ -32,6 +32,18 @@ class CR3BP:
 
 		return np.array([x_dot, y_dot, z_dot, vx_dot, vy_dot, vz_dot])
 
+	def pseudo_potential(self, r):
+		""" Computation of the pseudo-potential U_bar """
+
+		x, y, z = r[:3]
+
+		r_1 = np.sqrt((x + self.mu) ** 2 + y ** 2 + z ** 2)
+		r_2 = np.sqrt((x - 1 + self.mu) ** 2 + y ** 2 + z ** 2)
+
+		U_bar = - 0.5 * ((1 - self.mu) * r_1**2 + self.mu * r_2**2) - (1-self.mu) / r_1 - self.mu / r_2
+
+		return U_bar
+
 	def pseudo_potential_derivatives(self, r):
 		""" Computation of the derivatives of the pseudo-potential U_bar wrt. x, y and z """
 
@@ -50,6 +62,15 @@ class CR3BP:
 			r_2 ** (3 / 2) + (1 - self.mu) * z / r_1 ** (3 / 2)
 
 		return U_bar_x, U_bar_y, U_bar_z
+
+	def jacobian_constant(self, r):
+		""" Computation of the Jacobian constant """
+		vx, vy, vz = r[3:]
+		U_bar = self.pseudo_potential(r)
+
+		Cjac = -(vx**2 + vy**2 + vz**2) - 2 * U_bar
+
+		return Cjac
 
 	def rot2irf(self, t):
 		""" Rotation matrix between rotating and intertial reference frames whose z axes coincide

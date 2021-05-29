@@ -70,7 +70,7 @@ def moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval):
 	return error
 
 
-def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf):
+def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 
 	# 1 - Definition of the initial circular orbit and S/C initial state in the Earth inertial frame
 	# ----------------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf):
 	# S/C initial states on its circular orbit around the Earth [km] | [km/s]
 	r0 = kep2cart(a, e, i, W, w, ta, cst.mu_E)
 
-	theta = 7 * np.pi / 180
+	theta *= np.pi / 180
 
 	t_span = [0, 365 * 86400]
 	t_eval = np.linspace(t_span[0], t_span[-1], 1000000)
@@ -112,35 +112,39 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf):
 	plt.show()
 
 
-	# mu = 0.012151
-	# L = 384400
-	# T = 2360591.424
-	# V = L/(T/(2*np.pi))
-	# cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
+	mu = 0.012151
+	L = 384400
+	T = 2360591.424
+	V = L/(T/(2*np.pi))
+	cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
 
-	# cr3bp_time = np.zeros(shape=propagation.t.shape)
-	# cr3bp_trajectory = np.zeros(shape=propagation.y.shape)
+	cr3bp_time = np.zeros(shape=propagation.t.shape)
+	cr3bp_trajectory = np.zeros(shape=propagation.y.shape)
 
-	# for k, t in enumerate(propagation.t):
-	# 	propagation.y[:3, k] /= cr3bp.L 
-	# 	propagation.y[3:, k] /= cr3bp.V
+	for k, t in enumerate(propagation.t):
+		propagation.y[:3, k] /= cr3bp.L 
+		propagation.y[3:, k] /= cr3bp.V
 
-	# 	cr3bp_trajectory[:, k] = cr3bp.eci2syn(t / cr3bp.T , propagation.y[:, k])
-	# 	cr3bp_time[k] = t / cr3bp.T
+		cr3bp_trajectory[:, k] = cr3bp.eci2syn(t / cr3bp.T , propagation.y[:, k])
+		cr3bp_time[k] = t / cr3bp.T
 
-	# fig = plt.figure()
-	# ax = fig.add_subplot(111)
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
 
-	# ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='blue', linewidth=1)
-	# ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
-	# ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
+	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='blue', linewidth=1)
+	ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
+	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
 
-	# plt.grid()
-	# plt.show()
+	plt.grid()
+	plt.show()
+
+	np.loadtxt('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/cr3bp_apogee_raising.txt')
 
 
 
 if __name__ == '__main__':
+
+	theta = float(sys.argv[1])
 
 	# Spacecraft characteristics
 	# --------------------------
@@ -165,4 +169,4 @@ if __name__ == '__main__':
 	v_inf = np.linalg.norm(v_out)										 # Excess velocity at Moon departure [km/s]
 
 
-	TBP_apogee_raising(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, v_inf)
+	TBP_apogee_raising(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, v_inf, theta)

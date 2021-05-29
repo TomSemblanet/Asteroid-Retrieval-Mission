@@ -88,7 +88,7 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf):
 	theta = 7 * np.pi / 180
 
 	t_span = [0, 365 * 86400]
-	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
+	t_eval = np.linspace(t_span[0], t_span[-1], 1000000)
 	moon_altitude_reached.terminal = True
 
 	minimization = minimize(fun=moon_first_shot, x0=[theta], args=(r0, Tmax, mass, eps, t_span, t_eval), tol=1000)

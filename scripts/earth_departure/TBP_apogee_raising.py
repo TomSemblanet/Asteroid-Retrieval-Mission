@@ -138,7 +138,7 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 	plt.grid()
 	plt.show()
 
-	np.loadtxt('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/cr3bp_apogee_raising.txt')
+	# np.loadtxt('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/cr3bp_apogee_raising.txt')
 
 
 

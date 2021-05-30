@@ -28,4 +28,4 @@ for k, theta in enumerate(theta_list):
 	error_matrices[k, :, 1] = sub_matrix[:, 1]
 
 with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/matrix', 'wb') as file:
-	pickle.dump(error_matrices, f)
+	pickle.dump(error_matrices, file)

@@ -21,6 +21,14 @@ def moon_approach(t, r, Tmax, mass, eps, theta):
 	dist = 10000 # Minimal distance [km]
 	return np.linalg.norm(r[:3]) - (cst.d_M - dist)
 
+def get_index_thrust(thrust_profil):
+	index = np.array([], dtype=int)
+	for k, T in enumerate(thrust_profil[0]):
+		if T > 1e-5:
+			index = np.append(index, int(k))
+
+	return index
+
 def thrusted_dynamics(t, r, Tmax, mass, eps, theta):
 	""" Returns the state derivatives of a thrusted S/C in the CR3BP dynamic environment """
 
@@ -122,9 +130,7 @@ def keep_last_branch(trajectory, time):
 
 	return trajectory[:, index:], time[index:], trajectory[:, :index], time[:index]
 
-def modify_last_arc(trajectory, time, Tmax, mass, theta):
-	# Arc-length for the last branch [°]
-	eps = 0.27013506753376687
+def modify_last_arc(trajectory, time, Tmax, mass, eps, theta):
 
 	# Propagation parameters
 	t_span = [time[0], time[0] + 365 * 86400]
@@ -133,7 +139,6 @@ def modify_last_arc(trajectory, time, Tmax, mass, theta):
 
 	r0 = trajectory[:, 0]
 
-	# for k, eps in enumerate(eps_list):
 	propagation = solve_ivp(fun=thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
 	events=(moon_approach), rtol=1e-10, atol=1e-13)
 
@@ -146,15 +151,23 @@ def modify_last_arc(trajectory, time, Tmax, mass, theta):
 	return propagation.y, propagation.t
 
 
-def assembly(trajectory_prv, time_prv, trajectory_add, time_add):
+def assembly(trajectory_prv, time_prv, thrust_prv, trajectory_add, time_add, thrust_add):
 
 	eci_trajectory = np.hstack((trajectory_prv, trajectory_add))
 	eci_time = np.concatenate((time_prv, time_add))
+	thrusts = np.hstack((thrust_prv, thrust_add))
+
+	thrust_index = get_index_thrust(thrusts)
+
+	moon_angle = 2*np.pi * eci_time[-1] / cst.T_M
+	r_M_f = R2_6d(moon_angle).dot(np.array([cst.d_M, 0, 0, 0, cst.V_M, 0]))
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
 	ax.plot(eci_trajectory[0], eci_trajectory[1], '-', color='blue', linewidth=1)
+	ax.plot(eci_trajectory[0, thrust_index], eci_trajectory[1, thrust_index], '-', color='red', linewidth=1)
+	ax.plot([r_M_f[0]], [r_M_f[1]], 'o', color='black', markersize=2)
 	plot_env_2D(ax)
 
 	plt.grid()
@@ -184,20 +197,73 @@ def assembly(trajectory_prv, time_prv, trajectory_add, time_add):
 	plt.show()
 
 
+def thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps, eps_l, theta, Tmax):
+
+	axis = R2(theta).dot([-1, 0, 0])
+
+	thrust_fx = np.zeros((4, time_fx.shape[0]))
+	thrust_add = np.zeros((4, time_add.shape[0]))
+
+	for k, t in enumerate(time_fx):
+
+		gamma = np.sign( np.cross(axis, trajectory_fx[:3, k])[2] ) * np.arccos( np.dot(axis, trajectory_fx[:3, k]) / np.linalg.norm(trajectory_fx[:3, k])  )
+		thrust_on = True if abs(gamma) <= eps else False
+
+		if thrust_on == True:
+			v = np.linalg.norm(trajectory_fx[3:, k])
+			thrust_fx[1:, k] = trajectory_fx[3:, k] / v
+			thrust_fx[0, k]  = Tmax 
+
+
+	for k, t in enumerate(time_add):
+
+		gamma = np.sign( np.cross(axis, trajectory_add[:3, k])[2] ) * np.arccos( np.dot(axis, trajectory_add[:3, k]) / np.linalg.norm(trajectory_add[:3, k])  )
+		thrust_on = True if abs(gamma) <= eps_l else False
+
+		if thrust_on == True:
+			v = np.linalg.norm(trajectory_add[3:, k])
+			thrust_add[1:, k] = trajectory_add[3:, k] / v
+			thrust_add[0, k]  = Tmax 
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(time_fx, thrust_fx[0], color='blue')
+	ax.plot(time_add, thrust_add[0], color='blue')
+
+	plt.grid()
+	plt.show()
+
+	return thrust_fx, thrust_add
+
+
 if __name__ == '__main__':
 
-	theta = 48.041666
-	Tmax  = 2 						    # Maximum thrust [N]
-	mass  = 2000 						# S/C initial mass [kg]
+	# theta = 48.041666
+	# Tmax  = 2 						    # Maximum thrust [N]
+	# mass  = 2000 						# S/C initial mass [kg]
 
-	eps = 130	    					# Thrust arc semi-angle [°]
-	r_p = 300 	    					# Earth orbit perigee [km]
-	r_a = 30000     					# Earth orbit apogee  [km]
+	# eps = 130	    					# Thrust arc semi-angle [°]
+	# eps_l = 0.27013506753376687        # Thrust arc semi-angle on last branch [°]
+	# r_p = 300 	    				# Earth orbit perigee [km]
+	# r_a = 30000     					# Earth orbit apogee  [km]
 
-	trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)
+	# trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)
 
-	trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
+	# trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
 
-	trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta)
+	# trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, eps_l, theta)
 
-	assembly(trajectory_fx, time_fx, trajectory_add, time_add)
+	# thrust_fx, thrust_add = thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps*np.pi/180, eps_l*np.pi/180, theta*np.pi/180, Tmax/1000)
+
+	# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/30-05-2021', 'wb') as file:
+	# 	pickle.dump({'trajectory_fx': trajectory_fx, 'time_fx': time_fx, 'thrust_fx': thrust_fx, 'trajectory_add': trajectory_add, \
+	# 		'time_add': time_add, 'thrust_add': thrust_add}, file)
+
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/30-05-2021', 'rb') as file:
+		results = pickle.load(file)
+
+	trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add = results.values()
+
+	assembly(trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add)
+

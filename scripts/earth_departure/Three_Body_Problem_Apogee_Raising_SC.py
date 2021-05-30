@@ -131,33 +131,6 @@ def modify_last_arc(trajectory, time, Tmax, mass, theta):
 	return error_matrix
 
 
-def assembly(trajectory_prv, time_prv, trajectory_add, time_add):
-
-	eci_trajectory = np.hstack((trajectory_prv, trajectory_add))
-	eci_time = np.concatenate((time_prv, time_add))
-
-	fig = plt.figure()
-	ax = fig.add_subplot(111)
-
-	ax.plot(eci_trajectory[0], eci_trajectory[1], '-', color='blue', linewidth=1)
-	plot_env_2D(ax)
-
-	plt.grid()
-	plt.show()
-
-	mu = 0.012151
-	L = 384400
-	T = 2360591.424
-	V = L/(T/(2*np.pi))
-	cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
-
-	syn_trajectory = np.ndarray(shape=eci_trajectory.shape)
-	syn_time = eci_time / cr3bp.T
-
-	for k, t in enumerate(syn_time):
-		syn_trajectory[:, k] = cr3bp.eci2syn(t, np.concatenate((eci_trajectory[:3, k]/cr3bp.L, eci_trajectory[3:, k]/cr3bp.V)) )
-
-
 if __name__ == '__main__':
 
 	theta_I = float(sys.argv[1]) 
@@ -180,7 +153,7 @@ if __name__ == '__main__':
 
 	trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
 
-	error_matrix = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta)
+	error_matrix = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta*180/np.pi)
 
 	with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/' + str(theta), 'wb') as file:
 		pickle.dump(error_matrix, file)

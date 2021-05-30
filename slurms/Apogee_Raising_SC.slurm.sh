@@ -19,4 +19,4 @@ source activate asteroids
 
 cd /home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission
 
-mpiexec -n 24 python -m scripts.earth_departure.Three_Body_Problem_Apogee_Raising_SC 0 0.041666
+mpiexec -n 24 python -m scripts.earth_departure.Three_Body_Problem_Apogee_Raising_SC ${theta} 0.041666

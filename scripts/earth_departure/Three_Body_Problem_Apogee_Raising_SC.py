@@ -166,7 +166,7 @@ if __name__ == '__main__':
 	mass  = 2000 						# S/C initial mass [kg]
 
 	eps = 130	    					# Thrust arc semi-angle [°]
-	r_p = 300 	    				# Earth orbit perigee [km]
+	r_p = 300 	    					# Earth orbit perigee [km]
 	r_a = 30000     					# Earth orbit apogee  [km]
 
 	trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)

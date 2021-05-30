@@ -124,9 +124,9 @@ def keep_last_branch(trajectory, time):
 
 def modify_last_arc(trajectory, time, Tmax, mass, theta):
 
-	error_matrix = np.zeros((20, 2))
+	error_matrix = np.zeros((2000, 2))
 
-	eps_list = np.linspace(0, 180, 20)
+	eps_list = np.linspace(0, 180, 2000)
 
 	# Propagation parameters
 	t_span = [time[0], time[0] + 365 * 86400]
@@ -166,7 +166,7 @@ if __name__ == '__main__':
 	mass  = 2000 						# S/C initial mass [kg]
 
 	eps = 130	    					# Thrust arc semi-angle [°]
-	r_p = 30000 	    				# Earth orbit perigee [km]
+	r_p = 300 	    				# Earth orbit perigee [km]
 	r_a = 30000     					# Earth orbit apogee  [km]
 
 	trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)

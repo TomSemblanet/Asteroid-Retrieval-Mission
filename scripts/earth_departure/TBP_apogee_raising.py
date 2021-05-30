@@ -96,9 +96,6 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 
 	print(moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval))
 
-	# minimization = minimize(fun=moon_first_shot, x0=[theta], args=(r0, Tmax, mass, eps, t_span, t_eval), tol=1000)
-	# theta = minimization.x
-
 	# r0 = R2_6d(theta).dot(r0)
 
 	# propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
@@ -143,8 +140,53 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 	# plt.grid()
 	# plt.show()
 
-	# np.loadtxt('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/cr3bp_apogee_raising.txt')
+	# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021', 'wb') as file:
+	# 	pickle.dump({'eci_time': propagation.t,'eci_traj': propagation.y, 'syn_time': cr3bp_time, 'syn_traj': cr3bp_trajectory}, file)
 
+
+def trajectory_separation():
+
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021', 'rb') as file:
+		results = pickle.load(file)
+
+	eci_fx_traj = results['eci_traj'][:, :679000]
+	eci_fx_time = results['eci_time'][:679000]
+
+	eci_ut_traj = results['eci_traj'][:, 679000:]
+	eci_ut_time = results['eci_time'][679000:]
+
+	syn_fx_traj = results['syn_traj'][:, :679000]
+	syn_fx_time = results['syn_time'][:679000]
+
+	syn_ut_traj = results['syn_traj'][:, 679000:]
+	syn_ut_time = results['syn_time'][679000:]
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(syn_ut_traj[0], syn_ut_traj[1], '-')
+
+	plt.grid()
+	plt.show()
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(eci_ut_traj[0], eci_ut_traj[1], '-')
+
+	plt.grid()
+	plt.show()
+
+	mu = 0.012151
+	L = 384400
+	T = 2360591.424
+	V = L/(T/(2*np.pi))
+	cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
+
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021-separated', 'wb') as file:
+		results = pickle.dump({'cr3bp': cr3bp, 'eci_fx_traj': eci_fx_traj, 'eci_fx_time': eci_fx_time, 'eci_ut_traj': eci_ut_time, \
+			'eci_ut_time': eci_ut_time, 'syn_fx_traj': syn_fx_traj, 'syn_fx_time': syn_fx_time, 'syn_ut_traj': syn_ut_traj, \
+			'syn_ut_time': syn_ut_time}, file)
 
 
 if __name__ == '__main__':
@@ -157,6 +199,8 @@ if __name__ == '__main__':
 	rank = comm.rank
 
 	theta += rank * step
+
+	# theta = 140.70000000000000
 
 	# Spacecraft characteristics
 	# --------------------------
@@ -180,5 +224,5 @@ if __name__ == '__main__':
 	v_out = np.array([ 0.84168181508,   0.09065171796, -0.27474864627])  # Velocity at Moon departure in the ECLIPJ2000 frame [km/s]
 	v_inf = np.linalg.norm(v_out)										 # Excess velocity at Moon departure [km/s]
 
-
 	TBP_apogee_raising(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, v_inf, theta)
+

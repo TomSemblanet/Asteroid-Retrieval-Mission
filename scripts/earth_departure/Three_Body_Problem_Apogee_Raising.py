@@ -83,6 +83,18 @@ def moon_orbit_reaching(Tmax, mass, r_p, r_a, eps, theta):
 	propagation = solve_ivp(fun=thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
 		events=(moon_approach), rtol=1e-10, atol=1e-13)
 
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(propagation.y[0], propagation.y[1], '-', color='blue', linewidth=1)
+	angle = 2 * np.pi * propagation.t[-1] / cst.T_M
+	r_m_f = R2_6d(angle).dot(np.array([cst.d_M, 0, 0, 0, cst.V_M, 0]))
+	ax.plot([r_m_f[0]], [r_m_f[1]], 'o', color='black')
+	plot_env_2D(ax)
+
+	plt.grid()
+	plt.show()
+
 	trajectory, time = propagation.y, propagation.t
 
 	return trajectory, time
@@ -100,13 +112,19 @@ def keep_last_branch(trajectory, time):
 			index = -1-(2*k+1)
 			break
 
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(trajectory[0, index:], trajectory[1, index:], '-', color='blue', linewidth=1)
+
+	plt.grid()
+	plt.show()
+
 	return trajectory[:, index:], time[index:], trajectory[:, :index], time[:index]
 
 def modify_last_arc(trajectory, time, Tmax, mass, theta):
-
-	error_matrix = np.zeros((2000, 2))
-
-	eps_list = np.linspace(0, np.pi, 2000)
+	# Arc-length for the last branch [°]
+	eps = 0.27013506753376687
 
 	# Propagation parameters
 	t_span = [time[0], time[0] + 365 * 86400]
@@ -125,10 +143,7 @@ def modify_last_arc(trajectory, time, Tmax, mass, theta):
 	pos_error = np.linalg.norm( propagation.y[:3, -1] - r_m_f[:3] )
 	vel_error = np.linalg.norm( propagation.y[3:, -1] - r_m_f[3:] )
 
-	error_matrix[k, 0] = pos_error
-	error_matrix[k, 1] = vel_error
-
-	return error_matrix
+	return propagation.y, propagation.t
 
 
 def assembly(trajectory_prv, time_prv, trajectory_add, time_add):
@@ -158,17 +173,20 @@ def assembly(trajectory_prv, time_prv, trajectory_add, time_add):
 		syn_trajectory[:, k] = cr3bp.eci2syn(t, np.concatenate((eci_trajectory[:3, k]/cr3bp.L, eci_trajectory[3:, k]/cr3bp.V)) )
 
 
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(syn_trajectory[0], syn_trajectory[1], '-', color='blue', linewidth=1)
+	ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
+	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
+
+	plt.grid()
+	plt.show()
+
+
 if __name__ == '__main__':
 
-	theta_I = float(sys.argv[1]) 
-	step    = float(sys.argv[2])
-
-	# Creation of the communicator 
-	comm = MPI.COMM_WORLD
-	rank = comm.rank
-
-
-	theta = theta_I + rank * step		# Initial orbit orientation [°]
+	theta = 48.041666
 	Tmax  = 2 						    # Maximum thrust [N]
 	mass  = 2000 						# S/C initial mass [kg]
 
@@ -180,7 +198,6 @@ if __name__ == '__main__':
 
 	trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
 
-	error_matrix = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta)
+	trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta)
 
-	with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/' + str(theta), 'wb') as file:
-		pickle.dump(error_matrix, file)
+	assembly(trajectory_fx, time_fx, trajectory_add, time_add)

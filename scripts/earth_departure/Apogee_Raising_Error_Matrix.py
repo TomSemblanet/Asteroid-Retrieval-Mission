@@ -17,15 +17,17 @@ for file in files_list:
 	theta_list = np.append(theta_list, float(file))
 theta_list = np.sort(theta_list)
 
+print("Theta : {}".format(theta_list[1129]))
 
-error_matrices = np.zeros((len(theta_list), 2000, 2))
 
-for k, theta in enumerate(theta_list):
-	with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/'+str(theta), 'rb') as file:
-		sub_matrix = pickle.load(file)
+# error_matrices = np.zeros((len(theta_list), 2000, 2))
 
-	error_matrices[k, :, 0] = sub_matrix[:, 0]
-	error_matrices[k, :, 1] = sub_matrix[:, 1]
+# for k, theta in enumerate(theta_list):
+# 	with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/'+str(theta), 'rb') as file:
+# 		sub_matrix = pickle.load(file)
 
-with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/matrix', 'wb') as file:
-	pickle.dump(error_matrices, file)
+# 	error_matrices[k, :, 0] = sub_matrix[:, 0]
+# 	error_matrices[k, :, 1] = sub_matrix[:, 1]
+
+# with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/matrix', 'wb') as file:
+# 	pickle.dump(error_matrices, file)

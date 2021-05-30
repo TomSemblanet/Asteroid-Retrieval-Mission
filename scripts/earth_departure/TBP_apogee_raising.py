@@ -63,12 +63,13 @@ def moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval):
 	propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
 		events=(moon_altitude_reached), rtol=1e-10, atol=1e-13)
 
-	r_M_f = R2(2*np.pi*propagation.t[-1]/cst.T_M).dot([cst.d_M, 0, 0])
+	r_M_f = R2_6d(2*np.pi*propagation.t[-1]/cst.T_M).dot([cst.d_M, 0, 0, 0, cst.V_M, 0])
 
-	p_o_m = np.sign( np.cross( propagation.y[:3, -1], r_M_f )[2] )
-	error = p_o_m * np.linalg.norm(propagation.y[:3, -1] - r_M_f)
+	p_o_m = np.sign( np.cross( propagation.y[:3, -1], r_M_f[:3] )[2] )
+	error_pos = p_o_m * np.linalg.norm(propagation.y[:3, -1] - r_M_f[:3])
+	error_vel =	        np.linalg.norm(propagation.y[3:, -1] - r_M_f[3:])
 
-	print("Theta: {}°\tError (oriented): {}km".format(theta*180/np.pi, error), flush=True)
+	print("Theta: {}°\tError (oriented): {}km\t{} km/s".format(theta*180/np.pi, error_pos, error_vel), flush=True)
 
 	return error
 

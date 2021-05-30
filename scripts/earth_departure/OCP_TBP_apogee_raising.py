@@ -19,9 +19,9 @@ class ApogeeRaising(Problem):
 		n_controls = 4
 		n_st_path_con = 0
 		n_ct_path_con = 1
-		n_event_con = 7
+		n_event_con = 9
 		n_f_par = 0
-		n_nodes = 100
+		n_nodes = 400
 
 		Problem.__init__(self, n_states, n_controls, n_st_path_con, n_ct_path_con, 
 						 n_event_con, n_f_par, n_nodes)
@@ -109,6 +109,10 @@ class ApogeeRaising(Problem):
 							dtype=cppad_py.a_double)
 
 		x_i, y_i, z_i, vx_i, vy_i, vz_i, m_i = xi
+		x_f, y_f, z_f, vx_f, vy_f, vz_f, m_f = xf
+
+		d_f = ((x_f - (1 - self.cr3bp.mu))**2 + y_f**2 + z_f**2) ** (0.5)
+		v_f = (vx_f**2 + vy_f**2 + vz_f**2 ) ** (0.5)
 
 		events[0] = x_i  - self.trajectory[0, 0]
 		events[1] = y_i  - self.trajectory[1, 0]
@@ -117,6 +121,9 @@ class ApogeeRaising(Problem):
 		events[4] = vy_i - self.trajectory[4, 0]
 		events[5] = vz_i - self.trajectory[5, 0]
 		events[6] = m_i - self.mass0
+
+		events[7] = d_f - 10000 / self.cr3bp.L
+		events[8] = v_f - self.v_inf
 
 		return events
 
@@ -130,6 +137,9 @@ class ApogeeRaising(Problem):
 		self.low_bnd.event[4] = self.upp_bnd.event[4] = 0
 		self.low_bnd.event[5] = self.upp_bnd.event[5] = 0
 		self.low_bnd.event[6] = self.upp_bnd.event[6] = 0
+
+		self.low_bnd.event[7] = self.upp_bnd.event[7] = 0
+		self.low_bnd.event[8] = self.upp_bnd.event[8] = 0
 
 	def path_constraints(self, states, controls, states_add, controls_add, controls_col, f_par):
 
@@ -185,9 +195,9 @@ class ApogeeRaising(Problem):
 
 	def end_point_cost(self, ti, xi, tf, xf, f_prm):
 		""" Computation of the end point cost (Mayer term) """
-		x_f, y_f, z_f, vx_f, vy_f, vz_f, m_f = xf 
+		m_f = xf[-1]
 
-		return ((x_f - (1-self.cr3bp.mu))**2 + y_f**2 + z_f**2)**(.5)
+		return - m_f / self.mass0
 
 
 	def set_initial_guess(self):
@@ -243,7 +253,6 @@ if __name__ == '__main__':
 	optimization.run()
 
 	opt_trajectory = optimization.results['opt_st']
-
 
 
 	fig = plt.figure()

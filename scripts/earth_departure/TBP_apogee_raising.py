@@ -16,7 +16,7 @@ from scripts.earth_departure.cr3bp import CR3BP
 from scripts.earth_departure import constants as cst
 
 def moon_altitude_reached(t, r, Tmax, mass, eps, theta):
-	return np.linalg.norm(r[:3]) - (cst.d_M - 3000)
+	return np.linalg.norm(r[:3]) - (cst.d_M - 10000)
 
 
 def TBP_thrusted_dynamics(t, r, Tmax, mass, eps, theta):
@@ -71,7 +71,7 @@ def moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval):
 
 	print("Theta: {}°\tError (oriented): {}km\t{} km/s".format(theta*180/np.pi, error_pos, error_vel), flush=True)
 
-	return error
+	# return error
 
 
 def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
@@ -89,60 +89,56 @@ def TBP_apogee_raising(Tmax, mass, r_p, r_a, eps, v_inf, theta):
 	# S/C initial states on its circular orbit around the Earth [km] | [km/s]
 	r0 = kep2cart(a, e, i, W, w, ta, cst.mu_E)
 
-	theta *= np.pi / 180
-
 	t_span = [0, 365 * 86400]
 	t_eval = np.linspace(t_span[0], t_span[-1], 1000000)
 	moon_altitude_reached.terminal = True
 
-	print(moon_first_shot(theta, r0, Tmax, mass, eps, t_span, t_eval))
+	r0 = R2_6d(theta).dot(r0)
 
-	# r0 = R2_6d(theta).dot(r0)
+	propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
+		events=(moon_altitude_reached), rtol=1e-10, atol=1e-13)
 
-	# propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
-	# 	events=(moon_altitude_reached), rtol=1e-10, atol=1e-13)
+	r_M_f = R2_6d(2*np.pi*propagation.t[-1] / cst.T_M).dot([cst.d_M, 0, 0, 0, cst.V_M, 0])
 
-	# r_M_f = R2_6d(2*np.pi*propagation.t[-1] / cst.T_M).dot([cst.d_M, 0, 0, 0, cst.V_M, 0])
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
 
-	# fig = plt.figure()
-	# ax = fig.add_subplot(111)
+	ax.plot(propagation.y[0], propagation.y[1], '-', color='blue', linewidth=1)
+	ax.plot([r_M_f[0]], [r_M_f[1]], 'o', color='black', markersize=3)
+	plot_env_2D(ax)
 
-	# ax.plot(propagation.y[0], propagation.y[1], '-', color='blue', linewidth=1)
-	# ax.plot([r_M_f[0]], [r_M_f[1]], 'o', color='black', markersize=3)
-	# plot_env_2D(ax)
-
-	# plt.grid()
-	# plt.show()
+	plt.grid()
+	plt.show()
 
 
-	# mu = 0.012151
-	# L = 384400
-	# T = 2360591.424
-	# V = L/(T/(2*np.pi))
-	# cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
+	mu = 0.012151
+	L = 384400
+	T = 2360591.424
+	V = L/(T/(2*np.pi))
+	cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
 
-	# cr3bp_time = np.zeros(shape=propagation.t.shape)
-	# cr3bp_trajectory = np.zeros(shape=propagation.y.shape)
+	cr3bp_time = np.zeros(shape=propagation.t.shape)
+	cr3bp_trajectory = np.zeros(shape=propagation.y.shape)
 
-	# for k, t in enumerate(propagation.t):
-	# 	propagation.y[:3, k] /= cr3bp.L 
-	# 	propagation.y[3:, k] /= cr3bp.V
+	for k, t in enumerate(propagation.t):
+		propagation.y[:3, k] /= cr3bp.L 
+		propagation.y[3:, k] /= cr3bp.V
 
-	# 	cr3bp_trajectory[:, k] = cr3bp.eci2syn(t / cr3bp.T , propagation.y[:, k])
-	# 	cr3bp_time[k] = t / cr3bp.T
+		cr3bp_trajectory[:, k] = cr3bp.eci2syn(t / cr3bp.T , propagation.y[:, k])
+		cr3bp_time[k] = t / cr3bp.T
 
-	# fig = plt.figure()
-	# ax = fig.add_subplot(111)
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
 
-	# ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='blue', linewidth=1)
-	# ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
-	# ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
+	ax.plot(cr3bp_trajectory[0], cr3bp_trajectory[1], '-', color='blue', linewidth=1)
+	ax.plot([-cr3bp.mu], [0], 'o', color='black', markersize=5)
+	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
 
-	# plt.grid()
-	# plt.show()
+	plt.grid()
+	plt.show()
 
-	# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021', 'wb') as file:
-	# 	pickle.dump({'eci_time': propagation.t,'eci_traj': propagation.y, 'syn_time': cr3bp_time, 'syn_traj': cr3bp_trajectory}, file)
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021', 'wb') as file:
+		pickle.dump({'eci_time': propagation.t,'eci_traj': propagation.y, 'syn_time': cr3bp_time, 'syn_traj': cr3bp_trajectory}, file)
 
 
 def trajectory_separation():
@@ -150,22 +146,24 @@ def trajectory_separation():
 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021', 'rb') as file:
 		results = pickle.load(file)
 
-	eci_fx_traj = results['eci_traj'][:, :679000]
-	eci_fx_time = results['eci_time'][:679000]
+	index = 803000
 
-	eci_ut_traj = results['eci_traj'][:, 679000:]
-	eci_ut_time = results['eci_time'][679000:]
+	eci_fx_traj = results['eci_traj'][:, :index]
+	eci_fx_time = results['eci_time'][:index]
 
-	syn_fx_traj = results['syn_traj'][:, :679000]
-	syn_fx_time = results['syn_time'][:679000]
+	eci_ut_traj = results['eci_traj'][:, index:]
+	eci_ut_time = results['eci_time'][index:]
 
-	syn_ut_traj = results['syn_traj'][:, 679000:]
-	syn_ut_time = results['syn_time'][679000:]
+	syn_fx_traj = results['syn_traj'][:, :index]
+	syn_fx_time = results['syn_time'][:index]
+
+	syn_ut_traj = results['syn_traj'][:, index:]
+	syn_ut_time = results['syn_time'][index:]
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	ax.plot(syn_ut_traj[0], syn_ut_traj[1], '-')
+	ax.plot(eci_ut_traj[0], eci_ut_traj[1], '-')
 
 	plt.grid()
 	plt.show()
@@ -173,7 +171,7 @@ def trajectory_separation():
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	ax.plot(eci_ut_traj[0], eci_ut_traj[1], '-')
+	ax.plot(syn_ut_traj[0], syn_ut_traj[1], '-')
 
 	plt.grid()
 	plt.show()
@@ -185,9 +183,48 @@ def trajectory_separation():
 	cr3bp = CR3BP(mu=mu, L=L, V=V, T=T/(2*np.pi))
 
 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021-separated', 'wb') as file:
-		results = pickle.dump({'cr3bp': cr3bp, 'eci_fx_traj': eci_fx_traj, 'eci_fx_time': eci_fx_time, 'eci_ut_traj': eci_ut_time, \
+		results = pickle.dump({'cr3bp': cr3bp, 'eci_fx_traj': eci_fx_traj, 'eci_fx_time': eci_fx_time, 'eci_ut_traj': eci_ut_traj, \
 			'eci_ut_time': eci_ut_time, 'syn_fx_traj': syn_fx_traj, 'syn_fx_time': syn_fx_time, 'syn_ut_traj': syn_ut_traj, \
 			'syn_ut_time': syn_ut_time}, file)
+
+
+def last_branch():
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_cr3bp/29-05-2021-separated', 'rb') as file:
+		results = pickle.load(file)
+
+	traj = results['eci_ut_traj']
+	traj[:3] *= results['cr3bp'].L
+	traj[3:] *= results['cr3bp'].V
+
+	time = results['eci_ut_time']
+
+	eps = 10.0 * np.pi / 180
+	# theta = 120.0 * np.pi / 180
+
+	r0 = traj[:, 0]
+
+	t_span = [time[0], time[-1]]
+	t_eval = np.linspace(t_span[0], t_span[-1], 1000000)
+	moon_altitude_reached.terminal = True
+
+	propagation = solve_ivp(fun=TBP_thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(2/1000, 2000, eps, theta), \
+		events=(moon_altitude_reached), rtol=1e-10, atol=1e-13)
+
+	gamma = 2 * np.pi * propagation.t[-1] / cst.T_M
+
+	r_M_f = R2_6d(gamma).dot(np.array([cst.d_M, 0, 0, 0, cst.V_M, 0]))
+
+	print(np.linalg.norm( r_M_f[3:] - propagation.y[3:, -1] ))
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(propagation.y[0], propagation.y[1])
+	ax.plot([r_M_f[0]], [r_M_f[1]], 'o', color='black', markersize=2)
+	plot_env_2D(ax)
+
+	plt.grid()
+	plt.show()
 
 
 if __name__ == '__main__':
@@ -201,8 +238,6 @@ if __name__ == '__main__':
 
 	theta += rank * step
 
-	# theta = 140.70000000000000
-
 	# Spacecraft characteristics
 	# --------------------------
 	Tmax = 2 	 # Maximum thrust [N]
@@ -210,14 +245,9 @@ if __name__ == '__main__':
 
 	# Trajectory parameters
 	# ---------------------
-	eps = 120	  # Thrust arc semi-angle [°]
+	eps = 130	  # Thrust arc semi-angle [°]
 	r_p = 300     # Earth orbit perigee [km]
 	r_a = 30000   # Earth orbit apogee  [km]
-
-	r_m = 300	  # S/C - Moon surface minimal distance [km]
-
-	p = 1		# Resonance parameters (Moon) [-]
-	q = 1		# Resonance parameters (S/C)  [-]
 
 	# Outter trajectory characteristics
 	# ---------------------------------
@@ -225,5 +255,8 @@ if __name__ == '__main__':
 	v_out = np.array([ 0.84168181508,   0.09065171796, -0.27474864627])  # Velocity at Moon departure in the ECLIPJ2000 frame [km/s]
 	v_inf = np.linalg.norm(v_out)										 # Excess velocity at Moon departure [km/s]
 
-	TBP_apogee_raising(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, v_inf, theta)
+	TBP_apogee_raising(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, v_inf, theta*np.pi/180)
+
+	# trajectory_separation()
+	# last_branch()
 

@@ -18,7 +18,7 @@ for file in files_list:
 theta_list = np.sort(theta_list)
 
 
-error_matrix = np.zeros((len(theta_list), 2000, 2))
+error_matrices = np.zeros((len(theta_list), 2000, 2))
 
 for k, theta in enumerate(theta_list):
 	with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/'+str(theta), 'rb') as file:

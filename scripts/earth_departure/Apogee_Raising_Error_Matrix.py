@@ -14,7 +14,7 @@ theta_list = np.array([])
 files_list = os.listdir('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices')
 
 for file in files_list:
-	theta_list = np.append(float(file))
+	theta_list = np.append(theta_list, float(file))
 theta_list = np.sort(theta_list)
 
 

@@ -115,18 +115,18 @@ def modify_last_arc(trajectory, time, Tmax, mass, theta):
 
 	r0 = trajectory[:, 0]
 
-	# for k, eps in enumerate(eps_list):
-	propagation = solve_ivp(fun=thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
-	events=(moon_approach), rtol=1e-10, atol=1e-13)
+	for k, eps in enumerate(eps_list):
+		propagation = solve_ivp(fun=thrusted_dynamics, t_span=t_span, t_eval=t_eval, y0=r0, args=(Tmax, mass, eps, theta), \
+		events=(moon_approach), rtol=1e-10, atol=1e-13)
 
-	angle = 2 * np.pi * propagation.t[-1] / cst.T_M
-	r_m_f = R2_6d(angle).dot(np.array([cst.d_M, 0, 0, 0, cst.V_M, 0]))
+		angle = 2 * np.pi * propagation.t[-1] / cst.T_M
+		r_m_f = R2_6d(angle).dot(np.array([cst.d_M, 0, 0, 0, cst.V_M, 0]))
 
-	pos_error = np.linalg.norm( propagation.y[:3, -1] - r_m_f[:3] )
-	vel_error = np.linalg.norm( propagation.y[3:, -1] - r_m_f[3:] )
+		pos_error = np.linalg.norm( propagation.y[:3, -1] - r_m_f[:3] )
+		vel_error = np.linalg.norm( propagation.y[3:, -1] - r_m_f[3:] )
 
-	error_matrix[k, 0] = pos_error
-	error_matrix[k, 1] = vel_error
+		error_matrix[k, 0] = pos_error
+		error_matrix[k, 1] = vel_error
 
 	return error_matrix
 

@@ -259,7 +259,7 @@ if __name__ == '__main__':
 
 	thrust_fx, thrust_add = thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps*np.pi/180, eps_l*np.pi/180, theta*np.pi/180, Tmax/1000)
 
-	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/30-05-2021', 'wb') as file:
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/31-05-2021', 'wb') as file:
 		pickle.dump({'trajectory_fx': trajectory_fx, 'time_fx': time_fx, 'thrust_fx': thrust_fx, 'trajectory_add': trajectory_add, \
 			'time_add': time_add, 'thrust_add': thrust_add}, file)
 

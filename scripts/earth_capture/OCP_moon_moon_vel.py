@@ -10,16 +10,16 @@ from scipy.interpolate import interp1d
 from collocation.GL_V.src.problem import Problem
 from collocation.GL_V.src.optimization import Optimization
 
-class MoonMoonLeg(Problem):
-	""" CR3BP : Moon-Moon Leg optimal control problem """
+class MoonMoonLegVelocity(Problem):
+	""" CR3BP : Moon-Moon Leg Position optimal control problem """
 
-	def __init__(self, cr3bp, mass0, Tmax, trajectory, time):
+	def __init__(self, cr3bp, mass0, Tmax, trajectory, controls, time, target):
 		""" Initialization of the `GoddardRocket` class """
 		n_states = 7
 		n_controls = 4
 		n_st_path_con = 0
 		n_ct_path_con = 1
-		n_event_con = 13
+		n_event_con = 10
 		n_f_par = 0
 		n_nodes = 200
 
@@ -33,7 +33,10 @@ class MoonMoonLeg(Problem):
 		self.Tmax = Tmax   # [kN]
 
 		self.trajectory = trajectory # [L] | [L/T]
+		self.controls = controls # [kN]
 		self.time = time # [T]
+
+		self.target = target # [L] | [L/T]
 
 	def set_constants(self):
 		""" Setting of the problem constants """
@@ -95,9 +98,7 @@ class MoonMoonLeg(Problem):
 
 		# Initial and final times boundaries
 		self.low_bnd.ti = self.upp_bnd.ti = self.time[0]
-		self.low_bnd.tf = 0.5 * self.time[-1]
-		self.upp_bnd.tf = 2.5 * self.time[-1]
-
+		self.low_bnd.tf = self.upp_bnd.tf = 1 * self.time[-1]
 
 	def event_constraints(self, xi, ui, xf, uf, ti, tf, f_prm):
 		""" Computation of the events constraints """
@@ -113,15 +114,11 @@ class MoonMoonLeg(Problem):
 		events[3] = vx_i - self.trajectory[3, 0]
 		events[4] = vy_i - self.trajectory[4, 0]
 		events[5] = vz_i - self.trajectory[5, 0]
+		events[6] = m_i - self.mass0
 
-		events[6]  = x_f  - self.trajectory[0, -1]
-		events[7]  = y_f  - self.trajectory[1, -1]
-		events[8]  = z_f  - self.trajectory[2, -1]
-		events[9]  = vx_f - self.trajectory[3, -1]
-		events[10] = vy_f - self.trajectory[4, -1]
-		events[11] = vz_f - self.trajectory[5, -1]
-
-		events[12] = m_i - self.mass0
+		events[7] = x_f - self.target[0]
+		events[8] = y_f - self.target[1]
+		events[9] = z_f - self.target[2]
 
 		return events
 
@@ -134,15 +131,12 @@ class MoonMoonLeg(Problem):
 		self.low_bnd.event[3] = self.upp_bnd.event[3] = 0
 		self.low_bnd.event[4] = self.upp_bnd.event[4] = 0
 		self.low_bnd.event[5] = self.upp_bnd.event[5] = 0
-
 		self.low_bnd.event[6] = self.upp_bnd.event[6] = 0
+		
 		self.low_bnd.event[7] = self.upp_bnd.event[7] = 0
 		self.low_bnd.event[8] = self.upp_bnd.event[8] = 0
 		self.low_bnd.event[9] = self.upp_bnd.event[9] = 0
-		self.low_bnd.event[10] = self.upp_bnd.event[10] = 0
-		self.low_bnd.event[11] = self.upp_bnd.event[11] = 0
 
-		self.low_bnd.event[12] = self.upp_bnd.event[12] = 0
 
 	def path_constraints(self, states, controls, states_add, controls_add, controls_col, f_par):
 
@@ -198,8 +192,7 @@ class MoonMoonLeg(Problem):
 
 	def end_point_cost(self, ti, xi, tf, xf, f_prm):
 		""" Computation of the end point cost (Mayer term) """
-		mf = xf[-1]
-		return - mf / self.mass0
+		return ((xf[3] - self.target[3])**2 + (xf[4] - self.target[4])**2 + (xf[5] - self.target[5])**2) ** (0.5)
 
 
 	def set_initial_guess(self):
@@ -214,6 +207,8 @@ class MoonMoonLeg(Problem):
 		f_vx = interp1d(self.time, self.trajectory[3])
 		f_vy = interp1d(self.time, self.trajectory[4])
 		f_vz = interp1d(self.time, self.trajectory[5])
+
+		f_m = interp1d(self.time, self.trajectory[6])
 
 		# Time
 		self.initial_guess.time = np.linspace(self.time[0], self.time[-1], self.prm['n_nodes'])
@@ -230,11 +225,11 @@ class MoonMoonLeg(Problem):
 		self.initial_guess.states[4] = f_vy(self.initial_guess.time)
 		self.initial_guess.states[5] = f_vz(self.initial_guess.time)
 
-		self.initial_guess.states[6] = self.mass0 * np.ones(self.prm['n_nodes'])
+		self.initial_guess.states[6] = f_m(self.initial_guess.time)
 
 		# Controls
 		self.initial_guess.controls = np.ndarray(
 			shape=(self.prm['n_controls'], self.prm['n_nodes']))
 
-		self.initial_guess.controls = np.zeros((4, self.prm['n_nodes']))
+		self.initial_guess.controls = self.controls
 

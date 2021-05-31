@@ -10,10 +10,10 @@ from scipy.interpolate import interp1d
 from collocation.GL_V.src.problem import Problem
 from collocation.GL_V.src.optimization import Optimization
 
-class MoonMoonLeg(Problem):
+class MoonMoonLegMass(Problem):
 	""" CR3BP : Moon-Moon Leg optimal control problem """
 
-	def __init__(self, cr3bp, mass0, Tmax, trajectory, time):
+	def __init__(self, cr3bp, mass0, Tmax, trajectory, controls, time):
 		""" Initialization of the `GoddardRocket` class """
 		n_states = 7
 		n_controls = 4
@@ -33,6 +33,7 @@ class MoonMoonLeg(Problem):
 		self.Tmax = Tmax   # [kN]
 
 		self.trajectory = trajectory # [L] | [L/T]
+		self.controls = controls # [kN]
 		self.time = time # [T]
 
 	def set_constants(self):
@@ -215,6 +216,8 @@ class MoonMoonLeg(Problem):
 		f_vy = interp1d(self.time, self.trajectory[4])
 		f_vz = interp1d(self.time, self.trajectory[5])
 
+		f_m = interp1d(self.time, self.trajectory[6])
+
 		# Time
 		self.initial_guess.time = np.linspace(self.time[0], self.time[-1], self.prm['n_nodes'])
 
@@ -230,11 +233,11 @@ class MoonMoonLeg(Problem):
 		self.initial_guess.states[4] = f_vy(self.initial_guess.time)
 		self.initial_guess.states[5] = f_vz(self.initial_guess.time)
 
-		self.initial_guess.states[6] = self.mass0 * np.ones(self.prm['n_nodes'])
+		self.initial_guess.states[6] = f_m(self.initial_guess.time)
 
 		# Controls
 		self.initial_guess.controls = np.ndarray(
 			shape=(self.prm['n_controls'], self.prm['n_nodes']))
 
-		self.initial_guess.controls = np.zeros((4, self.prm['n_nodes']))
+		self.initial_guess.controls = self.controls
 

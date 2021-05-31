@@ -44,7 +44,7 @@ def thrusted_dynamics(t, r, Tmax, mass, eps, theta):
 
 	axis = R2(theta).dot([-1, 0, 0])
 
-	gamma = np.sign( np.cross(axis, r[:3])[2] ) * np.arccos( np.dot(axis, r[:3]) / d_E  )
+	gamma = np.sign( np.cross(axis, r[:3])[2] ) * np.arccos( min(np.dot(axis, r[:3]) / d_E, 1)  )
 	thrust_on = True if abs(gamma) <= eps else False
 
 	if thrust_on == True:

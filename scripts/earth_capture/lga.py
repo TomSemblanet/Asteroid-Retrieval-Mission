@@ -7,9 +7,9 @@ from scipy.integrate import solve_ivp
 
 from scripts.earth_departure import constants as cst
 from scripts.earth_capture.coc import P_ECLJ2000_ECI, P_ECI_HRV, cart2sph, sph2cart
-from scripts.earth_capture.utils import kepler, cart2kep, plot_env_2D, plot_env_3D, C3
+from scripts.earth_capture.utils import kepler, cart2kep, plot_env_2D, plot_env_3D, C3, cart2kep
 from scripts.utils import load_bodies, load_kernels
-
+			
 
 def first_lga(r, r_m, p, q):
 	""" Computes the Characteristic Energy that can be reached given the S/C state before the LGA and the 

@@ -19,7 +19,7 @@ for file in files_list:
 theta_list = np.sort(theta_list)
 
 print("Theta : {}".format(theta_list[2571]))
-print("Eps : {}".format(np.linspace(0, np.pi, 1000)[13] * 180 / np.pi))
+print("Eps : {}".format(np.linspace(0, np.pi, 2000)[13] * 180 / np.pi))
 
 
 error_matrices = np.zeros((len(theta_list), 2000, 2))

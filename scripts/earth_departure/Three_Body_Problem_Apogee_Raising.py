@@ -242,12 +242,12 @@ def thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps, eps_l, 
 
 if __name__ == '__main__':
 
-	theta = 119.62499					# Initial orbit orientation [°]
+	theta = 108.124998					# Initial orbit orientation [°]
 	Tmax  = 2 						    # Maximum thrust [N]
 	mass  = 2000 						# S/C initial mass [kg]
 
 	eps = 130	    					# Thrust arc semi-angle [°]
-	eps_l = 11.5315315315        		# Thrust arc semi-angle on last branch [°]
+	eps_l = 2.424342342342        		# Thrust arc semi-angle on last branch [°]
 	r_p = 300 	    					# Earth orbit perigee [km]
 	r_a = 30000     					# Earth orbit apogee  [km]
 

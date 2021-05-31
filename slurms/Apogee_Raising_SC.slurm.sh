@@ -2,7 +2,7 @@
 #SBATCH --nodes=1                                       			#### number of computation nodes
 #SBATCH --ntasks-per-node=24                            			#### number of tasks per node
 #SBATCH --time=24:00:00                                 			#### max run time
-#SBATCH --job-name=Earth-NEA                               			#### Job name
+#SBATCH --job-name=--                                    			#### Job name
 #SBATCH -o    slurm.%j.out                              			#### standard output STDOUT
 #SBATCH -e    slurm.%j.err                              			#### error output STDERR
 #SBATCH --partition=short                               			#### partition

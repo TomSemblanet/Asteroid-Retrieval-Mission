@@ -242,20 +242,20 @@ def thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps, eps_l, 
 
 if __name__ == '__main__':
 
-	theta = 119.62499
+	theta = 119.62499					# Initial orbit orientation [°]
 	Tmax  = 2 						    # Maximum thrust [N]
 	mass  = 2000 						# S/C initial mass [kg]
 
 	eps = 130	    					# Thrust arc semi-angle [°]
-	eps_l = 11.5315315315        # Thrust arc semi-angle on last branch [°]
-	r_p = 300 	    				# Earth orbit perigee [km]
+	eps_l = 11.5315315315        		# Thrust arc semi-angle on last branch [°]
+	r_p = 300 	    					# Earth orbit perigee [km]
 	r_a = 30000     					# Earth orbit apogee  [km]
 
 	trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)
 
 	trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
 
-	trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, eps_l*180/np.pi, theta*180/np.pi)
+	trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, eps_l*np.pi/180, theta*180/np.pi)
 
 	thrust_fx, thrust_add = thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps*np.pi/180, eps_l*np.pi/180, theta*np.pi/180, Tmax/1000)
 

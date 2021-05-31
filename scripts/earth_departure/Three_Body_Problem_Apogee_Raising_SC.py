@@ -153,7 +153,7 @@ if __name__ == '__main__':
 
 	trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
 
-	error_matrix = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta*180/np.pi)
+	error_matrix = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, theta*np.pi/180)
 
 	with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/error_matrices/' + str(theta), 'wb') as file:
 		pickle.dump(error_matrix, file)

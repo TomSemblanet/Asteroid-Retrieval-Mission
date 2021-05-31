@@ -242,31 +242,31 @@ def thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps, eps_l, 
 
 if __name__ == '__main__':
 
-	theta = 108.124998					# Initial orbit orientation [°]
-	Tmax  = 2 						    # Maximum thrust [N]
-	mass  = 2000 						# S/C initial mass [kg]
+	# theta = 108.124998					# Initial orbit orientation [°]
+	# Tmax  = 2 						    # Maximum thrust [N]
+	# mass  = 2000 						# S/C initial mass [kg]
 
-	eps = 130	    					# Thrust arc semi-angle [°]
-	eps_l = 2.424342342342        		# Thrust arc semi-angle on last branch [°]
-	r_p = 300 	    					# Earth orbit perigee [km]
-	r_a = 30000     					# Earth orbit apogee  [km]
+	# eps = 130	    					# Thrust arc semi-angle [°]
+	# eps_l = 1.1705852926463232     		# Thrust arc semi-angle on last branch [°]
+	# r_p = 300 	    					# Earth orbit perigee [km]
+	# r_a = 30000     					# Earth orbit apogee  [km]
 
-	trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)
+	# trajectory, time = moon_orbit_reaching(Tmax/1000, mass, r_p, r_a, eps*np.pi/180, theta*np.pi/180)
 
-	trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
+	# trajectory_ut, time_ut, trajectory_fx, time_fx = keep_last_branch(trajectory, time)
 
-	trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, eps_l*np.pi/180, theta*180/np.pi)
+	# trajectory_add, time_add = modify_last_arc(trajectory_ut, time_ut, Tmax/1000, mass, eps_l*np.pi/180, theta*np.pi/180)
 
-	thrust_fx, thrust_add = thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps*np.pi/180, eps_l*np.pi/180, theta*np.pi/180, Tmax/1000)
+	# thrust_fx, thrust_add = thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps*np.pi/180, eps_l*np.pi/180, theta*np.pi/180, Tmax/1000)
 
-	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/31-05-2021', 'wb') as file:
-		pickle.dump({'trajectory_fx': trajectory_fx, 'time_fx': time_fx, 'thrust_fx': thrust_fx, 'trajectory_add': trajectory_add, \
-			'time_add': time_add, 'thrust_add': thrust_add}, file)
+	# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/31-05-2021', 'wb') as file:
+	# 	pickle.dump({'trajectory_fx': trajectory_fx, 'time_fx': time_fx, 'thrust_fx': thrust_fx, 'trajectory_add': trajectory_add, \
+	# 		'time_add': time_add, 'thrust_add': thrust_add}, file)
 
-	# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/30-05-2021', 'rb') as file:
-	# 	results = pickle.load(file)
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/31-05-2021', 'rb') as file:
+		results = pickle.load(file)
 
-	# trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add = results.values()
+	trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add = results.values()
 
-	# assembly(trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add)
+	assembly(trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add)
 

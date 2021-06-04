@@ -51,13 +51,13 @@ tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
 # --------------
-m0 = 2000 + ast_mass
-Tmax = 0.5
+m0 = 10000 + ast_mass
+Tmax = 2
 Isp = 3000
 
 # 5 - Earth arrival 
 # -----------------
-vinf_max = 2.5e3
+vinf_max = 3.5e3
 
 # 5 - Optimization algorithm
 # --------------------------

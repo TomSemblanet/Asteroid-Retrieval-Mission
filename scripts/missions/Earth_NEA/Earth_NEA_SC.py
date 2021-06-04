@@ -60,8 +60,8 @@ tof_low = cst.YEAR2DAY * 0.50
 tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
-m0 = 2000
-Tmax = 0.5
+m0 = 10000
+Tmax = 2
 Isp = 3000
 
 # 5 - Velocity at infinity

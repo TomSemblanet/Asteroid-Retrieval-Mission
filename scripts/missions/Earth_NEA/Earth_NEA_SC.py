@@ -57,7 +57,7 @@ arr_upp = pk.epoch(nea_dpt_date - min_stay_time, 'mjd2000')
 
 # 3 - Time of flight
 tof_low = cst.YEAR2DAY * 0.50
-tof_upp = cst.YEAR2DAY * 3.00
+tof_upp = cst.YEAR2DAY * 4.00
 
 # 4 - Spacecraft
 m0 = 10000

@@ -63,8 +63,8 @@ tof_upp = cst.YEAR2DAY * 3.00
 
 # 4 - Spacecraft
 # --------------
-m0 = 2000
-Tmax = 0.5
+m0 = 10000
+Tmax = 2
 Isp = 3000
 
 # 5 - Earth arrival 

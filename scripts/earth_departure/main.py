@@ -22,275 +22,216 @@ from scripts.earth_departure.OCP_moon_flyby import MoonFlyBy
 from collocation.GL_V.src.optimization import Optimization
 
 
-# # Thrusters : 2 x EP-THR-2500/1000/20000
-# #				 	- 40   kW					Total Power
-# #					- 2000 mN 				    Total Thrust
-# #					- 2500 s 					Specific Impulse
+# Thrusters : 2 x EP-THR-2500/1000/20000
+#				 	- 40   kW					Total Power
+#					- 2000 mN 				    Total Thrust
+#					- 2500 s 					Specific Impulse
 
 
-# # Spacecraft characteristics
-# # --------------------------
-# Tmax = 2 	 # Maximum thrust [N]
-# mass = 2000  # Mass			  [kg]
+# 1 - Spacecraft characteristics definition
+# -----------------------------------------
+Tmax = 2 	 # Maximum thrust [N]
+mass = 10000 # Mass			  [kg]
 
-# # Trajectory parameters
-# # ---------------------
-# eps = 130	  # Thrust arc semi-angle [°]
-# r_p = 300     # Earth orbit perigee [km]
-# r_a = 30000   # Earth orbit apogee  [km]
+# 2 - Trajectory parameters definition
+# ------------------------------------
+eps = 130	  # Thrust arc semi-angle [°]
+r_p = 300     # Earth orbit perigee [km]
+r_a = 30000   # Earth orbit apogee  [km]
 
-# r_m = 300	  # S/C - Moon surface minimal distance [km]
+r_m = 300	  # S/C - Moon surface minimal distance [km]
 
-# p = 1		# Resonance parameters (Moon) [-]
-# q = 1		# Resonance parameters (S/C)  [-]
+p = 1		# Resonance parameters (Moon) [-]
+q = 1		# Resonance parameters (S/C)  [-]
 
-# # Outter trajectory characteristics
-# # ---------------------------------
-# tau = 15088.095521558473									  		 # Moon departure date (MJD2000)	
-# v_out = np.array([ 0.84168181508,   0.09065171796, -0.27474864627])  # Velocity at Moon departure in the ECLIPJ2000 frame [km/s]
-# v_inf = np.linalg.norm(v_out)										 # Excess velocity at Moon departure [km/s]
+# 3 - Loading of the outter trajectory characteristics
+# ----------------------------------------------------
+tau = 15088.095521558473									  		 # Moon departure date (MJD2000)	
+v_out = np.array([ 0.84168181508,   0.09065171796, -0.27474864627])  # Velocity at Moon departure in the ECLIPJ2000 frame [km/s]
+v_inf = np.linalg.norm(v_out)										 # Excess velocity at Moon departure [km/s]
 
-# # 1 - Computation of the Earth - Moon trajectory
-# # ----------------------------------------------
-# r_ar, t_ar, thrusts_intervals, last_apogee_pass_time = apogee_raising(mass=mass, T=Tmax/1000, eps=eps*np.pi/180, r_p=r_p, r_a=r_a, v_inf=v_inf)
-
-
-# # 2 - Extraction of informations about the S/C position at Moon encounter
-# # -----------------------------------------------------------------------
-# r_in = r_ar[:, -1]			 # Spacecraft state [km] | [km/s]
-# gamma = angle_w_Ox(r_in[:3]) # Angle between the (Ox) axis and the Spacecraft position w.r.t the Earth [rad]
+# 4 - Computation of the Earth - Moon trajectory
+# ----------------------------------------------
+r_ar, t_ar, thrusts_intervals, last_apogee_pass_time = apogee_raising(mass=mass, T=Tmax/1000, eps=eps*np.pi/180, r_p=r_p, r_a=r_a, v_inf=v_inf)
 
 
-# # 3 - Verification that one LGA (Lunar Gravity Assist) is sufficient 
-# # ------------------------------------------------------------------
-# one_lga_, phi_m, theta_m, phi_p, theta_p = rotation_feasibility(v_in=r_in[3:], v_out=v_out, tau=tau, r_m=r_m, gamma=gamma)
+# 5 - Extraction of informations about the S/C position at Moon encounter
+# -----------------------------------------------------------------------
+r_in = r_ar[:, -1]			 # Spacecraft state [km] | [km/s]
+gamma = angle_w_Ox(r_in[:3]) # Angle between the (Ox) axis and the Spacecraft position w.r.t the Earth [rad]
 
 
-# if one_lga_ == True:
+# 6 - Check if one LGA (Lunar Gravity Assist) is sufficient 
+# ---------------------------------------------------------
+one_lga_, phi_m, theta_m, phi_p, theta_p = rotation_feasibility(v_in=r_in[3:], v_out=v_out, tau=tau, r_m=r_m, gamma=gamma)
 
-# 	# Computation of the Earth - Moon trajectory and the beginning of the departure leg
-# 	trajectories, times = one_lga(v_inf=v_inf, phi_m=phi_m, theta_m=theta_m, phi_p=phi_p, theta_p=theta_p, gamma=gamma, r_ar=r_ar, t_ar=t_ar)
+
+if one_lga_ == True:
+
+	# Computation of the Earth - Moon trajectory and the beginning of the departure leg
+	trajectories, times = one_lga(v_inf=v_inf, phi_m=phi_m, theta_m=theta_m, phi_p=phi_p, theta_p=theta_p, gamma=gamma, r_ar=r_ar, t_ar=t_ar)
 	
 
-# 	# Pickle of the results in the Keplerian approximation
-# 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r', 'wb') as f:
-# 		pickle.dump({'trajectory': trajectories[0], 'time': times[0], 'thrusts_intervals': thrusts_intervals, 'mass': mass, \
-# 						'Tmax': Tmax/1000, 'last_apogee_pass_time': last_apogee_pass_time}, f)
+	# Pickle of the results in the Keplerian approximation
+	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r', 'wb') as f:
+		pickle.dump({'trajectory': trajectories[0], 'time': times[0], 'thrusts_intervals': thrusts_intervals, 'mass': mass, \
+						'Tmax': Tmax/1000, 'last_apogee_pass_time': last_apogee_pass_time}, f)
 
-# 	# Computation of the trajectory in the CR3BP frame
-# 	cr3bp, trajectory, time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
-# 		mass=mass, Tmax=Tmax/1000, t_last_ap_pass=last_apogee_pass_time)
+	# Computation of the trajectory in the CR3BP frame
+	cr3bp, trajectory, time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
+		mass=mass, Tmax=Tmax/1000, t_last_ap_pass=last_apogee_pass_time)
 
-# 	# Optimization of the CR3BP trajectory to make it feasible
-# 	# --------------------------------------------------------
-# 	problem = ApogeeRaising(cr3bp, mass, Tmax/1000, trajectory, time)
+	# Optimization of the CR3BP trajectory to make it feasible
+	# --------------------------------------------------------
+	problem = ApogeeRaising(cr3bp, mass, Tmax/1000, trajectory, time)
 
-# 	# Instantiation of the optimization
-# 	optimization = Optimization(problem=problem)
+	# Instantiation of the optimization
+	optimization = Optimization(problem=problem)
 
-# 	# Launch of the optimization
-# 	optimization.run()
+	# Launch of the optimization
+	optimization.run()
 
-# 	opt_trajectory = optimization.results['opt_st']
-# 	opt_controls = optimization.results['opt_ct']
-# 	opt_time = optimization.results['opt_tm']
+	opt_trajectory = optimization.results['opt_st']
+	opt_controls = optimization.results['opt_ct']
+	opt_time = optimization.results['opt_tm']
 
-# 	fig = plt.figure()
-# 	ax = fig.gca(projection='3d')
+	fig = plt.figure()
+	ax = fig.gca(projection='3d')
 
-# 	ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-# 	ax.plot([-cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-# 	ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
+	ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
+	ax.plot([-cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+	ax.plot([1-cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
-# 	plt.show()
+	plt.show()
 
 
-# else:
 
-# 	# We'll include one additional rotation corresponding to the second LGA
-# 	phi_1_m, theta_1_m = phi_m, theta_m
-# 	phi_2_p, theta_2_p = phi_p, theta_p
-# 	phi_1_p, theta_1_p = None, None
-# 	phi_2_m, theta_2_m = None, None
+else:
 
-# 	scd_lga_fnd = False
+	# We'll include one additional rotation corresponding to the second LGA
+	phi_1_m, theta_1_m = phi_m, theta_m
+	phi_2_p, theta_2_p = phi_p, theta_p
+	phi_1_p, theta_1_p = None, None
+	phi_2_m, theta_2_m = None, None
 
-# 	# Searching for the possible resonant (p:q) trajectories 
-# 	resonant_traj = resonant_trajectories(v_inf_mag=v_inf, phi_m=phi_1_m, theta_m=theta_1_m, phi_p=phi_2_p, theta_p=theta_2_p, \
-# 		r_m=r_m, gamma=gamma, p=p, q=q)
+	scd_lga_fnd = False
 
-# 	feasible_index = np.empty((0))
+	# 7 - Searching for the possible resonant (p:q) trajectories 
+	# ----------------------------------------------------------
+	resonant_traj = resonant_trajectories(v_inf_mag=v_inf, phi_m=phi_1_m, theta_m=theta_1_m, phi_p=phi_2_p, theta_p=theta_2_p, \
+		r_m=r_m, gamma=gamma, p=p, q=q)
 
-# 	for k, traj in enumerate(resonant_traj):
+	feasible_index = np.empty((0))
 
-# 		# Moon departure angles [-]
-# 		phi_1_p, theta_1_p = traj[:2]
+	for k, traj in enumerate(resonant_traj):
 
-# 		# Check if the trajectory allow to escape the Earth-Moon system with the good velocity
-# 		scd_lga, phi_2_m, theta_2_m, phi_2_p, theta_2_p = rotation_feasibility(v_in=traj[5:], v_out=v_out, tau=tau, r_m=r_m, gamma=gamma, print_=False)
+		# Moon departure angles [-]
+		phi_1_p, theta_1_p = traj[:2]
+
+		# Check if the trajectory allow to escape the Earth-Moon system with the good velocity
+		scd_lga, phi_2_m, theta_2_m, phi_2_p, theta_2_p = rotation_feasibility(v_in=traj[5:], v_out=v_out, tau=tau, r_m=r_m, gamma=gamma, print_=False)
 		
-# 		if scd_lga == True: 
-# 			feasible_index = np.append(feasible_index, k)
-# 			scd_lga_fnd = True
+		if scd_lga == True: 
+			feasible_index = np.append(feasible_index, k)
+			scd_lga_fnd = True
 
 
-# 	if scd_lga_fnd == True:
+	if scd_lga_fnd == True:
 
-# 		index = int(feasible_index[0])
+		index = int(feasible_index[0])
 
-# 		_, phi_2_m, theta_2_m, phi_2_p, theta_2_p = rotation_feasibility(v_in=resonant_traj[index, 5:], v_out=v_out, \
-# 			tau=tau, r_m=r_m, gamma=gamma, print_=False)
-
-
-# 		# Computation of the Apogee Raising and the Resonant trajectories in the CR3BP frame
-# 		trajectories, times = two_lga(v_inf=v_inf, phi_1_m=phi_1_m, theta_1_m=theta_1_m, phi_1_p=phi_1_p, theta_1_p=theta_1_p, phi_2_m=phi_2_m, theta_2_m=theta_2_m, \
-# 			phi_2_p=phi_2_p, theta_2_p=theta_2_p, p=p, q=q, gamma=gamma, r_ar=r_ar, t_ar=t_ar)
+		_, phi_2_m, theta_2_m, phi_2_p, theta_2_p = rotation_feasibility(v_in=resonant_traj[index, 5:], v_out=v_out, \
+			tau=tau, r_m=r_m, gamma=gamma, print_=False)
 
 
-
-# 		# Computation of the Moon-Moon leg trajectory in the CR3BP frame
-# 		moon_moon_cr3bp, moon_moon_trajectory, moon_moon_time = CR3BP_moon_moon(trajectories[1].copy(), times[1].copy())
-
-# 		# Optimization of the CR3BP Moon-Moon trajectory to make it feasible
-# 		moon_moon_problem = MoonMoonLeg(moon_moon_cr3bp, mass, Tmax/1000, moon_moon_trajectory, moon_moon_time)
-
-# 		# Instantiation of the optimization
-# 		optimization = Optimization(problem=moon_moon_problem)
-
-# 		# Launch of the optimization
-# 		optimization.run()
-
-# 		opt_trajectory = optimization.results['opt_st']
-# 		opt_controls = optimization.results['opt_ct']
-# 		opt_time = optimization.results['opt_tm']
-
-# 		fig = plt.figure()
-# 		ax = fig.gca(projection='3d')
-
-# 		ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-# 		ax.plot([ -moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-# 		ax.plot([1-moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
-
-# 		plt.show()
+		# Computation of the Apogee Raising and the Resonant trajectories in the CR3BP frame
+		trajectories, times = two_lga(v_inf=v_inf, phi_1_m=phi_1_m, theta_1_m=theta_1_m, phi_1_p=phi_1_p, theta_1_p=theta_1_p, phi_2_m=phi_2_m, theta_2_m=theta_2_m, \
+			phi_2_p=phi_2_p, theta_2_p=theta_2_p, p=p, q=q, gamma=gamma, r_ar=r_ar, t_ar=t_ar)
 
 
-# 		# Conversion of the moon-moon leg states in the ECI frame
-# 		# -------------------------------------------------------
 
-# 		moon_moon_trajectory = np.zeros(shape=(6, opt_trajectory.shape[1]))
-# 		moon_moon_time = opt_time * moon_moon_cr3bp.T
-# 		moon_moon_thrust = opt_controls[0] * moon_moon_cr3bp.L / moon_moon_cr3bp.T**2
+		# 8 - Computation of the Moon-Moon leg trajectory in the CR3BP frame
+		# --------------------------------------------------------------
+		moon_moon_cr3bp, moon_moon_trajectory, moon_moon_time = CR3BP_moon_moon(trajectories[1].copy(), times[1].copy())
 
-# 		for k, t in enumerate(opt_time):
-# 			moon_moon_trajectory[:, k] = moon_moon_cr3bp.syn2eci(t, opt_trajectory[:-1, k])
-# 			moon_moon_trajectory[:3, k] *= moon_moon_cr3bp.L
-# 			moon_moon_trajectory[3:, k] *= moon_moon_cr3bp.V
+		# 9 - Optimization of the CR3BP Moon-Moon trajectory to make it feasible
+		# ----------------------------------------------------------------------
+		moon_moon_problem = MoonMoonLeg(moon_moon_cr3bp, mass, Tmax/1000, moon_moon_trajectory, moon_moon_time)
 
-# 		fig = plt.figure()
-# 		ax = fig.gca(projection='3d')
+		# Instantiation of the optimization
+		optimization = Optimization(problem=moon_moon_problem)
 
-# 		ax.plot(trajectories[0][0], trajectories[0][1], trajectories[0][2], '-', color='blue', linewidth=1)
-# 		ax.plot(moon_moon_trajectory[0], moon_moon_trajectory[1], moon_moon_trajectory[2], '-', color='red', linewidth=1)
+		# Launch of the optimization
+		optimization.run()
 
-# 		plot_env_3D(ax)
-# 		plt.show()
+		opt_trajectory = optimization.results['opt_st']
+		opt_controls = optimization.results['opt_ct']
+		opt_time = optimization.results['opt_tm']
 
+		fig = plt.figure()
+		ax = fig.gca(projection='3d')
 
-# 		# Construction of the Moon-Moon leg thrust intervals
-# 		moon_moon_thrust_intervals = list()
+		ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
+		ax.plot([ -moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
+		ax.plot([1-moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
 
-# 		thrust_ON = False
-# 		t_i, t_f = 0, 0
-
-# 		for k, t in enumerate(moon_moon_time):
-# 			if (moon_moon_thrust[k] > 1e-3 and thrust_ON == False):
-# 				thrust_ON = True
-# 				t_i = t
-
-# 			elif (moon_moon_thrust[k] < 1e-3 and thrust_ON == True):
-# 				thrust_ON = False
-# 				t_f = t
-# 				moon_moon_thrust_intervals.append([t_i, t_f])
-
-# 			elif (t == moon_moon_time[-1] and thrust_ON == True):
-# 				thrust_ON = False
-# 				t_f = t
-# 				moon_moon_thrust_intervals.append([t_i, t_f])
-
-# 		moon_moon_thrust_intervals = np.array(moon_moon_thrust_intervals)
-
-# 		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/results/earth_departure', 'wb') as file:
-# 			pickle.dump({'apogee_raising_trajectory': trajectories[0], 'apogee_raising_time': times[0], 'apogee_raising_thrust_intervals':thrusts_intervals, \
-# 					    'moon_moon_trajectory': trajectories[1], 'moon_moon_time': times[1], 'moon_moon_thrust_intervals': moon_moon_thrust_intervals, \
-# 					    'outter_trajectory': trajectories[2], 'outter_time': times[2], 'Tmax': Tmax}, file)
+		plt.show()
 
 
-	# 	# Computation of the trajectory in the CR3BP frame
-	# 	apogee_raising_cr3bp, apogee_raising_trajectory, apogee_raising_time, \
-	# 	fixed_trajectory, fixed_time = CR3BP_orbit_raising(trajectory=trajectories[0], time=times[0], thrusts_intervals=thrusts_intervals, \
-	# 	mass=mass, Tmax=Tmax/1000, t_last_ap_pass=last_apogee_pass_time)
+		# 10 - Conversion of the moon-moon leg states in the ECI frame
+		# ------------------------------------------------------------
 
-	# 	moon_moon_cr3bp, moon_moon_trajectory, moon_moon_time = CR3BP_moon_moon(trajectories[1], times[1])
+		moon_moon_trajectory = np.zeros(shape=(6, opt_trajectory.shape[1]))
+		moon_moon_time = opt_time * moon_moon_cr3bp.T
+		moon_moon_thrust = opt_controls[0] * moon_moon_cr3bp.L / moon_moon_cr3bp.T**2
 
-	# 	# Optimization of the CR3BP Apogee Raising trajectory to make it feasible
-	# 	# -----------------------------------------------------------------------
-	# 	apogee_raising_problem = ApogeeRaising(apogee_raising_cr3bp, mass, Tmax/1000, apogee_raising_trajectory, apogee_raising_time)
+		for k, t in enumerate(opt_time):
+			moon_moon_trajectory[:, k] = moon_moon_cr3bp.syn2eci(t, opt_trajectory[:-1, k])
+			moon_moon_trajectory[:3, k] *= moon_moon_cr3bp.L
+			moon_moon_trajectory[3:, k] *= moon_moon_cr3bp.V
 
-	# 	# Instantiation of the optimization
-	# 	optimization = Optimization(problem=apogee_raising_problem)
+		fig = plt.figure()
+		ax = fig.gca(projection='3d')
 
-	# 	# Launch of the optimization
-	# 	optimization.run()
+		ax.plot(trajectories[0][0], trajectories[0][1], trajectories[0][2], '-', color='blue', linewidth=1)
+		ax.plot(moon_moon_trajectory[0], moon_moon_trajectory[1], moon_moon_trajectory[2], '-', color='red', linewidth=1)
 
-	# 	opt_trajectory = optimization.results['opt_st']
-
-	# 	fig = plt.figure()
-	# 	ax = fig.gca(projection='3d')
-
-	# 	ax.plot(fixed_trajectory[0], fixed_trajectory[1], fixed_trajectory[2], '-', color='blue', linewidth=1)
-	# 	ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-	# 	ax.plot([-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-	# 	ax.plot([1-apogee_raising_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
-
-	# 	plt.show()
-
-	# 	# Conversion of the Thrust in kN
-	# 	optimization.results['opt_ct'][0] *= apogee_raising_cr3bp.T**2 / apogee_raising_cr3bp.L
+		plot_env_3D(ax)
+		plt.show()
 
 
-	# 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/a_r_opt', 'wb') as f:
-	# 		pickle.dump({'cr3bp': apogee_raising_cr3bp, 'trajectory': optimization.results['opt_st'], 'time': optimization.results['opt_tm'], \
-	# 			'thrusts': optimization.results['opt_ct'], 'fixed_trajectory': fixed_trajectory, 'fixed_time': fixed_time, \
-	# 			'thrusts_intervals': thrusts_intervals, 'mass': mass, 'Tmax': Tmax/1000}, f)
+		# 11 - Construction of the Moon-Moon leg thrust intervals
+		# -------------------------------------------------------
+		moon_moon_thrust_intervals = list()
 
-	# 	# Optimization of the CR3BP Moon-Moon trajectory to make it feasible
-	# 	# ------------------------------------------------------------------
-	# 	moon_moon_problem = MoonMoonLeg(moon_moon_cr3bp, mass, Tmax/1000, moon_moon_trajectory, moon_moon_time)
+		thrust_ON = False
+		t_i, t_f = 0, 0
 
-	# 	# Instantiation of the optimization
-	# 	optimization = Optimization(problem=moon_moon_problem)
+		for k, t in enumerate(moon_moon_time):
+			if (moon_moon_thrust[k] > 1e-3 and thrust_ON == False):
+				thrust_ON = True
+				t_i = t
 
-	# 	# Launch of the optimization
-	# 	optimization.run()
+			elif (moon_moon_thrust[k] < 1e-3 and thrust_ON == True):
+				thrust_ON = False
+				t_f = t
+				moon_moon_thrust_intervals.append([t_i, t_f])
 
-	# 	opt_trajectory = optimization.results['opt_st']
+			elif (t == moon_moon_time[-1] and thrust_ON == True):
+				thrust_ON = False
+				t_f = t
+				moon_moon_thrust_intervals.append([t_i, t_f])
 
-	# 	fig = plt.figure()
-	# 	ax = fig.gca(projection='3d')
+		moon_moon_thrust_intervals = np.array(moon_moon_thrust_intervals)
 
-	# 	ax.plot(opt_trajectory[0], opt_trajectory[1], opt_trajectory[2], '-', color='blue', linewidth=1)
-	# 	ax.plot([ -moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=5)
-	# 	ax.plot([1-moon_moon_cr3bp.mu], [0], [0], 'o', color='black', markersize=2)
-
-	# 	plt.show()
-
-	# 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/moon_moon_opt', 'wb') as f:
-	# 		pickle.dump({'cr3bp': moon_moon_cr3bp, 'trajectory': optimization.results['opt_st'], 'time': optimization.results['opt_tm'], \
-	# 		 'thrusts': optimization.results['opt_ct'], 'mass': mass, 'Tmax': Tmax/1000}, f)
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/results/earth_departure', 'wb') as file:
+			pickle.dump({'apogee_raising_trajectory': trajectories[0], 'apogee_raising_time': times[0], 'apogee_raising_thrust_intervals':thrusts_intervals, \
+					    'moon_moon_trajectory': trajectories[1], 'moon_moon_time': times[1], 'moon_moon_thrust_intervals': moon_moon_thrust_intervals, \
+					    'outter_trajectory': trajectories[2], 'outter_time': times[2], 'Tmax': Tmax}, file)
 
 
-	# else:
-	# 	print("No second LGA found with this resonance")
+	else:
+		print("No second LGA found with this resonance")
 
 
 
@@ -309,13 +250,3 @@ if __name__ == '__main__':
 	plot_earth_departure(apogee_raising_trajectory, apogee_raising_time, apogee_raising_thrust_intervals, \
 						 moon_moon_trajectory, moon_moon_time, moon_moon_thrust_intervals, \
 						 outter_trajectory, outter_time, Tmax)
-
-	# sum_ = 0
-	# for interv in np.vstack((apogee_raising_thrust_intervals, moon_moon_thrust_intervals)):
-	# 	sum_ += interv[1] - interv[0]
-
-	# print(moon_moon_thrust_intervals[-1, 1] / 86400)
-
-	# print(2 / 2000 * sum_)
-
-

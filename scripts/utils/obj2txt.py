@@ -22,4 +22,4 @@ if __name__ == '__main__':
 		txt_file_nm = '/home/cesure/t.semblanet/Asteroid-Retrieval-Mission/local/txt_files/' + str(int(x[0])) + '.txt'
 	else:
 		txt_file_nm = '/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/txt_files/' + str(int(x[0])) + '.txt'
-	np.savetxt(txt_file_nm, x, fmt='%.50f')
+	np.savetxt(txt_file_nm, x, fmt='%.100f')

@@ -89,7 +89,7 @@ else:
 		udp, population = double_segments_Earth_NEA(udp_=udp, population_=population)
 
 	# Algorithm used to correct the dynamic changes
-	algorithm = load_sqp.load('ipopt', max_iter=100)
+	algorithm = load_sqp.load('ipopt', max_iter=200)
 
 	population = algorithm.evolve(population)
 
@@ -99,9 +99,9 @@ else:
 	if udp.get_deltaV(x) < dV_max:
 		# Storage
 		if 'NEA_Earth' in folder_path:
-			save(host='pando', mission='NEA_Earth', udp=udp, population=population, additional_sign='_doubled')
+			save(host='pando', mission='NEA_Earth', udp=udp, population=population, additional_sign='_quadrupled')
 		elif 'Earth_NEA' in folder_path:
-			save(host='pando', mission='Earth_NEA', udp=udp, population=population, additional_sign='_doubled')
+			save(host='pando', mission='Earth_NEA', udp=udp, population=population, additional_sign='_quadrupled')
 	
 	else:
 		# - * - * - * - * - * - * 

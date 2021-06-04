@@ -38,7 +38,7 @@ class MoonMoonLeg(Problem):
 		self.Tmax /= self.cr3bp.L / self.cr3bp.T**2   # Thrusts dimensioning
 
 		self.g0 = 9.80665e-3 / (self.cr3bp.L / self.cr3bp.T**2)
-		self.Isp = 2000 / self.cr3bp.T
+		self.Isp = 3000 / self.cr3bp.T
 
 	def set_boundaries(self):
 		""" Setting of the states, controls, free-parameters, initial and final times

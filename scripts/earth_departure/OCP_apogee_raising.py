@@ -5,19 +5,21 @@ import matplotlib.pyplot as plt
 
 import cppad_py
 
+from scipy.interpolate import interp1d
+
 from collocation.GL_V.src.problem import Problem
 from collocation.GL_V.src.optimization import Optimization
 
 class ApogeeRaising(Problem):
 	""" CR3BP : Moon-Moon Leg optimal control problem """
 
-	def __init__(self, cr3bp, mass0, Tmax, trajectory, time):
+	def __init__(self, cr3bp, mass0, Tmax, trajectory, time, target_d, target_v):
 		""" Initialization of the `GoddardRocket` class """
 		n_states = 7
 		n_controls = 4
 		n_st_path_con = 0
 		n_ct_path_con = 1
-		n_event_con = 13
+		n_event_con = 9
 		n_f_par = 0
 		n_nodes = 200
 
@@ -32,6 +34,9 @@ class ApogeeRaising(Problem):
 
 		self.trajectory = trajectory # [L] | [L/T]
 		self.time = time # [T]
+
+		self.target_d = target_d # [L]
+		self.target_v = target_v # [L/T]
 
 	def set_constants(self):
 		""" Setting of the problem constants """
@@ -92,7 +97,7 @@ class ApogeeRaising(Problem):
 
 
 		# Initial and final times boundaries
-		self.low_bnd.ti = self.upp_bnd.ti = self.time[0]
+		self.low_bnd.ti = self.upp_bnd.ti = self.time[ 0]
 		self.low_bnd.tf = self.upp_bnd.tf = self.time[-1]
 
 
@@ -110,15 +115,10 @@ class ApogeeRaising(Problem):
 		events[3] = vx_i - self.trajectory[3, 0]
 		events[4] = vy_i - self.trajectory[4, 0]
 		events[5] = vz_i - self.trajectory[5, 0]
+		events[6] = m_i - self.mass0
 
-		events[6]  = x_f  - self.trajectory[0, -1]
-		events[7]  = y_f  - self.trajectory[1, -1]
-		events[8]  = z_f  - self.trajectory[2, -1]
-		events[9]  = vx_f - self.trajectory[3, -1]
-		events[10] = vy_f - self.trajectory[4, -1]
-		events[11] = vz_f - self.trajectory[5, -1]
-
-		events[12] = m_i - self.mass0
+		events[7] = ((x_f-(1-self.cr3bp.mu))**2 + y_f**2 + z_f**2)**(0.5) - self.target_d
+		events[8] = (vx_f**2 + vy_f**2 + vz_f**2)**(0.5) - self.target_v
 
 		return events
 
@@ -131,15 +131,10 @@ class ApogeeRaising(Problem):
 		self.low_bnd.event[3] = self.upp_bnd.event[3] = 0
 		self.low_bnd.event[4] = self.upp_bnd.event[4] = 0
 		self.low_bnd.event[5] = self.upp_bnd.event[5] = 0
-
 		self.low_bnd.event[6] = self.upp_bnd.event[6] = 0
+
 		self.low_bnd.event[7] = self.upp_bnd.event[7] = 0
 		self.low_bnd.event[8] = self.upp_bnd.event[8] = 0
-		self.low_bnd.event[9] = self.upp_bnd.event[9] = 0
-		self.low_bnd.event[10] = self.upp_bnd.event[10] = 0
-		self.low_bnd.event[11] = self.upp_bnd.event[11] = 0
-
-		self.low_bnd.event[12] = self.upp_bnd.event[12] = 0
 
 	def path_constraints(self, states, controls, states_add, controls_add, controls_col, f_par):
 
@@ -203,29 +198,31 @@ class ApogeeRaising(Problem):
 		""" Setting of the initial guess for the states, controls, free-parameters
 						and time grid """
 
-		# Sampling of the states and time
-		time_smpld = np.zeros((6, self.prm['n_nodes']))
-		trajectory_smpld = np.zeros((1, self.prm['n_nodes']))
+		# Interpolation of the states
+		f_x = interp1d(self.time, self.trajectory[0])
+		f_y = interp1d(self.time, self.trajectory[1])
+		f_z = interp1d(self.time, self.trajectory[2])
 
-		step = int(len(self.time) / self.prm['n_nodes']) + 1
-
-		time_smpld = self.time[0::step]
-		trajectory_smpld = self.trajectory[:, 0::step]
+		f_vx = interp1d(self.time, self.trajectory[3])
+		f_vy = interp1d(self.time, self.trajectory[4])
+		f_vz = interp1d(self.time, self.trajectory[5])
 
 		# Time
-		self.initial_guess.time = np.linspace(time_smpld[0], time_smpld[-1], self.prm['n_nodes'])
+		self.initial_guess.time = np.linspace(self.time[0], self.time[-1], self.prm['n_nodes'])
 
 		# States
 		self.initial_guess.states = np.ndarray(
 			shape=(self.prm['n_states'], self.prm['n_nodes']))
 
-		self.initial_guess.states[0] = trajectory_smpld[0]
-		self.initial_guess.states[1] = trajectory_smpld[1]
-		self.initial_guess.states[2] = trajectory_smpld[2]
+		self.initial_guess.states[0] = f_x(self.initial_guess.time)
+		self.initial_guess.states[1] = f_y(self.initial_guess.time)
+		self.initial_guess.states[2] = f_z(self.initial_guess.time)
 
-		self.initial_guess.states[3] = trajectory_smpld[3]
-		self.initial_guess.states[4] = trajectory_smpld[4]
-		self.initial_guess.states[5] = trajectory_smpld[5]
+		self.initial_guess.states[3] = f_vx(self.initial_guess.time)
+		self.initial_guess.states[4] = f_vy(self.initial_guess.time)
+		self.initial_guess.states[5] = f_vz(self.initial_guess.time)
+
+		x_f, y_f, z_f, vx_f, vy_f, vz_f, _ = self.initial_guess.states[:, -1]
 
 		self.initial_guess.states[6] = self.mass0 * np.ones(self.prm['n_nodes'])
 

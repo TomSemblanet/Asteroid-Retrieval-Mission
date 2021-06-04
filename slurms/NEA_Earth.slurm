@@ -17,7 +17,7 @@ module load python/3.7
 source deactivate
 source activate asteroids
 
-cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
-####cd /home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission
+# cd /home/cesure/t.semblanet/Asteroid-Retrieval-Mission
+cd /home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission
 
 mpiexec -n  python -m scripts.missions.NEA_Earth.NEA_Earth_SC <date> <dV_max>

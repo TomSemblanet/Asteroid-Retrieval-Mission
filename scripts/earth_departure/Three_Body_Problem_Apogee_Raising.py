@@ -15,6 +15,9 @@ from scripts.earth_departure.utils import cart2sph, sph2cart, cr3bp_moon_approac
 from scripts.earth_departure.cr3bp import CR3BP
 from scripts.earth_departure import constants as cst
 
+from scripts.earth_departure.OCP_apogee_raising import ApogeeRaising
+from collocation.GL_V.src.optimization import Optimization
+
 
 def moon_approach(t, r, Tmax, mass, eps, theta):
 	""" Raises an event if the S/C approach the Moon's orbit at less than ``dist`` km """
@@ -188,6 +191,7 @@ def assembly(trajectory_prv, time_prv, thrust_prv, trajectory_add, time_add, thr
 	for k, t in enumerate(syn_time):
 		syn_trajectory[:, k] = cr3bp.eci2syn(t, np.concatenate((eci_trajectory[:3, k]/cr3bp.L, eci_trajectory[3:, k]/cr3bp.V)) )
 
+	print("{} km/s".format(np.linalg.norm(syn_trajectory[3:, -1]) * V))
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
@@ -198,6 +202,8 @@ def assembly(trajectory_prv, time_prv, thrust_prv, trajectory_add, time_add, thr
 
 	plt.grid()
 	plt.show()
+
+	return eci_trajectory, eci_time, syn_trajectory, syn_time, thrusts, cr3bp
 
 
 def thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps, eps_l, theta, Tmax):
@@ -242,12 +248,12 @@ def thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps, eps_l, 
 
 if __name__ == '__main__':
 
-	# theta = 108.124998					# Initial orbit orientation [°]
+	# theta = 70.333328					# Initial orbit orientation [°]
 	# Tmax  = 2 						    # Maximum thrust [N]
 	# mass  = 2000 						# S/C initial mass [kg]
 
 	# eps = 130	    					# Thrust arc semi-angle [°]
-	# eps_l = 1.1705852926463232     		# Thrust arc semi-angle on last branch [°]
+	# eps_l = 47.903951975     		# Thrust arc semi-angle on last branch [°]
 	# r_p = 300 	    					# Earth orbit perigee [km]
 	# r_a = 30000     					# Earth orbit apogee  [km]
 
@@ -259,14 +265,73 @@ if __name__ == '__main__':
 
 	# thrust_fx, thrust_add = thrust_profil(trajectory_fx, time_fx, trajectory_add, time_add, eps*np.pi/180, eps_l*np.pi/180, theta*np.pi/180, Tmax/1000)
 
+	# eci_trajectory, eci_time, syn_trajectory, syn_time, thrusts, cr3bp = assembly(trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add)
+
 	# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/31-05-2021', 'wb') as file:
-	# 	pickle.dump({'trajectory_fx': trajectory_fx, 'time_fx': time_fx, 'thrust_fx': thrust_fx, 'trajectory_add': trajectory_add, \
-	# 		'time_add': time_add, 'thrust_add': thrust_add}, file)
+	# 	pickle.dump({'eci_trajectory': eci_trajectory, 'eci_time': eci_time, 'syn_trajectory': syn_trajectory, 'syn_time': syn_time, \
+	# 		'thrusts': thrusts, 'cr3bp': cr3bp}, file)
 
 	with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/orbit_raising_tests/31-05-2021', 'rb') as file:
 		results = pickle.load(file)
 
-	trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add = results.values()
+	eci_trajectory, eci_time, syn_trajectory, syn_time, thrusts, cr3bp = results.values()
 
-	assembly(trajectory_fx, time_fx, thrust_fx, trajectory_add, time_add, thrust_add)
+
+	index = eci_time.shape[0] - 14200
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(eci_trajectory[0, index:], eci_trajectory[1, index:], '-', color='blue', linewidth=1)
+	plot_env_2D(ax)
+
+	plt.grid()
+	plt.show()
+
+	v_f_tgt = np.linalg.norm(syn_trajectory[3:, -1])
+	apogee_raising = ApogeeRaising(cr3bp, 2000, 2/1000, syn_trajectory[:, index:], syn_time[index:], 20000/cr3bp.L, v_f_tgt)
+
+	# Instantiation of the optimization
+	optimization = Optimization(problem=apogee_raising)
+
+	# Launch of the optimization
+	optimization.run()
+
+	opt_syn_trajectory = optimization.results['opt_st']
+	opt_controls = optimization.results['opt_ct']
+	opt_syn_time = optimization.results['opt_tm']
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(opt_syn_trajectory[0], opt_syn_trajectory[1], '-', color='blue', linewidth=1)
+	ax.plot([ -cr3bp.mu], [0], 'o', color='black', markersize=5)
+	ax.plot([1-cr3bp.mu], [0], 'o', color='black', markersize=2)
+
+	ax.set_xlim(-1, 1)
+	ax.set_ylim(-1, 1)
+
+	plt.grid()
+	plt.show()	
+
+	opt_eci_trajectory = np.zeros(shape=opt_syn_trajectory.shape)
+	opt_eci_time = np.zeros(shape=opt_syn_time.shape)
+
+	for k, t in enumerate(opt_syn_time):
+
+		opt_eci_trajectory[:-1, k] = cr3bp.syn2eci(t, opt_syn_trajectory[:-1, k])
+		opt_eci_trajectory[:3, k] *= cr3bp.L 
+		opt_eci_trajectory[3:, k] *= cr3bp.V
+		opt_eci_trajectory[-1, k] = opt_syn_trajectory[-1, k]
+
+		opt_eci_time = t*cr3bp.T
+
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(opt_eci_trajectory[0], opt_eci_trajectory[1], '-', color='blue', linewidth=1)
+	plot_env_2D(ax)
+
+	plt.grid()
+	plt.show()	
 

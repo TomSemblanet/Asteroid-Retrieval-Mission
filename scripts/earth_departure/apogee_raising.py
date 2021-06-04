@@ -153,7 +153,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 	f2 = 1
 
 	print("Searching for the last Thrust arc angle :\tabsolute error (km/s)\tangle (°)")
-	while abs(f2) > 1e-4:
+	while abs(f2) > 1e-3:
 		eps2 = eps1 - (eps1 - eps0) / (f1 - f0) * f1
 
 		f2 = f(r0, t_span, t_eval, mass, T, eps2, v_inf)	

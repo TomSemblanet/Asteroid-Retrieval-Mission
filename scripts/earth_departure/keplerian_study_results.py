@@ -75,7 +75,7 @@ def two_lga(v_inf, phi_1_m, theta_1_m, phi_1_p, theta_1_p, phi_2_m, theta_2_m, p
 
 	# Propagation
 	sol_1 = solve_ivp(fun=kepler, y0=np.concatenate((r_ar[:3, -1], v_out_1)), t_span=t_span_1, t_eval=t_eval_1, rtol=1e-12, atol=1e-12)
-	sol_2 = solve_ivp(fun=kepler, y0=np.concatenate((r_ar[:3, -1], v_out_2)), t_span=t_span_2, t_eval=t_eval_2, rtol=1e-12, atol=1e-12)
+	sol_2 = solve_ivp(fun=kepler, y0=np.concatenate((sol_1.y[:3, -1], v_out_2)), t_span=t_span_2, t_eval=t_eval_2, rtol=1e-12, atol=1e-12)
 
 
 	# Rotation of the frame so that at t=tf, the (Ox) ax is following the Earth-Moon vector

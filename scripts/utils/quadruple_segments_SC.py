@@ -53,7 +53,7 @@ with open('/'.join([folder_path, files[min(rank, len(files)-1)]]), 'rb') as file
 	print("<{}> Opened file : {}".format(rank, '/'.join([folder_path, files[min(rank, len(files)-1)]])), flush=True)
 
 # Algorithm used to correct the dynamic changes
-algorithm = load_sqp.load('ipopt')
+algorithm = load_sqp.load('ipopt', max_iter=300)
 
 # First double
 if 'NEA_Earth' in folder_path:
@@ -87,6 +87,9 @@ else:
 		udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
 	elif 'Earth_NEA' in folder_path:
 		udp, population = double_segments_Earth_NEA(udp_=udp, population_=population)
+
+	# Algorithm used to correct the dynamic changes
+	algorithm = load_sqp.load('ipopt', max_iter=100)
 
 	population = algorithm.evolve(population)
 

@@ -39,7 +39,7 @@ with open(file_path, 'rb') as file:
 	data = pkl.load(file)
 
 # Algorithm used to correct the dynamic changes
-algorithm = load_sqp.load('ipopt')
+algorithm = load_sqp.load('ipopt', max_iter=300)
 
 # First double
 if 'NEA_Earth' in file_path:
@@ -70,7 +70,10 @@ else:
 
 	# - * - * - * - * - * - * - * - * - 
 	print("> 2nd phase", flush=True)
-	# - * - * - * - * - * - * - * - * - 
+	# - * - * - * - * - * - * - * - * -
+
+	# Algorithm used to correct the dynamic changes
+	algorithm = load_sqp.load('ipopt', max_iter=200) 
 
 	population = algorithm.evolve(population)
 

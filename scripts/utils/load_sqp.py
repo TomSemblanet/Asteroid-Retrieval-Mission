@@ -1,6 +1,6 @@
 import pygmo as pg
 
-def load(name):
+def load(name, max_iter=300):
 	""" Loads an SQP algorithm (either SLSQP or IPOPT) and return it as 
 		a UDA (User-Defined Algorithm) usable by pygmo.algorithm method
 
@@ -20,7 +20,7 @@ def load(name):
 		uda = pg.nlopt('slsqp')
 		uda.xtol_rel = 0
 		uda.ftol_rel = 0
-		uda.maxeval = 200
+		uda.maxeval = max_iter
 		algo = pg.algorithm(uda)
 		algo.set_verbosity(1)
 		return algo
@@ -29,7 +29,7 @@ def load(name):
 		uda = pg.ipopt() 
 		uda.set_integer_option("print_level", 5)
 		uda.set_integer_option("acceptable_iter", 4)
-		uda.set_integer_option("max_iter", 300)
+		uda.set_integer_option("max_iter", max_iter)
 
 		uda.set_numeric_option("tol", 1e-5)
 		uda.set_numeric_option("dual_inf_tol", 1e-5)

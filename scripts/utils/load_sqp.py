@@ -27,7 +27,7 @@ def load(name):
 
 	elif name == "ipopt":
 		uda = pg.ipopt() 
-		uda.set_integer_option("print_level", 0)
+		uda.set_integer_option("print_level", 5)
 		uda.set_integer_option("acceptable_iter", 4)
 		uda.set_integer_option("max_iter", 300)
 

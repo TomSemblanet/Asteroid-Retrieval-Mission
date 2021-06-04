@@ -50,7 +50,7 @@ else:
 	print("Error.", flush=True)
 
 # - * - * - * - * - * - * - * - * - 
-print("<{}> 1st phase".format(rank), flush=True)
+print("> 1st phase", flush=True)
 # - * - * - * - * - * - * - * - * - 
 
 population = algorithm.evolve(population)
@@ -69,7 +69,7 @@ else:
 		udp, population = double_segments_Earth_NEA(udp_=udp, population_=population)
 
 	# - * - * - * - * - * - * - * - * - 
-	print("<{}> 2nd phase".format(rank), flush=True)
+	print("> 2nd phase", flush=True)
 	# - * - * - * - * - * - * - * - * - 
 
 	population = algorithm.evolve(population)

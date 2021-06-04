@@ -49,6 +49,10 @@ elif 'Earth_NEA' in file_path:
 else:
 	print("Error.", flush=True)
 
+# - * - * - * - * - * - * - * - * - 
+print("<{}> 1st phase".format(rank), flush=True)
+# - * - * - * - * - * - * - * - * - 
+
 population = algorithm.evolve(population)
 
 # Recovery of the results
@@ -58,10 +62,15 @@ if udp.get_deltaV(x) >= dV_max:
 	print("Delta V too high.", flush=True)
 
 else:
+
 	if 'NEA_Earth' in file_path:
 		udp, population = double_segments_NEA_Earth(udp_=udp, population_=population)
 	elif 'Earth_NEA' in file_path:
 		udp, population = double_segments_Earth_NEA(udp_=udp, population_=population)
+
+	# - * - * - * - * - * - * - * - * - 
+	print("<{}> 2nd phase".format(rank), flush=True)
+	# - * - * - * - * - * - * - * - * - 
 
 	population = algorithm.evolve(population)
 

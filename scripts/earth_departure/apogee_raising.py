@@ -61,7 +61,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 
 	""" 
 
-	t_span = np.array([0, 365 * 86400])
+	t_span = np.array([0, 2 * 365 * 86400])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 
 	moon_reached.terminal = True
@@ -138,7 +138,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 
 	"""
 
-	t_span = np.array([0, 365 * 86400])
+	t_span = np.array([0, 2 * 365 * 86400])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 
 	# The propagation begins at the last apogee pass
@@ -213,7 +213,7 @@ def propagate_last_branch(r_ap, mass, T, eps_l):
 
 	"""
 
-	t_span = np.array([0, 365 * 86400])
+	t_span = np.array([0, 2 * 365 * 86400])
 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 
 	sol = solve_ivp(fun=kepler_thrust, y0=r_ap[:, -1], t_span=t_span, t_eval=t_eval, args=(mass, T, eps_l), events=(moon_reached, thrust_ignition), rtol=1e-12, atol=1e-12)

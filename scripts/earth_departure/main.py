@@ -224,6 +224,8 @@ else:
 
 		moon_moon_thrust_intervals = np.array(moon_moon_thrust_intervals)
 
+		# 12 - Pickle of the results
+		# --------------------------
 		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/results/earth_departure', 'wb') as file:
 			pickle.dump({'apogee_raising_trajectory': trajectories[0], 'apogee_raising_time': times[0], 'apogee_raising_thrust_intervals':thrusts_intervals, \
 					    'moon_moon_trajectory': trajectories[1], 'moon_moon_time': times[1], 'moon_moon_thrust_intervals': moon_moon_thrust_intervals, \

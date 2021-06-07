@@ -60,7 +60,7 @@ Tmax = 2
 Isp = 3000
 
 # 5 - Optimization algorithm
-algorithm = load_sqp.load('ipopt', max_iter=3)
+algorithm = load_sqp.load('ipopt', max_iter=300)
 
 # 6 - Problem
 udp = Earth2NEA(

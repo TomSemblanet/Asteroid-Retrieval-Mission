@@ -22,13 +22,14 @@ from datetime import date
 from mpi4py import MPI
 
 from data import constants as cst
+from data.spk_table import NAME2SPK
 from scripts.utils.post_process import post_process
 from scripts.utils import load_sqp, load_kernels, load_bodies
 from scripts.utils.pickle_results import save
 from scripts.target_determination.target_udp import Earth2NEA
 
 # Number of the script
-script_number = float(sys.argv[1])
+script_number = int(sys.argv[1])
 
 # Creation of the communicator 
 comm = MPI.COMM_WORLD
@@ -42,7 +43,8 @@ print("Rank <{}> : Run".format(rank), flush=True)
 load_kernels.load()
 
 # 2 - Load of the targets list
-asteroid = load_bodies.asteroid('2020 CD3')
+# print(list(NAME2SPK.keys())[(script_number-1)*24 + rank])
+asteroid = load_bodies.asteroid(list(NAME2SPK.keys())[(script_number-1)*24 + rank])
 
 # 3 - Arrival date 
 ad_low = pk.epoch_from_string('2025-01-01 00:00:00')
@@ -58,7 +60,7 @@ Tmax = 2
 Isp = 3000
 
 # 5 - Optimization algorithm
-algorithm = load_sqp.load('ipopt', max_iter=300)
+algorithm = load_sqp.load('ipopt', max_iter=3)
 
 # 6 - Problem
 udp = Earth2NEA(
@@ -84,11 +86,5 @@ x = population.get_x()[0]
 # -----------------
 dV = udp.get_deltaV(x)
 
-with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/target_determination/deltaV', 'a') as file:
-    file.write(dV)
-
-# # 11 - Pickle the results
-# # -----------------------
-# save(host='laptop', mission='Earth_NEA', udp=udp, population=population)
-
-
+with open('/home/dcas/yv.gary/SEMBLANET/Asteroid-Retrieval-Mission/local/target_determination/deltaV.txt', 'a') as file:
+    file.write(list(NAME2SPK.keys())[(script_number-1)*24 + rank] + ' ' + str(dV) + '\n')

@@ -20,7 +20,7 @@ def load(kernels=None):
 
 	# If no specific kernels are specified, we load the default kernels
 	if kernels is None:
-		kernels = ['asteroids.bsp', 'de405.bsp', 'de430.bsp']
+		kernels = ['asteroids.bsp', 'de405.bsp', 'de430.bsp', 'targets.bsp']
 
 	# Load the kernels
 	for k_ in kernels:

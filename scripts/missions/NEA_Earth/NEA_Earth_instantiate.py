@@ -68,7 +68,7 @@ vinf_max = 3.5e3
 
 # 6 - Problem
 # -----------
-udp = NEA2Earth(nea=ast, n_seg=120, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
+udp = NEA2Earth(nea=ast, n_seg=50, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)
 problem = pg.problem(udp)
 

@@ -212,9 +212,9 @@ def get_states(udp, population, N, plot):
 		fig = plt.figure()
 		ax = fig.gca(projection='3d')
 
-		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=5*T[-1], N=1000, axes=ax, s=0, color='orange', legend=(False, "Earth orbit"))
-		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=T[0], tf=5*T[-1], N=1000, axes=ax, s=0, color='green', legend=(False, "CD3-2020 orbit"))
-		ax.plot(R[0], R[1], R[2], label="Spacecraft trajectory")
+		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=T[0]+366, N=1000, axes=ax, s=0, color='red', alpha=0.7, legend=(False, "Earth orbit"))
+		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=T[0], tf=T[-1], N=1000, axes=ax, s=0, color='green', alpha=0.7, legend=(False, "CD3-2020 orbit"))
+		ax.plot(R[0], R[1], R[2], color='blue', alpha=0.7, linewidth=1, label="Spacecraft trajectory")
 		
 		ax.plot([0], [0], [0], 'o', markersize=10, color='yellow', label="Sun")
 		ax.plot([R[0,0]], [R[1, 0]], [R[2, 0]], 'o', markersize=3, color='black', label="Departure position")
@@ -224,9 +224,9 @@ def get_states(udp, population, N, plot):
 		ax.set_ylim(-2e11, 2e11)
 		ax.set_zlim(-7e9, 7e9)
 
-		ax.set_xlabel("x [m]")
-		ax.set_ylabel("y [m]")
-		ax.set_zlabel("z [m]")
+		ax.set_xlabel("X [m]")
+		ax.set_ylabel("Y [m]")
+		ax.set_zlabel("Z [m]")
 
 		plt.title("CD3-2020 to Earth trajectory")
 

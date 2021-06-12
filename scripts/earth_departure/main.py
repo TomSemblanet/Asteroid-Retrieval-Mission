@@ -39,13 +39,13 @@ excess_velocity_vec = Earth_NEA['udp'].vinf_max * Earth_NEA['population'].get_x(
 # 1 - Spacecraft characteristics definition
 # -----------------------------------------
 Tmax = 2 	 # Maximum thrust [N]
-mass = 10000 # Mass			  [kg]
+mass = 5000 # Mass			  [kg]
 
 # 2 - Trajectory parameters definition
 # ------------------------------------
 eps = 130	  # Thrust arc semi-angle [°]
-r_p = 300     # Earth orbit perigee [km]
-r_a = 300   # Earth orbit apogee  [km]
+r_p = 30000     # Earth orbit perigee [km]
+r_a = 30000   # Earth orbit apogee  [km]
 
 r_m = 10000	  # S/C - Moon surface minimal distance [km]
 

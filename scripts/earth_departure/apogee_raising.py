@@ -79,7 +79,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 	# Searching the index of the last pass
 	last_pass_index = np.searchsorted(sol.t, tau)
 
-	return sol.y[:, :last_pass_index], sol.t[:, :last_pass_index], sol.t_events[2][:-1]
+	return sol.y[:, :last_pass_index], sol.t[:last_pass_index], sol.t_events[2][:-1]
 
 
 # def propagate_to_last_apogee_pass(r0, tau, mass, T, eps):

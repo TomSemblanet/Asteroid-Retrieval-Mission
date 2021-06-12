@@ -150,7 +150,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 
 	# Secants method to find the good last thrust arc
 	eps0 = eps_guess
-	eps1 = eps_guess - 0.5 * np.pi / 180
+	eps1 = eps_guess - 1 * np.pi / 180
 
 	f0 = f(r0, t_span, t_eval, mass, T, eps0, v_inf)
 	f1 = f(r0, t_span, t_eval, mass, T, eps1, v_inf)
@@ -171,8 +171,6 @@ def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 		f1 = f2
 
 		print("\t\t\t\t\t\t{}\t\t\t{}".format(round(abs(f2), 5), round(abs(eps2*180/np.pi), 5)), flush=True)
-
-		print(str(eps2))
 
 		if ('nan' in str(eps2) or 'inf' in str(eps2)):
 			error = True
@@ -284,10 +282,10 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity
 	# ---------------------------------------------------------------------------------------------
 	error = True 
-	eps_guess = 180 * np.pi / 180
+	eps_guess = 10 * np.pi / 180
 	while error == True:
 		eps_l, error = last_arc_search(r_ap=r_ap, v_inf=v_inf, mass=mass, T=T, eps=eps, eps_guess=eps_guess)
-		eps_guess += 1 * np.pi / 180
+		eps_guess += 10 * np.pi / 180
 
 
 	# 5 - Simulation of the last branch until Moon encounter

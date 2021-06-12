@@ -69,51 +69,53 @@ def last_apogee_pass_time(r0, mass, T, eps):
 
 	apside_pass.direction = -1
 
-	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached, apside_pass), rtol=1e-10, atol=1e-13)
+	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached, apside_pass, thrust_ignition), \
+		rtol=1e-10, atol=1e-13)
 	r = sol.y
 
 	# Date of the last apogee pass
 	tau = sol.t_events[1][-1]
 
-	print("Propagation finished", flush=True)
+	# Searching the index of the last pass
+	last_pass_index = np.searchsorted(sol.t, tau)
 
-	return tau
+	return sol.y[:, :last_pass_index], sol.t[:, :last_pass_index], sol.t_events[2][:-1]
 
 
-def propagate_to_last_apogee_pass(r0, tau, mass, T, eps):
-	""" Propagation of the keplerian equations from the S/C initial position on its circular orbit around the 
-		Earth to the last apogee pass before the Moon encounter.
+# def propagate_to_last_apogee_pass(r0, tau, mass, T, eps):
+# 	""" Propagation of the keplerian equations from the S/C initial position on its circular orbit around the 
+# 		Earth to the last apogee pass before the Moon encounter.
 
-		Parameters
-		----------
-			r0 : array
-				S/C initial states on its orbit around the Earth [km] | [km/s]
-			tau : float
-				Time of the last apogee pass
-			mass : float
-				S/C mass [kg]
-			T : float
-				S/C maximum thrust [kN]
-			eps : float
-				Angle allowing the thrusters ignition or shutdown [rad]
+# 		Parameters
+# 		----------
+# 			r0 : array
+# 				S/C initial states on its orbit around the Earth [km] | [km/s]
+# 			tau : float
+# 				Time of the last apogee pass
+# 			mass : float
+# 				S/C mass [kg]
+# 			T : float
+# 				S/C maximum thrust [kN]
+# 			eps : float
+# 				Angle allowing the thrusters ignition or shutdown [rad]
 
-		Returns
-		-------
-			r : array
-				S/C states during the trajectory to the last apogee pass [km] | [km/s]
-			t : array
-				Time grid during the trajectory to the last apogee pass [s]
-			t_ign : array
-				Dates of thrusters ignition / shut-down [s]
+# 		Returns
+# 		-------
+# 			r : array
+# 				S/C states during the trajectory to the last apogee pass [km] | [km/s]
+# 			t : array
+# 				Time grid during the trajectory to the last apogee pass [s]
+# 			t_ign : array
+# 				Dates of thrusters ignition / shut-down [s]
 
-	"""
+# 	"""
 
-	t_span = np.array([0, tau])
-	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
+# 	t_span = np.array([0, tau])
+# 	t_eval = np.linspace(t_span[0], t_span[-1], 100000)
 
-	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached, thrust_ignition), rtol=1e-12, atol=1e-12)
+# 	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached, thrust_ignition), rtol=1e-10, atol=1e-13)
 	
-	return sol.y, sol.t, sol.t_events[1]
+# 	return sol.y, sol.t, sol.t_events[1]
 
 
 def last_arc_search(r_ap, v_inf, mass, T, eps):
@@ -259,14 +261,16 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	r0 = kep2cart(a, e, i, W, w, ta, cst.mu_E)
 
 
-	# 2 - Detemination of the last apogee pass date to begin the last thrust arc length
-	# ---------------------------------------------------------------------------------
-	last_ap_pass_time = last_apogee_pass_time(r0=r0, mass=mass, T=T, eps=eps)
+	# # 2 - Detemination of the last apogee pass date to begin the last thrust arc length
+	# # ---------------------------------------------------------------------------------
+	# last_ap_pass_time = last_apogee_pass_time(r0=r0, mass=mass, T=T, eps=eps)
 
 
-	# 3 - Computation of the S/C states after the last apogee pass date
-	# -----------------------------------------------------------------
-	r_ap, t_ap, t_thrusters_ap = propagate_to_last_apogee_pass(r0=r0, tau=last_ap_pass_time, mass=mass, T=T, eps=eps)
+	# # 3 - Computation of the S/C states after the last apogee pass date
+	# # -----------------------------------------------------------------
+	# r_ap, t_ap, t_thrusters_ap = propagate_to_last_apogee_pass(r0=r0, tau=last_ap_pass_time, mass=mass, T=T, eps=eps)
+
+	r_ap, t_ap, t_thrusters_ap = last_apogee_pass_time(r0=r0, mass=mass, T=T, eps=eps)
 
 
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity

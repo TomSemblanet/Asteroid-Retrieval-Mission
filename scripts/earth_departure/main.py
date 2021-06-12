@@ -14,7 +14,7 @@ from scripts.earth_departure.utils import kepler, cart2sph, sph2cart, R2, P_GEO2
 from scripts.earth_departure import constants as cst
 from scripts.earth_departure.keplerian_study_results import one_lga, two_lga
 # from scripts.earth_departure.CR3BP_escape_trajectory import CR3BP_orbit_raising, CR3BP_moon_moon
-from scripts.earth_departure.TBP_apogee_raising import TBP_apogee_raising
+# from scripts.earth_departure.TBP_apogee_raising import TBP_apogee_raising
 
 # from scripts.earth_departure.OCP_moon_moon_leg import MoonMoonLeg
 # from scripts.earth_departure.OCP_apogee_raising import ApogeeRaising

@@ -290,7 +290,7 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	print(t_thrusters_ap)
 	print("\t{}".format(t_thrusters_ap))
 	print(t_thrusters_lb)
-	print("\t{}".format(t_thrusters_lp))
+	print("\t{}".format(t_thrusters_lb))
 	input()
 
 	t_thrusters = np.concatenate((t_thrusters_ap, t_thrusters_lb + last_ap_pass_time))

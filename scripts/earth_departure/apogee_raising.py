@@ -118,7 +118,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 # 	return sol.y, sol.t, sol.t_events[1]
 
 
-def last_arc_search(r_ap, v_inf, mass, T, eps):
+def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 	""" Search the last thrust arc length to encounter the Moon with the desired excess velocity using the secants
 		method.
 
@@ -149,12 +149,14 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 	r0 = r_ap[:, -1]
 
 	# Secants method to find the good last thrust arc
-	eps0 = eps
-	eps1 = eps - 0.5 * np.pi / 180
+	eps0 = eps_guess
+	eps1 = eps_guess - 0.5 * np.pi / 180
 
 	f0 = f(r0, t_span, t_eval, mass, T, eps0, v_inf)
 	f1 = f(r0, t_span, t_eval, mass, T, eps1, v_inf)
 	f2 = 1
+
+	error = False
 
 	print("Searching for the last Thrust arc angle :\tabsolute error (km/s)\tangle (°)", flush=True)
 	while abs(f2) > 1e-3:
@@ -170,7 +172,11 @@ def last_arc_search(r_ap, v_inf, mass, T, eps):
 
 		print("\t\t\t\t\t\t{}\t\t\t{}".format(round(abs(f2), 5), round(abs(eps2*180/np.pi), 5)), flush=True)
 
-	return eps2
+		if (str(eps2) == 'nan' or str(eps2) == 'inf'):
+			error = True
+			break
+
+	return eps2, error
 
 
 def f(r0, t_span, t_eval, mass, T, eps, v_inf):
@@ -275,7 +281,11 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity
 	# ---------------------------------------------------------------------------------------------
-	eps_l = last_arc_search(r_ap=r_ap, v_inf=v_inf, mass=mass, T=T, eps=eps)
+	error = True 
+	eps_guess = 1 * np.pi / 180
+	while error == True:
+		eps_l, error = last_arc_search(r_ap=r_ap, v_inf=v_inf, mass=mass, T=T, eps=eps, eps_guess=eps_guess)
+		eps_guess += 1 * np.pi / 180
 
 
 	# 5 - Simulation of the last branch until Moon encounter

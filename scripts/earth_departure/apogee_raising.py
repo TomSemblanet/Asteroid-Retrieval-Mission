@@ -75,6 +75,8 @@ def last_apogee_pass_time(r0, mass, T, eps):
 	# Date of the last apogee pass
 	tau = sol.t_events[1][-1]
 
+	print("Propagation finished", flush=True)
+
 	return tau
 
 

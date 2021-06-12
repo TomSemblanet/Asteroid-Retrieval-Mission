@@ -39,7 +39,7 @@ excess_velocity_vec = Earth_NEA['udp'].vinf_max * Earth_NEA['population'].get_x(
 # 1 - Spacecraft characteristics definition
 # -----------------------------------------
 Tmax = 2 	 # Maximum thrust [N]
-mass = 5000 # Mass			  [kg]
+mass = 10000 # Mass			  [kg]
 
 # 2 - Trajectory parameters definition
 # ------------------------------------

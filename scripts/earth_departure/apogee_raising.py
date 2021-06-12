@@ -174,7 +174,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 
 		print(str(eps2))
 
-		if (str(eps2) == 'nan' or str(eps2) == 'inf'):
+		if ('nan' in str(eps2) or 'inf' in str(eps2)):
 			error = True
 			break
 

@@ -47,7 +47,7 @@ eps = 130	  # Thrust arc semi-angle [°]
 r_p = 300     # Earth orbit perigee [km]
 r_a = 300   # Earth orbit apogee  [km]
 
-r_m = 10000	  # S/C - Moon surface minimal distance [km]
+r_m = 300	  # S/C - Moon surface minimal distance [km]
 
 p = 1		# Resonance parameters (Moon) [-]
 q = 1		# Resonance parameters (S/C)  [-]

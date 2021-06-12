@@ -287,6 +287,12 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	r = np.concatenate((r_ap, r_lb), axis=1)
 	t = np.concatenate((t_ap, t_lb + last_ap_pass_time))
 
+	print(t_thrusters_ap)
+	print("\t{}".format(t_thrusters_ap))
+	print(t_thrusters_lb)
+	print("\t{}".format(t_thrusters_lp))
+	input()
+
 	t_thrusters = np.concatenate((t_thrusters_ap, t_thrusters_lb + last_ap_pass_time))
 	thrust_intervals = np.reshape(a=t_thrusters, newshape=(int(len(t_thrusters) / 2), 2))
 

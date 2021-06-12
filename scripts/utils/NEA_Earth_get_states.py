@@ -212,8 +212,8 @@ def get_states(udp, population, N, plot):
 		fig = plt.figure()
 		ax = fig.gca(projection='3d')
 
-		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=T[-1], N=1000, axes=ax, s=0, color='orange', legend=(False, "Earth orbit"))
-		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=T[0], tf=T[-1], N=1000, axes=ax, s=0, color='green', legend=(False, "CD3-2020 orbit"))
+		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=5*T[-1], N=1000, axes=ax, s=0, color='orange', legend=(False, "Earth orbit"))
+		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=T[0], tf=5*T[-1], N=1000, axes=ax, s=0, color='green', legend=(False, "CD3-2020 orbit"))
 		ax.plot(R[0], R[1], R[2], label="Spacecraft trajectory")
 		
 		ax.plot([0], [0], [0], 'o', markersize=10, color='yellow', label="Sun")

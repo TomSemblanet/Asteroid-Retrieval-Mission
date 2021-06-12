@@ -2,6 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np 
 import math as mt
 
+from scipy.integrate import solve_ivp
+
 from scripts.earth_departure import constants as cst
 
 
@@ -59,7 +61,7 @@ def cart2sph(r):
 	""" Converts cartesian coordinates to spherical coordinates """
 	rho = np.linalg.norm(r)
 	phi = mt.atan2(r[1], r[0])
-	theta = theta = mt.acos(r[2]/rho)
+	theta = mt.acos(r[2]/rho)
 
 	return np.array([rho, phi, theta])
 
@@ -286,7 +288,7 @@ def plot_env_3D(ax, earth_size=5):
 
 	ax.plot([0], [0], [0], 'o', markersize=earth_size, color='black', label='Earth')
 	ax.plot([cst.d_M * np.cos(t_) for t_ in np.linspace(0, 2*np.pi, 1000)], [cst.d_M * np.sin(t_) for t_ in np.linspace(0, 2*np.pi, 1000)], \
-		np.zeros(1000), '-', linewidth=1.5, color='magenta', label='Moon trajectory')
+		np.zeros(1000), '-', linewidth=0.5, color='black', alpha=0.8, label='Moon trajectory')
 
 
 def thrust_profil_construction(time, trajectory, thrusts_intervals, Tmax):
@@ -339,52 +341,76 @@ def thrust_index(time, thrust_profil, Tmax):
 
 def plot_earth_departure(apogee_raising_trajectory, apogee_raising_time, apogee_raising_thrust_interval, \
 	moon_moon_trajectory, moon_moon_time, moon_moon_thrust_interval, outter_trajectory, outter_time, Tmax):
+
+	r0 = apogee_raising_trajectory[:, -1]
+	t_span = [0, 86400 * 1.5]
+	t_eval = np.linspace(t_span[0], t_span[1], 10000)
+	r0[3:] = [-1, -1, -0.2]
+
+	propagation = solve_ivp(fun=kepler, y0=r0, t_span=t_span, t_eval=t_eval, atol=1e-13, rtol=1e-10)
+
+
 	
 	apogee_raising_thrusts = thrust_profil_construction(apogee_raising_time, apogee_raising_trajectory, apogee_raising_thrust_interval, Tmax)
-	moon_moon_thrusts = thrust_profil_construction(moon_moon_time, moon_moon_trajectory, moon_moon_thrust_interval, Tmax)
+	# moon_moon_thrusts = thrust_profil_construction(moon_moon_time, moon_moon_trajectory, moon_moon_thrust_interval, Tmax)
 
 	apogee_raising_thrusts_index = thrust_index(apogee_raising_time, apogee_raising_thrusts, Tmax)
-	moon_moon_thrusts_index = thrust_index(moon_moon_time, moon_moon_thrusts, Tmax)
+	# moon_moon_thrusts_index = thrust_index(moon_moon_time, moon_moon_thrusts, Tmax)
 
-	# # For the plot, divide change the unit
-	# apogee_raising_trajectory[:3] /= 1e6
-	# moon_moon_trajectory[:3] /= 1e6
+	apogee_raising_coasts_index = list()
+	for k in range(len(apogee_raising_thrusts_index)-1):
+		apogee_raising_coasts_index.append([apogee_raising_thrusts_index[k][1], apogee_raising_thrusts_index[k+1][0]])
+	apogee_raising_coasts_index.append([apogee_raising_thrusts_index[-1][1], len(apogee_raising_trajectory[0])])
+
+	apogee_raising_coasts_index = np.reshape(apogee_raising_coasts_index, (int(len(apogee_raising_coasts_index)), 2))
 
 	fig = plt.figure()
 	ax = fig.gca(projection='3d')
 
-	ax.plot(apogee_raising_trajectory[0], apogee_raising_trajectory[1], apogee_raising_trajectory[2], '-', color='blue', linewidth=1)
-	ax.plot(moon_moon_trajectory[0], moon_moon_trajectory[1], moon_moon_trajectory[2], '-', color='blue', linewidth=1)
-	ax.plot(outter_trajectory[0], outter_trajectory[1], outter_trajectory[2], '-', color='blue', linewidth=1)
+
+	ax.plot(moon_moon_trajectory[0], moon_moon_trajectory[1], moon_moon_trajectory[2], '-', color='blue', alpha=0.7, linewidth=1)
+	# ax.plot(outter_trajectory[0], outter_trajectory[1], outter_trajectory[2], '-', color='blue', linewidth=1)
+
+	for ind in apogee_raising_coasts_index:
+		ax.plot(apogee_raising_trajectory[0, ind[0]:ind[1]], apogee_raising_trajectory[1, ind[0]:ind[1]], apogee_raising_trajectory[2, ind[0]:ind[1]], '-', color='blue', alpha=0.7, linewidth=1)
+
 
 	for ind in apogee_raising_thrusts_index:
-		ax.plot(apogee_raising_trajectory[0, ind[0]:ind[1]], apogee_raising_trajectory[1, ind[0]:ind[1]], apogee_raising_trajectory[2, ind[0]:ind[1]], '-', color='red', linewidth=1)
+		ax.plot(apogee_raising_trajectory[0, ind[0]:ind[1]], apogee_raising_trajectory[1, ind[0]:ind[1]], apogee_raising_trajectory[2, ind[0]:ind[1]], '-', color='red', alpha=0.7, linewidth=1)
 
-	for ind in moon_moon_thrusts_index:
-		ax.plot(moon_moon_trajectory[0, ind[0]:ind[1]], moon_moon_trajectory[1, ind[0]:ind[1]], moon_moon_trajectory[2, ind[0]:ind[1]], '-', color='red', linewidth=1)
+	ax.plot([apogee_raising_trajectory[0, -1]], [apogee_raising_trajectory[1, -1]], [apogee_raising_trajectory[2, -1]], marker='o', color=(0, 0, 1, 0), markeredgecolor='magenta', \
+		markeredgewidth=1, label='1$^{st}$ - 2$^{nd}$ LGAs')
+
+	ax.plot(propagation.y[0], propagation.y[1], propagation.y[2], '-', color='green', alpha=0.7, linewidth=1, label='Outbound trajectory')
+
+	# for ind in moon_moon_thrusts_index:
+	# 	ax.plot(moon_moon_trajectory[0, ind[0]:ind[1]], moon_moon_trajectory[1, ind[0]:ind[1]], moon_moon_trajectory[2, ind[0]:ind[1]], '-', color='red', linewidth=1)
 
 	plot_env_3D(ax)
+
+	ax.plot([0, 1], [0, 1], [0, 1], '-', color='red', alpha=0.7, label='Thrust')
+	ax.plot([0, 1], [0, 1], [0, 1], '-', color='blue', alpha=0.7, label='Coast')
 
 	ax.set_xlabel('X [km]')
 	ax.set_ylabel('Y [km]')
 	ax.set_zlabel('Z [km]')
 
-	# # make the panes transparent
-	# ax.xaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-	# ax.yaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-	# ax.zaxis.set_pane_color((1.0, 1.0, 1.0, 0.0))
-	# # make the grid lines transparent
-	# ax.xaxis._axinfo["grid"]['color'] =  (1,1,1,0)
-	# ax.yaxis._axinfo["grid"]['color'] =  (1,1,1,0)
-	# ax.zaxis._axinfo["grid"]['color'] =  (1,1,1,0)
+	ax.set_xlim(-500000, 500000)
+	ax.set_ylim(-500000, 500000)
+	ax.set_zlim(-500000, 500000)
 
-
+	plt.legend()
 	plt.show()
+
+
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111)
 
-	ax.plot(np.concatenate((apogee_raising_time, moon_moon_time)), np.concatenate((apogee_raising_thrusts[0], moon_moon_thrusts[0])), color='blue')
+	ax.plot(np.concatenate((apogee_raising_time, moon_moon_time))/86400, np.concatenate((apogee_raising_thrusts[0], np.zeros(len(moon_moon_time)))), color='blue')
+
+	ax.set_xlabel('Time [d]')
+	ax.set_ylabel('Thrust [N]')
 
 	plt.grid()
 	plt.show()

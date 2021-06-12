@@ -285,9 +285,9 @@ class Earth2NEA:
 		# Plotting the Sun, Earth and NEA
 		ax.plot([0], [0], [0], color='y')
 		pk.orbit_plots.plot_planet(self.earth, pk.epoch(
-			t0), units=pk.AU, color=(0.7, 0.7, 1), axes=ax)
+			t0), units=pk.AU, legend=('Earth at departure', 'Earth trajectory'), color=(0.7, 0.7, 1), axes=ax)
 		pk.orbit_plots.plot_planet(self.nea, pk.epoch(
-			t0 + tof), units=pk.AU, legend=True, color=(0.7, 0.7, 1), axes=ax)
+			t0 + tof), units=pk.AU, legend=('NEA at arrival', 'NEA trajectory'), color=(1, 0.7, 0.7), axes=ax)
 
 		# Forward propagation for plotting
 		xfwd = [0.0] * (n_fwd_seg + 1)
@@ -305,11 +305,11 @@ class Earth2NEA:
 				disturbance = [mfwd[i] * pk.MU_EARTH / r3 * ri for ri in dfwd[i]]
 
 				pk.orbit_plots.plot_taylor_disturbance(rfwd[i], vfwd[i], mfwd[i], ufwd[i], disturbance, fwd_dt[
-											   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+											   i], cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
 
 			else:
 				pk.orbit_plots.plot_taylor(rfwd[i], vfwd[i], mfwd[i], ufwd[i], fwd_dt[
-											   i], cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
+											   i], cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[i], 0, 1 - alphas[i]), axes=ax)
 
 			xfwd[i + 1] = rfwd[i + 1][0] / pk.AU
 			yfwd[i + 1] = rfwd[i + 1][1] / pk.AU
@@ -331,11 +331,11 @@ class Earth2NEA:
 				disturbance = [mbwd[i] * pk.MU_EARTH / r3 * ri for ri in dbwd[-1 - i]]
 
 				pk.orbit_plots.plot_taylor_disturbance(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], disturbance, -bwd_dt[-i - 1],
-											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+											   cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
 
 			else:
 				pk.orbit_plots.plot_taylor(rbwd[-i - 1], vbwd[-i - 1], mbwd[-i - 1], ubwd[-i - 1], -bwd_dt[-i - 1],
-											   cst.MU_SUN, veff, N=10, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
+											   cst.MU_SUN, veff, N=100, units=pk.AU, color=(alphas[-i - 1], 0, 1 - alphas[-i - 1]), axes=ax)
 
 			xbwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][0] / pk.AU
 			ybwd[-1 - (i + 1)] = rbwd[-1 - (i + 1)][1] / pk.AU
@@ -343,6 +343,12 @@ class Earth2NEA:
 
 		ax.scatter(xfwd[:-1], yfwd[:-1], zfwd[:-1], marker='o', s=5, c='k')
 		ax.scatter(xbwd[1:], ybwd[1:], zbwd[1:], marker='o', s=5, c='k')
+
+		ax.set_xlabel('X [AU]')
+		ax.set_ylabel('Y [AU]')
+		ax.set_zlabel('Z [AU]')
+
+		ax.set_zlim(-0.05, 0.05)
 
 		return fig, ax
 

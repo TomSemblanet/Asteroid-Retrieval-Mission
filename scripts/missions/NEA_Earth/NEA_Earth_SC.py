@@ -93,11 +93,11 @@ vinf_max = 3.5e3
 
 # 6 - Optimization algorithm
 # --------------------------
-algorithm = load_sqp.load('ipopt')
+algorithm = load_sqp.load('ipopt', max_iter=300)
 
 # 7 - Problem
 # -----------
-n_seg = 30
+n_seg = 60
 
 udp = NEA2Earth(nea=ast, n_seg=n_seg, t0=(lw_low, lw_upp), tof=(tof_low, tof_upp), m0=m0, \
 	Tmax=Tmax, Isp=Isp, nea_mass=ast_mass, vinf_max=vinf_max, earth_grv=True)

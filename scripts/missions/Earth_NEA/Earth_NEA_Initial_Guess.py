@@ -57,7 +57,7 @@ def initial_guess(nea_dpt_date_, n_seg):
 
 	# 6 - Optimization algorithm
 	# --------------------------
-	algorithm = load_sqp.load('ipopt')
+	algorithm = load_sqp.load('ipopt', max_iter=250)
 
 	# 7 - Optimization on position
 	# ----------------------------

@@ -57,7 +57,7 @@ Isp = 3000
 vinf_max = 2e3
 
 # 5 - Optimization algorithm
-algorithm = load_sqp.load('ipopt')
+algorithm = load_sqp.load('ipopt', max_iter=300)
 
 # 7 - Problem
 # -----------

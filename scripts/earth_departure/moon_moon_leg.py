@@ -42,7 +42,7 @@ def moon_moon_leg(v_inf_mag, phi, theta, gamma, p, q, ax):
 	r_S = sol_S.y
 
 	ax.plot(r_S[0], r_S[1], r_S[2], '-', linewidth=1, color='blue')
-	ax.plot([r_S[0, -1]], [r_S[1, -1]], [r_S[2, -1]], 'o', markersize=2, color='green')
+	# ax.plot([r_S[0, -1]], [r_S[1, -1]], [r_S[2, -1]], 'o', markersize=2, color='green')
 
 	return r_S[:, -1]
 

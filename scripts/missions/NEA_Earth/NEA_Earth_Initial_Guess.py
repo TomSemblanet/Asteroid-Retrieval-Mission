@@ -61,7 +61,7 @@ def initial_guess(year_, n_seg):
 
 	# 5 - Optimization algorithm
 	# --------------------------
-	algorithm = load_sqp.load('ipopt')
+	algorithm = load_sqp.load('ipopt', max_iter=300)
 
 	# 6 - Optimization on position
 	# ----------------------------

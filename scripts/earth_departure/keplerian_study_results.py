@@ -20,7 +20,7 @@ def one_lga(v_inf, phi_m, theta_m, phi_p, theta_p, gamma, r_ar, t_ar):
 	v_out = P_GEO2HRV(gamma).dot(sph2cart([v_inf, phi_p, theta_p]))
 	r0 = np.concatenate((r_ar[:3, -1], v_out))
 
-	t_span = np.array([0, 10*86400])
+	t_span = np.array([0, 30*86400])
 	t_eval = np.linspace(t_span[0], t_span[-1], 10000)
 
 	sol = solve_ivp(fun=kepler, t_span=t_span, t_eval=t_eval, y0=r0, rtol=1e-12, atol=1e-12)

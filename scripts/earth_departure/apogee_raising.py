@@ -69,7 +69,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 
 	apside_pass.direction = -1
 
-	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached, apside_pass), rtol=1e-12, atol=1e-12)
+	sol = solve_ivp(fun=kepler_thrust, y0=r0, t_span=t_span, t_eval=t_eval, args=(mass, T, eps), events=(moon_reached, apside_pass), rtol=1e-10, atol=1e-13)
 	r = sol.y
 
 	# Date of the last apogee pass

@@ -78,7 +78,7 @@ if __name__ == '__main__':
 		data = pkl.load(file)
 
 	# Algorithm used to correct the dynamic changes
-	algorithm = load_sqp.load('ipopt')
+	algorithm = load_sqp.load('slsqp', max_iter=150)
 
 	# First double
 	if 'NEA_Earth' in file_path:

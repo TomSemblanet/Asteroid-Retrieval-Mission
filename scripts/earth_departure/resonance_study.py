@@ -94,6 +94,11 @@ def resonant_trajectories(v_inf_mag, phi_m, theta_m, phi_p, theta_p, r_m, gamma,
 
 	plot_env(ax, gamma, p, q)
 
+	ax.set_xlabel('X [km]')
+	ax.set_xlabel('Y [km]')
+	ax.set_xlabel('Z [km]')
+
+	plt.legend()
 	plt.show()
 
 	return r_fs

@@ -44,8 +44,8 @@ mass = 10000 # Mass			  [kg]
 # 2 - Trajectory parameters definition
 # ------------------------------------
 eps = 130	  # Thrust arc semi-angle [°]
-r_p = 300     # Earth orbit perigee [km]
-r_a = 300   # Earth orbit apogee  [km]
+r_p = 10000     # Earth orbit perigee [km]
+r_a = 10000   # Earth orbit apogee  [km]
 
 r_m = 300	  # S/C - Moon surface minimal distance [km]
 

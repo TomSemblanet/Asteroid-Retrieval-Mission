@@ -240,7 +240,7 @@ else:
 
 
 	else:
-		print("No second LGA found with this resonance")
+		print("No second LGA found with this resonance", flush=True)
 
 
 

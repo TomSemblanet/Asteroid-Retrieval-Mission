@@ -75,7 +75,7 @@ def resonant_trajectories(v_inf_mag, phi_m, theta_m, phi_p, theta_p, r_m, gamma,
 	plt.show()
 
 	if len(phi_p_adm) == 0:
-		print("No admissible solution with ({}:{}) resonance.".format(p, q))
+		print("No admissible solution with ({}:{}) resonance.".format(p, q), flush=True)
 		sys.exit()
 
 	r_fs = np.ndarray(shape=(0, 8))

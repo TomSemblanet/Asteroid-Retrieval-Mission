@@ -79,7 +79,7 @@ def last_apogee_pass_time(r0, mass, T, eps):
 	# Searching the index of the last pass
 	last_pass_index = np.searchsorted(sol.t, tau)
 
-	return sol.y[:, :last_pass_index], sol.t[:last_pass_index], sol.t_events[2][:-1]
+	return sol.y[:, :last_pass_index], sol.t[:last_pass_index], sol.t_events[2][:-1], tau
 
 
 # def propagate_to_last_apogee_pass(r0, tau, mass, T, eps):
@@ -270,7 +270,7 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	# # -----------------------------------------------------------------
 	# r_ap, t_ap, t_thrusters_ap = propagate_to_last_apogee_pass(r0=r0, tau=last_ap_pass_time, mass=mass, T=T, eps=eps)
 
-	r_ap, t_ap, t_thrusters_ap = last_apogee_pass_time(r0=r0, mass=mass, T=T, eps=eps)
+	r_ap, t_ap, t_thrusters_ap, last_ap_pass_time = last_apogee_pass_time(r0=r0, mass=mass, T=T, eps=eps)
 
 
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity

@@ -172,6 +172,8 @@ def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 
 		print("\t\t\t\t\t\t{}\t\t\t{}".format(round(abs(f2), 5), round(abs(eps2*180/np.pi), 5)), flush=True)
 
+		print(str(eps2))
+
 		if (str(eps2) == 'nan' or str(eps2) == 'inf'):
 			error = True
 			break

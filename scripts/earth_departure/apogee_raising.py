@@ -284,7 +284,7 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity
 	# ---------------------------------------------------------------------------------------------
 	error = True 
-	eps_guess = 1 * np.pi / 180
+	eps_guess = 180 * np.pi / 180
 	while error == True:
 		eps_l, error = last_arc_search(r_ap=r_ap, v_inf=v_inf, mass=mass, T=T, eps=eps, eps_guess=eps_guess)
 		eps_guess += 1 * np.pi / 180

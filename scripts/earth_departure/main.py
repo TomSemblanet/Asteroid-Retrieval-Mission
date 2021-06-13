@@ -11,6 +11,7 @@ from scripts.earth_departure.rotation_feasibility import rotation_feasibility
 from scripts.earth_departure.resonance_study import resonant_trajectories
 from scripts.earth_departure.utils import kepler, cart2sph, sph2cart, R2, P_GEO2HRV, P_HRV2GEO, angle_w_Ox, plot_env_2D, plot_env_3D, \
 											thrust_profil_construction, plot_earth_departure
+											
 from scripts.earth_departure import constants as cst
 from scripts.earth_departure.keplerian_study_results import one_lga, two_lga
 # from scripts.earth_departure.CR3BP_escape_trajectory import CR3BP_orbit_raising, CR3BP_moon_moon

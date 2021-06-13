@@ -159,7 +159,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 	error = False
 
 	print("Searching for the last Thrust arc angle :\tabsolute error (km/s)\tangle (°)", flush=True)
-	while abs(f2) > 1e-3:
+	while abs(f2) > 1e-2:
 		eps2 = eps1 - (eps1 - eps0) / (f1 - f0) * f1
 
 		f2 = f(r0, t_span, t_eval, mass, T, eps2, v_inf)	
@@ -277,7 +277,6 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	# r_ap, t_ap, t_thrusters_ap = propagate_to_last_apogee_pass(r0=r0, tau=last_ap_pass_time, mass=mass, T=T, eps=eps)
 
 	r_ap, t_ap, t_thrusters_ap, last_ap_pass_time = last_apogee_pass_time(r0=r0, mass=mass, T=T, eps=eps)
-
 
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity
 	# ---------------------------------------------------------------------------------------------

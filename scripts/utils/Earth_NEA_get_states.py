@@ -12,6 +12,40 @@ from scripts.utils.post_process import post_process
 
 from data import constants as cst
 
+# def Earth_Sun_rotating_plot(earth, R, T):
+
+# 	earth_R = np.zeros((3, len(T)))
+
+# 	fig = plt.figure()
+# 	ax = fig.gca(projection='3d')
+
+# 	for k, t in enumerate(T):
+
+# 		# Earth position in the ECLJ2000 frame + angle with the (Ox) axis
+# 		earth_pos, _ = earth.eph(t)
+
+# 		gamma = np.sign( np.cross( [1, 0, 0], earth_pos)[2] ) * np.arccos( np.dot( [1, 0, 0], earth_pos) / np.linalg.norm(earth_pos) )
+
+# 		Rotmat = np.array([[np.cos(-gamma), -np.sin(-gamma), 0],
+# 						   [np.sin(-gamma),  np.cos(-gamma), 0],
+# 						    [            0,              0, 1]])
+
+# 		# Rotation of the state in the Sun-Earth rotating frame
+# 		R[:3, k] = Rotmat.dot(R[:3, k])
+# 		earth_R[:, k] = Rotmat.dot(earth_pos)
+
+# 	ax.plot(R[0], R[1], R[2], '-', color='blue', alpha=0.7, linewidth=1)
+# 	ax.plot(earth_R[0], earth_R[1], earth_R[2], '-', color='red', alpha=0.7, linewidth=1)
+# 	ax.plot([0], [0], [0], marker='o', markersize=5, color='yellow')
+
+# 	ax.set_xlim(-1e11, 1e11)
+# 	ax.set_ylim(-1e11, 1e11)
+# 	ax.set_zlim(-1e11, 1e11)
+
+# 	plt.show()
+
+
+
 
 def taylor_disturbance(r0, v0, m0, thrust, disturbance, tof, mu, veff, N=60):
 
@@ -210,21 +244,21 @@ def get_states(udp, population, N, plot):
 		plt.show()
 
 		# 3-D Plot
-		fig = plt.figure(figsize=(7, 7))
+		fig = plt.figure()
 		ax = fig.gca(projection='3d')
 
-		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=pk.epoch(T[0]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='orange', legend=(False, "Earth orbit"))
-		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=pk.epoch(T[0]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', legend=(False, "CD3-2020 orbit"))
-		ax.plot([0], [0], [0], marker='o', markersize=5, color='yellow')
+		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=T[0] + 370, N=1000, axes=ax, s=0, color='red', alpha=0.7, legend=(False, "Earth orbit"))
+		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=pk.epoch(T[0]), tf=pk.epoch(T[-1]), N=1000, axes=ax, s=0, color='green', alpha=0.7, legend=(False, "CD3-2020 orbit"))
 
-		ax.plot(R[0], R[1], R[2], label="Spacecraft trajectory")
+		ax.plot(R[0], R[1], R[2], '-', color='blue', alpha=1, linewidth=1.3, label="Spacecraft trajectory")
 
+		ax.plot([0], [0], [0], 'o', markersize=10, color='yellow', label="Sun")
 		ax.plot([R[0,0]], [R[1, 0]], [R[2, 0]], 'o', markersize=3, color='black', label="Departure position")
 		ax.plot([R[0, -1]], [R[1, -1]], [R[2, -1]], 'o', markersize=3, color='red', label="Arrival position")
 
 		ax.set_xlim(-2e11, 2e11)
 		ax.set_ylim(-2e11, 2e11)
-		ax.set_zlim(-1e10, 1e10)
+		ax.set_zlim(-7e9, 7e9)
 
 		ax.set_xlabel("x [m]")
 		ax.set_ylabel("y [m]")

@@ -91,9 +91,9 @@ def ECLJ2000_ECI(tau, r_ECLJ2000):
 	r_M_ECLP, v_M_ECLP = np.array(r_M_ECLP) / 1000, np.array(v_M_ECLP) / 1000
 
 	# Unitary vector of the ECI frame
-	i = (r_M_ECLP - r_E_ECLP) / np.linalg.norm(r_M_ECLP - r_E_ECLP)
+	j = (v_M_ECLP - v_E_ECLP) / np.linalg.norm(v_M_ECLP - v_E_ECLP)
 	k = np.cross(r_M_ECLP - r_E_ECLP, v_M_ECLP - v_E_ECLP) / np.linalg.norm(np.cross(r_M_ECLP - r_E_ECLP, v_M_ECLP - v_E_ECLP))
-	j = np.cross(k, i) / np.linalg.norm(np.cross(k, i))
+	i = np.cross(j, k) / np.linalg.norm(np.cross(j, k))
 
 	# Passage matrix from the ECLJ2000 frame to the ECI one
 	P = np.array([[i[0], j[0], k[0]],

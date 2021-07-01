@@ -11,7 +11,7 @@ from scripts.earth_departure.rotation_feasibility import rotation_feasibility
 from scripts.earth_departure.resonance_study import resonant_trajectories
 from scripts.earth_departure.utils import kepler, cart2sph, sph2cart, R2, P_GEO2HRV, P_HRV2GEO, angle_w_Ox, plot_env_2D, plot_env_3D, \
 											thrust_profil_construction, plot_earth_departure
-											
+
 from scripts.earth_departure import constants as cst
 from scripts.earth_departure.keplerian_study_results import one_lga, two_lga
 # from scripts.earth_departure.CR3BP_escape_trajectory import CR3BP_orbit_raising, CR3BP_moon_moon
@@ -62,6 +62,13 @@ v_inf = np.linalg.norm(v_out)				# Excess velocity at Moon departure [km/s]
 # 4 - Computation of the Earth - Moon trajectory
 # ----------------------------------------------
 r_ar, t_ar, thrusts_intervals, last_apogee_pass_time = apogee_raising(mass=mass, T=Tmax/1000, eps=eps*np.pi/180, r_p=r_p, r_a=r_a, v_inf=v_inf)
+
+time_sum = 0
+for interv in thrusts_intervals:
+	time_sum += interv[1] - interv[0]
+
+print("Total thrust time: {} sec".format(time_sum))
+print("Delta V : {} km/s".format(Tmax * time_sum / mass / 1000))
 
 # 5 - Extraction of informations about the S/C position at Moon encounter
 # -----------------------------------------------------------------------
@@ -146,7 +153,7 @@ else:
 
 	if scd_lga_fnd == True:
 
-		index = int(feasible_index[0])
+		index = int(feasible_index[-1])
 
 		_, phi_2_m, theta_2_m, phi_2_p, theta_2_p = rotation_feasibility(v_in=resonant_traj[index, 5:], v_out=v_out, \
 			tau=tau, r_m=r_m, gamma=gamma, print_=False)
@@ -234,10 +241,10 @@ else:
 
 		# 12 - Pickle of the results
 		# --------------------------
-		# with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/results/earth_departure', 'wb') as file:
-		# 	pickle.dump({'apogee_raising_trajectory': trajectories[0], 'apogee_raising_time': times[0], 'apogee_raising_thrust_intervals':thrusts_intervals, \
-		# 			    'moon_moon_trajectory': trajectories[1], 'moon_moon_time': times[1], 'moon_moon_thrust_intervals': moon_moon_thrust_intervals, \
-		# 			    'outter_trajectory': trajectories[2], 'outter_time': times[2], 'Tmax': Tmax}, file)
+		with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/results/earth_departure', 'wb') as file:
+			pickle.dump({'apogee_raising_trajectory': trajectories[0], 'apogee_raising_time': times[0], 'apogee_raising_thrust_intervals':thrusts_intervals, \
+					    'moon_moon_trajectory': trajectories[1], 'moon_moon_time': times[1], 'moon_moon_thrust_intervals': moon_moon_thrust_intervals, \
+					    'outter_trajectory': trajectories[2], 'outter_time': times[2], 'Tmax': Tmax}, file)
 
 
 	else:

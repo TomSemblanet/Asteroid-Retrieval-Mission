@@ -214,7 +214,8 @@ def get_states(udp, population, N, plot):
 
 		pk.orbit_plots.plot_planet(plnt=udp.earth, t0=T[0], tf=T[0]+366, N=1000, axes=ax, s=0, color='red', alpha=0.7, legend=(False, "Earth orbit"))
 		pk.orbit_plots.plot_planet(plnt=udp.nea, t0=T[0], tf=T[-1], N=1000, axes=ax, s=0, color='green', alpha=0.7, legend=(False, "CD3-2020 orbit"))
-		ax.plot(R[0], R[1], R[2], color='blue', alpha=0.7, linewidth=1, label="Spacecraft trajectory")
+		
+		ax.plot(R[0], R[1], R[2], marker='-', color='blue', alpha=0.7, linewidth=1, label="Spacecraft trajectory")
 		
 		ax.plot([0], [0], [0], 'o', markersize=10, color='yellow', label="Sun")
 		ax.plot([R[0,0]], [R[1, 0]], [R[2, 0]], 'o', markersize=3, color='black', label="Departure position")

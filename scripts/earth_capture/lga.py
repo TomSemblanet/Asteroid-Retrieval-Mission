@@ -90,6 +90,10 @@ def first_lga(r, r_m, p, q):
 		v_ECI_p = P_ECI_HRV().dot(v_HRV_p)
 		r0 = np.concatenate((r[:3], v_ECI_p))
 
+		print("HRV : [{}, {}, {}]".format(v_inf, phi_p*180/np.pi, theta_p*180/np.pi))
+		print("Velocity : {} km/s".format(np.linalg.norm(v_M_HRV)))
+		input()
+
 		solution = solve_ivp(fun=kepler, t_span=t_span, t_eval=t_eval, y0=r0, rtol=1e-12, atol=1e-12)
 		r_f = solution.y[:, -1]
 

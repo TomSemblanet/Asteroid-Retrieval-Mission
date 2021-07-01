@@ -79,6 +79,15 @@ def last_apogee_pass_time(r0, mass, T, eps):
 	# Searching the index of the last pass
 	last_pass_index = np.searchsorted(sol.t, tau)
 
+	fig = plt.figure()
+	ax = fig.add_subplot(111)
+
+	ax.plot(sol.y[0, :last_pass_index], sol.y[1, :last_pass_index], '-')
+	plot_env_2D(ax)
+
+	plt.grid()
+	plt.show()
+
 	return sol.y[:, :last_pass_index], sol.t[:last_pass_index], sol.t_events[2][:-2], tau
 
 
@@ -159,7 +168,7 @@ def last_arc_search(r_ap, v_inf, mass, T, eps, eps_guess):
 	error = False
 
 	print("Searching for the last Thrust arc angle :\tabsolute error (km/s)\tangle (°)", flush=True)
-	while abs(f2) > 1e-2:
+	while abs(f2) > 3e-2:
 		eps2 = eps1 - (eps1 - eps0) / (f1 - f0) * f1
 
 		f2 = f(r0, t_span, t_eval, mass, T, eps2, v_inf)	
@@ -281,7 +290,7 @@ def apogee_raising(mass, T, eps, r_p, r_a, v_inf):
 	# 4 - Computation of the last arc semi-angle to reach the Moon with the desired excess velocity
 	# ---------------------------------------------------------------------------------------------
 	error = True 
-	eps_guess = 180 * np.pi / 180
+	eps_guess = 30 * np.pi / 180
 	while error == True:
 		eps_l, error = last_arc_search(r_ap=r_ap, v_inf=v_inf, mass=mass, T=T, eps=eps, eps_guess=eps_guess)
 		eps_guess += 1 * np.pi / 180

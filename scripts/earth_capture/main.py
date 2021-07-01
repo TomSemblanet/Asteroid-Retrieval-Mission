@@ -37,40 +37,29 @@ decision_vector = NEA_Earth['population'].get_x()[0]
 
 # Spacecraft characteristics
 # --------------------------
-Tmax = 5 	 # Maximum thrust [N]
-mass = 6900  # Mass			  [kg]
+Tmax = 5 	  # Maximum thrust [N]
+mass = 13582  # Mass		   [kg]
 
 # Trajectory parameters
 # ---------------------
 r_m = 300	  # S/C - Moon surface minimal distance [km]
 
-# Outter trajectory characteristics
-# ---------------------------------
+# Inner trajectory characteristics
+# --------------------------------
 tau   = decision_vector[0] + decision_vector[1]					# Moon arrival date (MJD2000)	
 
-r_in_S, r_in_E, r_in_M = arrival_states.get(file_path)		 	# S/C states relatively to the Sun, Earth and Moon at Moon arrival [m] | [m/s]
-r_in_S, r_in_E, r_in_M = r_in_S/1000, r_in_E/1000, r_in_M/1000 	# S/C states relatively to the Sun, Earth and Moon at Moon arrival [km] | [km/s]
-
+r_in_S, r_in_E, r_in_M = arrival_states.get(file_path)		 	# S/C states relatively to the Sun, Earth and Moon at Moon arrival [km] | [km/s]
 v_inf = np.linalg.norm(r_in_M[3:])					  			# S/C excess velocity relatively to the Moon [km/s]
+
+print("Excess velocity w.r.t the Moon : {} km/s".format(np.linalg.norm(r_in_M[3:])))
 
 # Target DRO
 # ----------
 with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/data/DROs', 'rb') as file:
 	DROs = pickle.load(file)
 
-DRO, target = get_state(DROs, Cjac=2.75, theta=0.5)
+DRO, target = get_state(DROs, Cjac=2.9328, theta=0.5)
 
-# fig = plt.figure()
-# ax = fig.add_subplot(111)
-
-# plot_DRO_state(ax, DRO, target)
-# ax.plot([1-0.012151], [0], 'o', color='black', markersize=2)
-# ax.plot([-0.012151], [0], 'o', color='black', markersize=5)
-
-# plt.grid()
-# plt.show()
-
-# sys.exit()
 
 # Conversion of the S/C velocity from the ECLJ2000 frame to the ECI one
 P_ECI_ECLJ2000 = np.linalg.inv(P_ECLJ2000_ECI(tau))
@@ -226,3 +215,6 @@ ax.set_ylim(-1, 1)
 ax.set_zlim(-1, 1)
 
 plt.show()
+
+with open('/Users/semblanet/Desktop/Git/Asteroid-Retrieval-Mission/local/to_DRO', 'wb') as file:
+	pickle.dump({'trajectory': opt_trajectory, 'time': opt_time, 'controls': opt_controls, 'cr3bp': cr3bp}, file)
